@@ -3,7 +3,7 @@ using System.IO;
 using Sharpmake;
 
 [module: Include("%EngineDir%/Engine/Source/CommonProject.build.cs")]
-[module: Include("%EngineDir%/Engine/Source/HE/HE.build.cs")]
+[module: Include("%EngineDir%/Engine/Source/HE1/HE1.build.cs")]
 [module: Include("Utils.cs")]
 
 [Generate]
@@ -55,8 +55,8 @@ public class EngineSolution : Solution
             //conf.AddProject<EngineConfig>(target);
 
             // exe
-            conf.AddProject<HE>(target);
-            conf.SetStartupProject<HE>();
+            conf.AddProject<HE1>(target);
+            conf.SetStartupProject<HE1>();
         }
     }
 }

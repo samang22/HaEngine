@@ -21,4 +21,5 @@ IF NOT "%~4"=="" set SharpMakeSolutionDir="%4"
 echo SharpMakeSolutionDir은 %SharpMakeSolutionDir%
 
 "%EngineDir%\Engine\Source\Programs\Sharpmake\Sharpmake.Application\bin\Release\net6.0\Sharpmake.Application.exe" /sources(@'%TargetCS%') /verbose
+"%EngineDir%\Engine\Source\Programs\Sharpmake\Sharpmake.Application\bin\Release\net6.0\Sharpmake.Application.exe" /sources(@'%FrontendTargetCS%') /verbose
 pause

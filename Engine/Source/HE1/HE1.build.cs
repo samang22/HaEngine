@@ -2,9 +2,9 @@ using System.IO;
 using Sharpmake;
 
 [Generate]
-public class HE : CommonProject
+public class HE1 : CommonProject
 {
-    public HE()
+    public HE1()
     {
         //ResourceFilesExtensions.Add(".rc");
         //ResourceFilesExtensions.Add(".ico");
