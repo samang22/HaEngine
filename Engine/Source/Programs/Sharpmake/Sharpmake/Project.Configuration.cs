@@ -3746,7 +3746,7 @@ namespace Sharpmake
                         }
                     }
 
-                    if (Project.Name == "SE1")
+                    if (Project.Name == "HE1")
                     {
                         foreach (Configuration c in _resolvedDependencies)
                         {
@@ -3763,7 +3763,7 @@ namespace Sharpmake
                         {
                             //EventPreBuild.Add("msbuild EngineConfig.vcxproj /t:Rebuild /p:IncrementalBuild=true /p:platform=x64 /p:configuration=\"" + Name + "\"");
                             //EventPreBuild.Add("devenv " + "EngineConfig" + ".vcxproj /Build \"" + Name + "\"");
-                            // SE1에 UserProject 종속성 추가
+                            // HE1에 UserProject 종속성 추가
                             foreach (KeyValuePair<Type, Project> Pair in builder._projects)
                             {
                                 if (Pair.Value.GetType().BaseType.Name == "UserProject")
@@ -3795,7 +3795,7 @@ namespace Sharpmake
                                 string NewIncludePath = DependenciesIncludePaths.JoinStrings(";") + ";" +
                                     IncludePaths.JoinStrings(";") + ";" + IncludePrivatePaths.JoinStrings(";") + ";";
 
-                                // Ex) D:\Engine\Intermediate\Build\Development Editor\SE1 + /../
+                                // Ex) D:\Engine\Intermediate\Build\Development Editor\HE1 + /../
                                 string FilePath = IntermediatePath + "/../" + "Include";
                                 Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
                                 using (StreamWriter Writer = new StreamWriter(FilePath/*, append: true*/))
@@ -3829,7 +3829,7 @@ namespace Sharpmake
                                 string NewIncludePath = DependenciesIncludePaths.JoinStrings(";") + ";" +
                                     IncludePaths.JoinStrings(";") + ";" + IncludePrivatePaths.JoinStrings(";") + ";";
                                 //Console.WriteLine(IncludePaths.JoinStrings("\n"));
-                                // Ex) D:\Engine\Intermediate\Build\Development Editor\SE1 + /../
+                                // Ex) D:\Engine\Intermediate\Build\Development Editor\HE1 + /../
                                 string FilePath = IntermediatePath + "/../" + "IncludeUser";
                                 Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
                                 using (StreamWriter Writer = new StreamWriter(FilePath))
@@ -3849,8 +3849,8 @@ namespace Sharpmake
                             }
                         }
                     }
-                    // Frontend의 SE(SE1은 빌드해야 할 찐 프로젝트)
-                    else if (Project.Name == "SE")
+                    // Frontend의 HE(HE1은 빌드해야 할 찐 프로젝트)
+                    else if (Project.Name == "HE")
                     {
                         // Include path
                         {
@@ -3866,7 +3866,7 @@ namespace Sharpmake
                                 IncludePaths.Clear();
                                 IncludePaths.Add(NewIncludePaths);
 
-                                string VcpkgRoot = Environment.GetEnvironmentVariable("SE_VCPKG_ROOT");
+                                string VcpkgRoot = Environment.GetEnvironmentVariable("HE_VCPKG_ROOT");
                                 IncludePaths.Add(VcpkgRoot + "\\installed\\x64-windows\\include");
                             }
                         }

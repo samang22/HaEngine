@@ -23,6 +23,8 @@ public class HE1 : CommonProject
         //conf.SolutionFolder = "Engine";
         conf.Output = Configuration.OutputType.Exe;
 
+        conf.AddPublicDependency<Core>(target);
+
         // conf.AddPublicDependency<Core>(target);
         // conf.AddPublicDependency<Launch>(target);
 

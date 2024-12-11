@@ -102,7 +102,7 @@ public abstract class CommonProject : Project
         // 이 이름으로 DLL에서 함수를 로드해서 호출함
         //if (target.LaunchType == ELaunchType.Editor)
         //{
-            //conf.ForceSymbolReferences.Add("IMPLEMENT_MODULE_" + conf.Project.Name);
+            //conf.ForceSymbolReferences.Add("IMPLEMENT_MODULE_"9 + conf.Project.Name);
         //}
 
         // Runtime Library
