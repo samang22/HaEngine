@@ -3,7 +3,12 @@
 //#include "UObject/UObject.h"
 //#include "Logging/Logger.h"
 //
-//bool GIsRequestingExit = false; /* Indicates that MainLoop() should be exited at the end of the current iteration */
+bool GIsRequestingExit = false; /* Indicates that MainLoop() should be exited at the end of the current iteration */
+
+bool CORE_API IsEngineExitRequested()
+{
+	return GIsRequestingExit;
+}
 //
 //CORE_API map<UClass*, vector<engine_weak_ptr<UObject>>> ObjectMap;
 //
