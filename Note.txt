@@ -27,3 +27,9 @@ C#으로 작성된 코드를, batch 스크립트로 실행
 CMake 설정 파일을 통해 binary 파일을 읽고, 솔루션을 만들 수 있다.
 폴더 내에서 우클릭 -> 추가 옵션 -> Visual Studio로 열기 로 솔루션을 열 수 있다.
 
+2. ModuleManager
+특정 모듈을 동적으로 로드하는 등, 모듈을 관리하기 위한 매니저 클래스
+
+3. Launch
+Init, Loop, Exit 이 흐름을 만들기
+추후에 Debug Editor로 실행하 때는 MFC main을, Debug Server로 실행할 때는 일반적은 main 함수를 실행할 것이다.

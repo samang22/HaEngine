@@ -44,7 +44,7 @@ public class EngineSolution : Solution
             // // dll
             conf.AddProject<Core>(target);
             // conf.AddProject<Engine>(target);
-            // conf.AddProject<Launch>(target);
+            conf.AddProject<Launch>(target);
             // conf.AddProject<Network>(target);
             // conf.AddProject<RenderCore>(target);
             // conf.AddProject<Renderer>(target);

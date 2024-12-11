@@ -24,9 +24,9 @@ public class HE1 : CommonProject
         conf.Output = Configuration.OutputType.Exe;
 
         conf.AddPublicDependency<Core>(target);
-
-        // conf.AddPublicDependency<Core>(target);
-        // conf.AddPublicDependency<Launch>(target);
+        // Launch가 Core를 사용하고 있기 때문에, Launch만 포함해도 
+        // 문제는 없지만, 명시적으로 Core를 추가시켜준다.
+        conf.AddPublicDependency<Launch>(target);
 
         // if (target.LaunchType == ELaunchType.Editor || target.LaunchType == ELaunchType.Client)
         // {
