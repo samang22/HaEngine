@@ -23,33 +23,33 @@ bool CORE_API IsEngineExitRequested()
 //	GIsRequestingExit = true;
 //}
 //
-//FStaticConstructObjectParameters::FStaticConstructObjectParameters(UClass* InClass)
-//	: Class(InClass)
-//{
-//	if (!Class)
-//	{
-//		E_LOG(Error, TEXT("Class is nullptr"))
-//	}
-//}
-//
-//FObjectInitializer::FObjectInitializer(shared_ptr<UObject>& InObj, const FStaticConstructObjectParameters& StaticConstructParams)
-//	: SharedObj(InObj)
-//	, Class(StaticConstructParams.Class)
-//	, OuterPrivate(StaticConstructParams.Outer)
-//	, ObjectFlags(StaticConstructParams.SetFlags)
-//	, Name(StaticConstructParams.Name)
-//	, ObjectArchetype(StaticConstructParams.Template)
-//{
-//	if (ObjectArchetype)
-//	{
-//		bShouldInitializePropsFromArchetype = true;
-//	}
-//}
-//
-//FObjectInitializer::~FObjectInitializer()
-//{
-//	PostConstructInit();
-//}
+FStaticConstructObjectParameters::FStaticConstructObjectParameters(UClass* InClass)
+	: Class(InClass)
+{
+	if (!Class)
+	{
+		//E_LOG(Error, TEXT("Class is nullptr"))
+	}
+}
+
+FObjectInitializer::FObjectInitializer(shared_ptr<UObject>& InObj, const FStaticConstructObjectParameters& StaticConstructParams)
+	: SharedObj(InObj)
+	, Class(StaticConstructParams.Class)
+	, OuterPrivate(StaticConstructParams.Outer)
+	, ObjectFlags(StaticConstructParams.SetFlags)
+	, Name(StaticConstructParams.Name)
+	, ObjectArchetype(StaticConstructParams.Template)
+{
+	if (ObjectArchetype)
+	{
+		bShouldInitializePropsFromArchetype = true;
+	}
+}
+
+FObjectInitializer::~FObjectInitializer()
+{
+	//PostConstructInit();
+}
 //#include "Math/SimpleMath.h"
 //void FObjectInitializer::InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults)
 //{
