@@ -1,6 +1,8 @@
 #include "LaunchEngineLoop.h"
 #include "Engine/Engine.h"
 
+extern CORE_API map<FString, UClass*> ClassMap;
+
 int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 {
 	UEngine* Test;
@@ -9,9 +11,12 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 
 int32 FEngineLoop::Init()
 {
-	return 0;
+	UEngine* Test = nullptr;
+	UClass* Temp = UEngine::StaticClass();
+	UClass* EngineClass = ClassMap[TEXT("UEngine")];
+	shared_ptr<UEngine> Engine = Cast<UEngine>(NewObject<UObject>(nullptr, EngineClass));
 }
-#include <iostream>
+
 void FEngineLoop::Tick()
 {
 	cout << "Tick\n";

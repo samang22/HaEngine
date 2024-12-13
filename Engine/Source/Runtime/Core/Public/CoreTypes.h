@@ -30,3 +30,5 @@
 using namespace std;
 using FString = std::wstring;
 using FStringView = std::wstring_view;
+
+static inline const WIDECHAR* NAME_NONE = TEXT("");
