@@ -34,3 +34,31 @@ public:
 
 	virtual ~UClass() {}
 };
+
+CORE_API UClass* GetPrivateStaticClassBody(
+	FString InClassName,
+	UClass::ClassConstructorType InClassConstructor,
+	UClass::StaticClassFunctionType InSuperClassFn,
+	//function<void()> InClassReflection,
+	const type_info& InClassTypeInfo,
+	const uint64 InClassSize
+);
+
+template<class T>
+UClass* TGetPrivateStaticClassBody(
+	FString InClassName,
+	UClass::ClassConstructorType InClassConstructor,
+	UClass::StaticClassFunctionType InSuperClassFn)
+{
+	return GetPrivateStaticClassBody(InClassName, InClassConstructor, InSuperClassFn,
+		typeid(T), sizeof(T));
+}
+
+/**
+ * 클래스의 기본 생성자를 호출하기 위한 헬퍼 템플릿입니다.
+ */
+template<class T>
+void InternalConstructor(const FObjectInitializer& X)
+{
+
+}

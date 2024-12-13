@@ -1,7 +1,9 @@
 #include "LaunchEngineLoop.h"
+#include "Engine/Engine.h"
 
 int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 {
+	UEngine* Test;
 	return 0;
 }
 
