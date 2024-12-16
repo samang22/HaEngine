@@ -60,5 +60,7 @@ UClass* TGetPrivateStaticClassBody(
 template<class T>
 void InternalConstructor(const FObjectInitializer& X)
 {
+	FObjectInitializer* ObjectInitializer = const_cast<FObjectInitializer*>(&X);
+	ObjectInitializer->SharedObj = allocate_shared<T>(FAllocator<T>(ObjectInitializer));
 
 }

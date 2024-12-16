@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreTypes.h"
 
-class FMemoryPool;
+struct FMemoryPool;
 class CORE_API FUObjectArray
 {
 public:
@@ -13,3 +13,5 @@ public:
 private:
 	unordered_map<FHashKey, FMemoryPool*> MemoryPools;
 };
+
+extern CORE_API FUObjectArray GUObjectArray;

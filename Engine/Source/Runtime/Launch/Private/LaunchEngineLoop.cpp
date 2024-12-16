@@ -15,9 +15,9 @@ int32 FEngineLoop::Init()
 	UClass* Temp = UEngine::StaticClass();
 	UClass* EngineClass = ClassMap[TEXT("UEngine")];
 	shared_ptr<UEngine> Engine = Cast<UEngine>(NewObject<UObject>(nullptr, EngineClass));
+	return 0;
 }
 
 void FEngineLoop::Tick()
 {
-	cout << "Tick\n";
 }
