@@ -6,3 +6,5 @@
 #include "UObject/Object.h"
 #include "UObject/Class.h"
 #include "Modules/ModuleManager.h"
+
+#include "Logging/Logger.h"
