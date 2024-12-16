@@ -20,9 +20,14 @@ if '%errorlevel%' NEQ '0' (goto UACPrompt) else ( goto gotAdmin )
     REM 관리자 권한으로 실행하는 경우 기본 경로가 달라서, 이를 bat파일 경로(%~dp0)로 변경한다
     CD /D "%~dp0"
 :-----------------------------------------------------------------------------------------------------------------------------
+call "%ProgramFiles%\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
 
 echo [Build Sharpmake]
 dotnet build --configuration Release .\Engine\Source\Programs\Sharpmake\Sharpmake.Application\Sharpmake.Application.csproj
+
+echo [Build Header Parser]
+cmake -G "Visual Studio 17 2022" -A x64 -S Engine\Source\Programs\HeaderParser -B Engine\Source\Programs\HeaderParser\out
+cmake --build Engine\Source\Programs\HeaderParser\out --config Release
 
 echo [vcpkg task]
 cd Engine\Source\Programs\

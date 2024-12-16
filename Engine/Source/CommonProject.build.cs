@@ -48,7 +48,7 @@ public abstract class CommonProject : Project
         }
         conf.Options.Add(Options.Vc.General.CharacterSet.Unicode);
         conf.Options.Add(Options.Vc.Compiler.JumboBuild.Enable);
-        conf.MinFilesPerJumboFile = 100;
+        //conf.MinFilesPerJumboFile = 100;
         conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP20);
         //conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.Latest);
         if (target.Optimization == Optimization.Debug)
@@ -100,10 +100,10 @@ public abstract class CommonProject : Project
         // UE Module 규칙
         // UE의 경우 모든 모듈이 IMPLEMENT_MODULE_모듈이름의 매크로가 정의되어 있어야함 
         // 이 이름으로 DLL에서 함수를 로드해서 호출함
-        //if (target.LaunchType == ELaunchType.Editor)
-        //{
-            //conf.ForceSymbolReferences.Add("IMPLEMENT_MODULE_"9 + conf.Project.Name);
-        //}
+        if (target.LaunchType == ELaunchType.Editor)
+        {
+            conf.ForceSymbolReferences.Add("IMPLEMENT_MODULE_" + conf.Project.Name);
+        }
 
         // Runtime Library
         {
@@ -124,8 +124,8 @@ public abstract class CommonProject : Project
         }
 
         // 빌드 직전에 HeaderParser가 실행되면서 변경된 헤더들을 수집하고, generated.h를 생성
-        ///string EngineDir = Utils.GetEngineDir();
-        ///conf.EventPreBuild.Add(@"cmd /c """"" + EngineDir + @"\Engine\Source\Programs\HeaderParser\HeaderParser.bat"" ""$(SolutionDir)"" [project.Name] ""[project.SourceRootPath]"" " + @""""+ EngineDir + @"""""");
+        string EngineDir = Utils.GetEngineDir();
+        conf.EventPreBuild.Add(@"cmd /c """"" + EngineDir + @"\Engine\Source\Programs\HeaderParser\HeaderParser.bat"" ""$(SolutionDir)"" [project.Name] ""[project.SourceRootPath]"" " + @"""" + EngineDir + @"""""");
 
         conf.CustomProperties.Add("CustomOptimizationProperty", $"Custom-{target.Optimization}");
     }
