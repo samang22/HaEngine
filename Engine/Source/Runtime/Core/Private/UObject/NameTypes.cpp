@@ -3,13 +3,17 @@
 #include "CoreTypes.h"
 //#include "Logging/Logger.h"
 
-static inline unordered_map<uint64, FString> NamePool;
+unordered_map<uint64, FString>& GetNamePool()
+{
+	static unordered_map<uint64, FString> NamePool;
+	return NamePool;
+}
 
 FName::FName(FStringView InString)
 {
 	FString String = InString.data();
 	HashCode = Hash(String.data());
-	NamePool[HashCode] = String;
+	GetNamePool()[HashCode] = String;
 }
 
 FName::FName(const WIDECHAR* InString)
@@ -32,5 +36,5 @@ void FName::ToString(FString& Out) const
 		return;
 	}
 
-	Out = NamePool[HashCode];
+	Out = GetNamePool()[HashCode];
 }

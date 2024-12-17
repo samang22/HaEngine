@@ -48,7 +48,7 @@ public abstract class CommonProject : Project
         }
         conf.Options.Add(Options.Vc.General.CharacterSet.Unicode);
         conf.Options.Add(Options.Vc.Compiler.JumboBuild.Enable);
-        //conf.MinFilesPerJumboFile = 100;
+        conf.MinFilesPerJumboFile = 100;
         conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.CPP20);
         //conf.Options.Add(Options.Vc.Compiler.CppLanguageStandard.Latest);
         if (target.Optimization == Optimization.Debug)
