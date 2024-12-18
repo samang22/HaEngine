@@ -30,12 +30,13 @@ cmake -G "Visual Studio 17 2022" -A x64 -S Engine\Source\Programs\HeaderParser -
 cmake --build Engine\Source\Programs\HeaderParser\out --config Release
 
 echo [vcpkg task]
-cd Engine\Source\Programs\
+pushd Engine\Source\Programs\
 if not exist "Engine\Source\Programs\vcpkg" (
 	git clone https://github.com/microsoft/vcpkg
 	call .\vcpkg\bootstrap-vcpkg.bat
 )
 .\vcpkg\vcpkg install boost:x64-windows
 .\vcpkg\vcpkg integrate install
+popd
 
 pause

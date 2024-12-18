@@ -1,12 +1,23 @@
 #include "LaunchEngineLoop.h"
 #include "Engine/Engine.h"
 
-extern CORE_API map<FString, UClass*> ClassMap;
+CORE_API map<FString, UClass*>& GetClassMap(); 
 shared_ptr<UEngine> GEngine;
 
 FEngineLoop::~FEngineLoop()
 {
 	FLogger::Get(true);
+
+
+	// Unregister Class
+	{
+		for (auto It : GetClassMap())
+		{
+			GUObjectArray.Free(typeid(UClass), It.second);
+			It.second = nullptr;
+		}
+		GetClassMap().clear();
+	}
 }
 
 int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
@@ -14,7 +25,7 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 	FLogger::Get();
 
 	// CDO 객체를 생성한다
-	for (auto It : ClassMap)
+	for (auto It : GetClassMap()) 
 	{
 		It.second->GetDefaultObject();
 	}
