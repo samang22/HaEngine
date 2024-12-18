@@ -1,12 +1,23 @@
 #include "UObject/NameTypes.h"
 #include "UObject/UObjectGlobals.h"
 #include "CoreTypes.h"
-//#include "Logging/Logger.h"
+#include "Logging/Logger.h"
 
 unordered_map<uint64, FString>& GetNamePool()
 {
 	static unordered_map<uint64, FString> NamePool;
 	return NamePool;
+}
+
+#pragma warning(disable:26495)
+FName::FName(ENoInit)
+{
+}
+#pragma warning(default:26495)
+
+FName::FName(EName InHashCode)
+	: HashCode((uint64)InHashCode)
+{
 }
 
 FName::FName(FStringView InString)
@@ -32,7 +43,7 @@ void FName::ToString(FString& Out) const
 {
 	if (HashCode == 0)
 	{
-		//E_LOG(Error, TEXT("HashCode == 0"));
+		E_LOG(Error, TEXT("HashCode == 0"));
 		return;
 	}
 

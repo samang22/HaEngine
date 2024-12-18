@@ -27,6 +27,9 @@
 #include "HAL/Platform.h"
 #include "UObject/NameTypes.h"
 
+#include "Misc/CoreMiscDefines.h"
+
+
 using namespace std;
 using FString = std::wstring;
 using FStringView = std::wstring_view;

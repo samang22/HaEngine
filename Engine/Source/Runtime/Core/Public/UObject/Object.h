@@ -6,10 +6,14 @@ class CORE_API UObject : public UObjectBase
 public:
     static UClass* StaticClass() { return nullptr; }
 
+	bool HasAnyFlags(const EObjectFlags FlagToCheck) const
+	{
+		return (GetFlags() & FlagToCheck);
+	}
+
 private:
 	template<typename> friend class FAllocator;
-	/** Name of this object */
-	FString NamePrivate;
+
 };
 
 template<class T1, class T2>

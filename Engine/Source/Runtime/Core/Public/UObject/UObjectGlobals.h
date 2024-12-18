@@ -16,7 +16,7 @@ struct CORE_API FStaticConstructObjectParameters
 {
 	UClass* Class = nullptr;
 	UObject* Outer = nullptr;
- 	FString Name;
+	FName Name;
 	EObjectFlags SetFlags = RF_NoFlags;
 
 	/**
@@ -38,7 +38,7 @@ public:
 	/** Object this object resides in. */
 	UObject* OuterPrivate = nullptr;
 	EObjectFlags ObjectFlags = EObjectFlags::RF_NoFlags;
-	FString Name;
+	FName Name;
 
 	// FAllocator 내부에서 MamoryPool로 부터 얻어온 주소(shared_ptr 크기를 고려해서 계산된 주소)
 	UObject* Obj = nullptr;
@@ -60,19 +60,19 @@ public:
 	 * @param   DefaultData         초기화에 사용할 원본 데이터를 포함하는 버퍼
 	 * @param   bCopyTransientsFromClassDefaults    true인 경우, 클래스 기본값에서 일시적인 데이터를 복사하고, 그렇지 않으면 DefaultData에서 일시적인 데이터를 복사합니다.
 	 */
-	//static void InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults);
+	 //static void InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults);
 
-	/**
-	 * Finalizes a constructed UObject by initializing properties,
-	 * instancing/initializing sub-objects, etc.
-	 */
-	//void PostConstructInit();
+	 /**
+	  * Finalizes a constructed UObject by initializing properties,
+	  * instancing/initializing sub-objects, etc.
+	  */
+	  //void PostConstructInit();
 };
 
 CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params);
 
 template<typename T>
-shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FString Name = NAME_NONE, EObjectFlags Flags = RF_NoFlags)
+shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NAME_NONE, EObjectFlags Flags = RF_NoFlags)
 {
 	if (!Class)
 	{
@@ -177,10 +177,10 @@ public:
 		new(Data.ObjectInitializer->GetObj())UObjectBase(
 			Data.ObjectInitializer->ObjectFlags,
 			Data.ObjectInitializer->Class,
-			Data.ObjectInitializer->OuterPrivate
+			Data.ObjectInitializer->OuterPrivate,
+			Data.ObjectInitializer->Name
 		);
 		_Objty::__DefaultConstructor(*Data.ObjectInitializer);
-		Data.ObjectInitializer->Obj->NamePrivate = Data.ObjectInitializer->Name;
 	}
 
 	template< class U >

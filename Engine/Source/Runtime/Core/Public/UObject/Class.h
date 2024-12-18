@@ -33,6 +33,34 @@ public:
 		StaticClassFunctionType InSuperClassFunction);
 
 	virtual ~UClass() {}
+
+	/**
+* 클래스에서 기본 객체를 가져옵니다.
+* @param   bCreateIfNeeded true(기본값)인 경우, CDO가 null이면 생성됩니다.
+* @return      이 클래스의 CDO를 반환합니다.
+*/
+	UObject* GetDefaultObject(bool bCreateIfNeeded = true) const
+	{
+		if (ClassDefaultObject == nullptr && bCreateIfNeeded)
+		{
+			InternalCreateDefaultObjectWrapper();
+		}
+
+		return ClassDefaultObject.get();
+	}
+
+protected:
+	/**
+	* 클래스에서 기본 객체를 가져오며, 요청하거나 몇 가지 다른 상황에서 누락된 경우 생성합니다.
+	* @return       이 클래스의 CDO를 반환합니다.
+	**/
+	virtual UObject* CreateDefaultObject();
+
+private:
+	void InternalCreateDefaultObjectWrapper() const;
+
+private:
+	shared_ptr<UObject> ClassDefaultObject;
 };
 
 CORE_API UClass* GetPrivateStaticClassBody(

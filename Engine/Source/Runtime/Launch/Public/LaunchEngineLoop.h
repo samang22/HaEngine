@@ -8,6 +8,9 @@
 class FEngineLoop
 {
 public:
+    virtual ~FEngineLoop();
+
+
     /**
      * 메인 루프를 사전 초기화합니다 - 명령줄을 해석하고, GIsEditor 등을 설정합니다.
      *

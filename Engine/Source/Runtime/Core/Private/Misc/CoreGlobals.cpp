@@ -5,11 +5,6 @@
 class FCoreModule : public FDefaultModuleImpl
 {
 public:
-	virtual void StartupModule() override
-	{
-		int a = 0;
-	}
-
 	virtual bool SupportsDynamicReloading() override
 	{
 		// Core cannot be unloaded or reloaded

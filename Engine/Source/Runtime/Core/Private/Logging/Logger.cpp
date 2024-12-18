@@ -120,8 +120,6 @@ FLogger::FLogger()
 		logging::core::get()->add_sink(ConsoleSink);
 	}
 	logging::add_common_attributes();
-
-	LogF(ELogVerbosity::Log, TEXT("Sample"));
 }
 
 void FLogger::LogF(ELogVerbosity InLogVerbosity, FStringView InMessage)
@@ -130,9 +128,11 @@ void FLogger::LogF(ELogVerbosity InLogVerbosity, FStringView InMessage)
 	{
 	case ELogVerbosity::Fatal:
 		BOOST_LOG_SEV(Logger, ELogVerbosity::Fatal) << InMessage;
+		_ASSERT(false);
 		break;
 	case ELogVerbosity::Error:
 		BOOST_LOG_SEV(Logger, ELogVerbosity::Error) << InMessage;
+		_ASSERT(false);
 		break;
 	case ELogVerbosity::Warning:
 		BOOST_LOG_SEV(Logger, ELogVerbosity::Warning) << InMessage;

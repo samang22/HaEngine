@@ -20,6 +20,7 @@ bool CORE_API IsEngineExitRequested()
 //
 FStaticConstructObjectParameters::FStaticConstructObjectParameters(UClass* InClass)
 	: Class(InClass)
+	, Name(NAME_None)
 {
 	if (!Class)
 	{
@@ -105,7 +106,7 @@ FObjectInitializer::~FObjectInitializer()
 CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params)
 {
 	UClass* InClass = Params.Class;
-	FString& InName = Params.Name;
+	FName& InName = Params.Name;
 
 	if (InName == NAME_NONE)
 	{
@@ -113,7 +114,7 @@ CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObje
 		FString ClassName = InClass->ClassName;
 		int64& NewIndex = NameCountMap[ClassName];
 
-		InName = ClassName + TEXT("_") + to_wstring(NewIndex);
+		InName = FName(ClassName + TEXT("_") + to_wstring(NewIndex));
 
 		++NewIndex;
 	}
