@@ -7,6 +7,14 @@ class FObjectInitializer;
 
 class CORE_API UClass : public UObject
 {
+public:
+	static UClass* FindClass(FStringView InClassName);
+	static TArray<UClass*> GetAllSubclassOfClass(UClass* InBaseClass);
+
+public:
+	bool IsChildOf(const UClass* SomeBase) const;
+	UClass* GetSuperClass() const { return SuperClass; }
+
 private:
 	UClass* SuperClass;
 

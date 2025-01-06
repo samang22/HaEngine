@@ -32,3 +32,31 @@ bool FConfigFile::TryOverride(FStringView InPath)
 	bOverrided = OverrideFile.load(TCHAR_TO_ANSI(InPath));
 	return bOverrided;
 }
+
+bool FConfigFile::Get(string_view InSection, string_view InKey, ini::IniField& OutField)
+{
+	if (bOverrided)
+	{
+		bool bFind = Get(OverrideFile, InSection, InKey, OutField);
+		if (bFind) return true;
+	}
+	return Get(File, InSection, InKey, OutField);
+}
+
+bool FConfigFile::Get(ini::IniFile& InFile, string_view InSection, string_view InKey, ini::IniField& OutField)
+{
+	if (!InFile.contains(InSection.data()))
+	{
+		return false;
+	}
+
+	ini::IniSection& Section = InFile[InSection.data()];
+	if (!Section.contains(InKey.data()))
+	{
+		return false;
+	}
+
+	OutField = Section[InKey.data()];
+
+	return true;
+}

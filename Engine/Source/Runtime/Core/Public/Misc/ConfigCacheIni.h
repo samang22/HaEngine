@@ -15,3 +15,5 @@ public:
 private:
 	unordered_map<FString, FConfigFile> CachedConfigMap;
 };
+
+CORE_API extern FConfigCacheIni* GConfig;

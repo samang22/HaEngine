@@ -14,7 +14,7 @@ FEngineLoop::~FEngineLoop()
 	{
 		for (auto It : GetClassMap())
 		{
-			GUObjectArray.Free(typeid(UClass), It.second);
+			GetObjectArray().Free(typeid(UClass), It.second);
 			It.second = nullptr;
 		}
 		GetClassMap().clear();

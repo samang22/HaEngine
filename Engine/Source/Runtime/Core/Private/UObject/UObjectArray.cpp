@@ -1,8 +1,11 @@
 #include "UObject/UObjectArray.h"
 #include "boost/pool/pool.hpp"
 
-  
-FUObjectArray GUObjectArray;
+FUObjectArray& GetObjectArray()
+{
+	static FUObjectArray GUObjectArray;
+	return GUObjectArray;
+}
 
 struct FMemoryPool
 {

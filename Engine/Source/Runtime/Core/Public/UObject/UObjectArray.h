@@ -14,4 +14,4 @@ private:
 	unordered_map<FHashKey, FMemoryPool*> MemoryPools;
 };
 
-extern CORE_API FUObjectArray GUObjectArray;
+CORE_API FUObjectArray& GetObjectArray();

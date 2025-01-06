@@ -6,7 +6,8 @@ FConfigCacheIni* GConfig = nullptr;
 
 FConfigCacheIni::FConfigCacheIni()
 {
-	LoadIniFile(TEXT("Engine.ini"), TEXT("BaseEngine.ini"), false);
+
+
 }
 
 bool FConfigCacheIni::LoadIniFile(FStringView InKey, const FString& InIniFileName, const bool bTryOverride)

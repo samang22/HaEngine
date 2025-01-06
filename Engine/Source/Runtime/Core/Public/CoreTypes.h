@@ -33,5 +33,7 @@
 using namespace std;
 using FString = std::wstring;
 using FStringView = std::wstring_view;
+template<class T>
+using TArray = std::vector<T>;
 
 static inline const WIDECHAR* NAME_NONE = TEXT("");
