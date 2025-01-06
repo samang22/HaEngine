@@ -6,6 +6,7 @@ shared_ptr<UEngine> GEngine;
 
 FEngineLoop::~FEngineLoop()
 {
+	FConfigCacheIni::Get(true);
 	FLogger::Get(true);
 
 
@@ -23,7 +24,7 @@ FEngineLoop::~FEngineLoop()
 int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 {
 	FLogger::Get();
-
+	FConfigCacheIni::Get();
 	// CDO 객체를 생성한다
 	for (auto It : GetClassMap()) 
 	{

@@ -12,5 +12,4 @@ public:
 	}
 };
 
-
 IMPLEMENT_MODULE(FCoreModule, Core);

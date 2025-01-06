@@ -8,3 +8,5 @@
 #include "Modules/ModuleManager.h"
 
 #include "Logging/Logger.h"
+
+#include "Misc/ConfigCacheIni.h"

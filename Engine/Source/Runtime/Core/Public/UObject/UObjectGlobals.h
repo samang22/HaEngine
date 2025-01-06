@@ -94,6 +94,7 @@ CORE_API string to_string(FStringView InString);
 // UTF8 -> wstring
 CORE_API FString to_wstring(string_view InString);
 #define ANSI_TO_TCHAR to_wstring
+#define TCHAR_TO_ANSI to_string
 
 CORE_API uint64 operator""_hash(const ANSICHAR * NewString, size_t);
 CORE_API uint64 operator""_hash(const WIDECHAR * NewString, size_t);

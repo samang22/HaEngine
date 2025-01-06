@@ -5,6 +5,7 @@ using Sharpmake;
 [module: Include("%EngineDir%/Engine/Source/CommonProject.build.cs")]
 [module: Include("%EngineDir%/Engine/Source/HE1/HE1.build.cs")]
 [module: Include("%EngineDir%/Engine/Source/Runtime/**/*.build.cs")]
+[module: Include("%EngineDir%/Engine/Config/EngineConfig.build.cs")]
 [module: Include("Utils.cs")]
 
 [Generate]
@@ -43,7 +44,7 @@ public class EngineSolution : Solution
 
             // // dll
             conf.AddProject<Core>(target);
-            // conf.AddProject<Engine>(target);
+            conf.AddProject<Engine>(target);
             conf.AddProject<Launch>(target);
             // conf.AddProject<Network>(target);
             // conf.AddProject<RenderCore>(target);
@@ -53,7 +54,7 @@ public class EngineSolution : Solution
             // conf.AddProject<Slate>(target);
 
             // config
-            //conf.AddProject<EngineConfig>(target);
+            conf.AddProject<EngineConfig>(target);
 
             // exe
             conf.AddProject<HE1>(target);
