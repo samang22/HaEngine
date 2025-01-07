@@ -135,7 +135,7 @@ CORE_API void FModuleManager::AddModule(const FName InModuleName)
     }
     ModuleInfoPtr ModuleInfo(new FModuleInfo());
 
-    Modules.insert(std::make_pair(InModuleName, ModuleInfo));
+    Modules.emplace(InModuleName, ModuleInfo);
 
     bool bFound = false;
     const FString SearchModuleName = InModuleName.ToString();
