@@ -84,11 +84,11 @@ public:
 	CORE_API ModuleInfoPtr FindModule(FName InModuleName);
 
 	/**
-	 * Loads the specified module.
+	 * 지정된 모듈을 로드합니다.
 	 *
-	 * @param InModuleName The base name of the module file.  Should not include path, extension or platform/configuration info.  This is just the "module name" part of the module file name.  Names should be globally unique.
-	 * @param InLoadModuleFlags Optional flags for module load operation.
-	 * @return The loaded module, or nullptr if the load operation failed.
+	 * @param InModuleName 모듈 파일의 기본 이름입니다. 경로, 확장자 또는 플랫폼/구성 정보는 포함하지 않아야 합니다. 이는 모듈 파일 이름의 "모듈 이름" 부분입니다. 이름은 전역적으로 고유해야 합니다.
+	 * @param InLoadModuleFlags 모듈 로드 작업을 위한 선택적 플래그입니다.
+	 * @return 로드된 모듈을 반환하거나, 로드 작업이 실패한 경우 nullptr을 반환합니다.
 	 * @see AbandonModule, IsModuleLoaded, LoadModuleChecked, LoadModulePtr, LoadModuleWithFailureReason, UnloadModule
 	 */
 	CORE_API IModuleInterface* LoadModule(const FName InModuleName);

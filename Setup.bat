@@ -39,4 +39,11 @@ if not exist "Engine\Source\Programs\vcpkg" (
 .\vcpkg\vcpkg integrate install
 popd
 
+echo [register .sproject]
+assoc .sproject=sprojectfile
+ftype sprojectfile=
+ftype sprojectfile=%cd%\GenerateSolution.bat "%cd%" .\Game\Source\Game.build.cs .\Game\FrontendGame.build.cs
+
+echo.
+echo [Done]
 pause

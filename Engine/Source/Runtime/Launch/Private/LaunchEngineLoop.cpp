@@ -7,6 +7,7 @@ shared_ptr<UEngine> GEngine;
 FEngineLoop::~FEngineLoop()
 {
 	FConfigCacheIni::Get(true);
+	FModuleManager::Get(true);
 	FLogger::Get(true);
 
 
@@ -24,7 +25,21 @@ FEngineLoop::~FEngineLoop()
 int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 {
 	FLogger::Get();
+	FModuleManager::Get();
 	FConfigCacheIni::Get();
+
+#if WITH_EDITOR
+#ifdef USER_PROJECT_NAME
+	{
+		const FString UserProjectName = TEXT(USER_PROJECT_NAME);
+		if (!UserProjectName.empty())
+		{
+			FModuleManager::Get()->LoadModule(FName(UserProjectName));
+		}
+	}
+#endif
+#endif
+
 	// CDO 객체를 생성한다
 	for (auto It : GetClassMap()) 
 	{
