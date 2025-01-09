@@ -9,9 +9,11 @@ UGameMapSettings::UGameMapSettings()
 
 	FConfigFile& ConfigFile = GConfig->GetConfig(GEngineIni);
 
-	FString String;
-	ConfigFile.Get("/Script/EngineSettings.GameMapsSettings", "GameInstanceClass", String);
-
-	GameInstanceClass = UClass::FindClass(String);
-	UClass::GetAllSubclassOfClass(UObject::StaticClass());
+    {
+        FString ClassName;
+        ConfigFile.Get("/Script/EngineSettings.GameMapsSettings", "GameInstanceClass", ClassName);
+        GameInstanceClass = UClass::FindClass(ClassName);
+        ConfigFile.Get("/Script/EngineSettings.GameMapsSettings", "GameModeClass", ClassName);
+        GameModeClass = UClass::FindClass(ClassName);
+    }
 }

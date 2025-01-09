@@ -3,12 +3,12 @@
 #include "GameMapSettings.generated.h"
 
 UCLASS()
-class UGameMapSettings : public UObject
-{
+class ENGINE_API UGameMapSettings : public UObject {
 	GENERATED_BODY()
 
 public:
 	UGameMapSettings();
 
 	UClass* GameInstanceClass = nullptr;
+	UClass* GameModeClass = nullptr;
 };

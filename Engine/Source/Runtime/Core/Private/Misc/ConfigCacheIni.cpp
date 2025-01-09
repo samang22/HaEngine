@@ -14,7 +14,7 @@ bool FConfigCacheIni::LoadIniFile(FStringView InKey, const FString& InIniFileNam
 {
 	FConfigFile& ConfigFile = CachedConfigMap[InKey.data()];
 
-	const FString IniFilePath = FPaths::EngineConfigDir() + TEXT("/") + InIniFileName;
+	const FString IniFilePath = FPaths::EngineConfigDir() + TEXT("\\") + InIniFileName;
 	bool bLoaded = false;
 
 	if (!bTryOverride)

@@ -6,7 +6,7 @@ using Sharpmake;
 
 [module: Include(@"%EngineDir%/Engine/Source/EngineSolution.build.cs")]
 [module: Include(@"%EngineDir%/Engine/Source/UserProject.build.cs")]
-//[module: Include(@"../Config/UserConfig.build.cs")]
+[module: Include(@"../Config/UserConfig.build.cs")]
 
 [Generate]
 public class GameProject : UserProject
@@ -32,7 +32,7 @@ public class GameSolution : EngineSolution
         // Add Projects
         {
             conf.AddProject<GameProject>(target);
-            //conf.AddProject<UserConfig>(target);
+            conf.AddProject<UserConfig>(target);
         }
     }
 }
