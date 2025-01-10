@@ -94,7 +94,7 @@ void FFillContentTask::RunTask(Value::ConstValueIterator& InDoc, string& InOutCo
 								//			{
 								//				InOutContent += ".PropertyType = EPropertyType::T_SHARED_PTR";
 								//			}
-								//			else if (strTemplate_Type_Name == "engine_weak_ptr")
+								//			else if (strTemplate_Type_Name == "EnginePtr")
 								//			{
 								//				InOutContent += ".PropertyType = EPropertyType::T_ENGINE_WEAK_PTR";
 								//			}

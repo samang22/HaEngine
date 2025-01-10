@@ -23,4 +23,4 @@ static shared_ptr<T1> Cast(T2* InObj) { return std::dynamic_pointer_cast<T1>(InO
 template<class T1, class T2>
 static shared_ptr<T1> Cast(shared_ptr<T2> InObj) { return std::dynamic_pointer_cast<T1>(InObj); }
 //template<class T1, class T2>
-//static engine_weak_ptr<T1> Cast(engine_weak_ptr<T2> InObj) { return std::dynamic_pointer_cast<T1>(InObj.lock()); }
+//static EnginePtr<T1> Cast(EnginePtr<T2> InObj) { return std::dynamic_pointer_cast<T1>(InObj.lock()); }

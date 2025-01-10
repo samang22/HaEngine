@@ -10,7 +10,7 @@ bool CORE_API IsEngineExitRequested()
 	return GIsRequestingExit;
 }
 
-//CORE_API map<UClass*, vector<engine_weak_ptr<UObject>>> ObjectMap;
+//CORE_API map<UClass*, vector<EnginePtr<UObject>>> ObjectMap;
 
 //void CORE_API RequestEngineExit(const FString ReasonString)
 //{

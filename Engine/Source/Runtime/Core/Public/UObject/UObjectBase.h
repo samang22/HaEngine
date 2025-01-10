@@ -2,6 +2,7 @@
 #include "CoreTypes.h"
 #include "UObjectMacros.h"
 #include "NameTypes.h"
+#include "EnginePtr.h"
 
 class UClass;
 class UObject;
