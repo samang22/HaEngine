@@ -24,7 +24,7 @@ public:
      *
      * @return 에러 레벨을 반환합니다; 성공 시 0, 에러 발생 시 > 0을 반환합니다.
      */
-    int32 Init();
+    int32 Init(HWND hViewportWnd);
 
     /** 메인 루프를 진행합니다. */
     void Tick();

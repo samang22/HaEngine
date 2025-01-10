@@ -48,9 +48,10 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 	return 0;
 }
 
-int32 FEngineLoop::Init()
+int32 FEngineLoop::Init(HWND hViewportWnd)
 {
 	GEngine = NewObject<UEngine>(nullptr);
+	GEngine->Init(hViewportWnd);
 	return 0;
 }
 
