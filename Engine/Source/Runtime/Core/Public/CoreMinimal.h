@@ -7,6 +7,9 @@
 #include "UObject/EnginePtr.h"
 #include "UObject/Object.h"
 #include "UObject/Class.h"
+
+#include "Delegate/Delegate.h"
+
 #include "Modules/ModuleManager.h"
 
 #include "Logging/Logger.h"

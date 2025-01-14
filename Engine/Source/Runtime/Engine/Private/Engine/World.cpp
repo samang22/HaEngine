@@ -18,7 +18,7 @@ void UWorld::InitalizeNewWorld()
 	shared_ptr<AActor> A = Actor->As<AActor>();
 }
 
-AActor* UWorld::SpawnActor(UClass* Class, FTransform const* Transform, const FActorSpawnParameters& SpawnParameters)
+AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, const FActorSpawnParameters& SpawnParameters)
 {
 	_ASSERT(PersistentLevel.get());
 
@@ -45,6 +45,22 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* Transform, const FAc
 	AActor* Template = SpawnParameters.Template ? SpawnParameters.Template : Class->GetDefaultObject<AActor>();
 	_ASSERT(Template);
 
-	return nullptr;
+	FName NewActorName = SpawnParameters.Name;
+	FTransform const UserTransform = UserTransformPtr ? *UserTransformPtr : FTransform::Identity;
+
+	EObjectFlags ActorFlags = SpawnParameters.ObjectFlags;
+
+	// actually make the actor object
+	shared_ptr<AActor> Actor = NewObject<AActor>(LevelToSpawnIn, Class, NewActorName, ActorFlags, Template);
+	LevelToSpawnIn->Actors.push_back(Actor);
+
+	AActor* NewActor = Actor.get();
+	// @TODO
+	// PostSpawnInitialize
+
+	// Broadcast notification of spawn
+	OnActorSpawned.Broadcast(NewActor);
+
+	return NewActor;
 }
 

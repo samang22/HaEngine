@@ -21,4 +21,7 @@ class ENGINE_API ULevel : public UObject
 	GENERATED_BODY()
 public:
 	ULevel();
+public:
+	/** 이 레벨의 모든 액터 배열 */
+	TArray<shared_ptr<AActor>> Actors;
 };

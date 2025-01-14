@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "Engine/EngineTypes.h"
 #include "World.generated.h"
+
 class ULevel;
 class APawn;
 
@@ -78,4 +79,12 @@ public:
 private:
 	/** 월드 정보, 기본 브러시 및 게임 플레이 중 스폰된 액터 등을 포함하는 PersistentLevel */
 	shared_ptr<ULevel> PersistentLevel;
+	FTransform Transform;
+
+private:
+	/**
+	 * 액터가 스폰될 때마다 알림을 브로드캐스트합니다.
+	 * 이 이벤트는 새로 생성된 액터에만 해당됩니다.
+	 */
+	FDelegate<AActor*> OnActorSpawned;
 };

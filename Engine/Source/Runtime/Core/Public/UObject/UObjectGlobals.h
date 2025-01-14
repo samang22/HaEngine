@@ -72,7 +72,7 @@ public:
 CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params);
 
 template<typename T>
-shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NAME_NONE, EObjectFlags Flags = RF_NoFlags)
+shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NAME_NONE, EObjectFlags Flags = RF_NoFlags, UObject* Template = nullptr)
 {
 	if (!Class)
 	{
@@ -83,6 +83,7 @@ shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NA
 	Params.Outer = Outer;
 	Params.Name = Name;
 	Params.SetFlags = Flags;
+	Params.Template = Template;
 
 	return Cast<T>(StaticConstructObject_Internal(Params));
 }
