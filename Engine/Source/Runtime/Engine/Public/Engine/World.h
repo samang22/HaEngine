@@ -3,8 +3,31 @@
 #include "GameFramework/Actor.h"
 #include "Engine/EngineTypes.h"
 #include "World.generated.h"
-
 class ULevel;
+class APawn;
+
+struct ENGINE_API FActorSpawnParameters
+{
+	FActorSpawnParameters();
+	/* 스폰된 액터의 이름으로 지정할 이름입니다. 값이 지정되지 않으면, 스폰된 액터의 이름은 [Class]_[Number] 형식으로 자동 생성됩니다. */
+	FName Name;
+
+	/* 새로운 액터를 스폰할 때 템플릿으로 사용할 액터입니다. 스폰된 액터는 템플릿 액터의 속성 값을 사용하여 초기화됩니다. 만약 이 값이 NULL로 남아있으면, 클래스 기본 객체 (CDO)를 사용하여 스폰된 액터를 초기화합니다. */
+	AActor* Template;
+
+	/* 이 액터를 스폰한 액터입니다. (NULL로 남겨둘 수 있습니다). */
+	AActor* Owner;
+
+	/* 스폰된 액터가 입힌 피해에 책임이 있는 APawn입니다. (NULL로 남겨둘 수 있습니다). */
+	APawn* Instigator;
+
+	/** 제공된 스폰 Transform을 사용하여 루트 컴포넌트를 곱할지 무시할지 결정합니다 */
+	ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::MultiplyWithRoot;
+
+	/* 스폰된 액터/객체 인스턴스를 설명하는 데 사용되는 플래그입니다. */
+	EObjectFlags ObjectFlags;
+};
+
 /**
  * World는 액터와 컴포넌트가 존재하고 렌더링되는 맵 또는 샌드박스를 나타내는 최상위 객체입니다.
  *
@@ -22,6 +45,31 @@ class ENGINE_API UWorld : public UObject
 
 public:
 	void InitalizeNewWorld();
+
+public:
+	/**
+	 * 주어진 Transform과 스폰 파라미터를 사용하여 액터를 스폰합니다.
+	 *
+	 * @param   Class                   스폰할 클래스
+	 * @param   Transform               스폰할 월드 변환
+	 * @param   SpawnParameters         스폰 파라미터
+	 *
+	 * @return  방금 스폰된 액터
+	*/
+	AActor* SpawnActor(UClass* Class, FTransform const* Transform, const FActorSpawnParameters& SpawnParameters = FActorSpawnParameters());
+
+	/**
+	 *  SpawnActor의 템플릿 버전입니다.
+	*/
+	template<class T>
+	T* SpawnActor(UClass* Class, FTransform const& Transform, const FActorSpawnParameters& SpawnParameters = FActorSpawnParameters())
+	{
+		if (Class == nullptr)
+		{
+			Class = T::StaticClass();
+		}
+		return CastCheckedRaw<T>(SpawnActor(Class, &Transform, SpawnParameters));
+	}
 
 public:
 	/** 이 월드의 타입입니다. 사용되는 Context을 설명합니다(에디터, 게임, 프리뷰 등). */

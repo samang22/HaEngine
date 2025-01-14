@@ -99,6 +99,7 @@ UClass* GetPrivateStaticClassBody(FString InClassName,
 	GetObjectArray().Create(InClassTypeInfo, SharedPtrSize + InClassSize);
 
 	UClass* ReturnClass = (UClass*)GetObjectArray().Malloc(typeid(UClass));
+	::new(ReturnClass)UObjectBase(EObjectFlags::RF_Class, nullptr, nullptr, FName(InClassName)); 
 	ReturnClass = ::new (ReturnClass)
 		UClass
 		(

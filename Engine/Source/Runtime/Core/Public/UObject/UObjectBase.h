@@ -6,7 +6,7 @@
 
 class UClass;
 class UObject;
-class CORE_API UObjectBase
+class CORE_API UObjectBase : public std::enable_shared_from_this<UObjectBase>
 {
 public:
 	UObjectBase();
@@ -16,7 +16,22 @@ public:
 	EObjectFlags GetFlags() const { return ObjectFlags; }
 	UObject* GetOuter() const { return OuterPrivate; }
 	UClass* GetClass() const { return ClassPrivate; }
-	const FName& GetName() const { return NamePrivate; }
+
+	/**
+	* Returns the name of this object (with no path information)
+	*
+	* @return Name of the object.
+	*/
+	FORCEINLINE FString GetName() const
+	{
+		return GetFName().ToString();
+	}
+
+	/** Returns the logical name of this object */
+	FORCEINLINE FName GetFName() const
+	{
+		return NamePrivate;
+	}
 
 private:
 	EObjectFlags ObjectFlags;

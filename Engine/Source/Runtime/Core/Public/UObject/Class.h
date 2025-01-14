@@ -43,10 +43,10 @@ public:
 	virtual ~UClass() {}
 
 	/**
-* 클래스에서 기본 객체를 가져옵니다.
-* @param   bCreateIfNeeded true(기본값)인 경우, CDO가 null이면 생성됩니다.
-* @return      이 클래스의 CDO를 반환합니다.
-*/
+	* 클래스에서 기본 객체를 가져옵니다.
+	* @param   bCreateIfNeeded true(기본값)인 경우, CDO가 null이면 생성됩니다.
+	* @return      이 클래스의 CDO를 반환합니다.
+	*/
 	UObject* GetDefaultObject(bool bCreateIfNeeded = true) const
 	{
 		if (ClassDefaultObject == nullptr && bCreateIfNeeded)
@@ -55,6 +55,18 @@ public:
 		}
 
 		return ClassDefaultObject.get();
+	}
+
+	/**
+	 * 클래스에서 기본 객체를 가져와 특정 타입으로 캐스트합니다
+	* @return      이 클래스의 CDO (Class Default Object)
+	*/
+	template<class T>
+	T* GetDefaultObject() const
+	{
+		UObject* Ret = GetDefaultObject();
+		_ASSERT(Ret->IsA(T::StaticClass()));
+		return (T*)Ret;
 	}
 
 protected:

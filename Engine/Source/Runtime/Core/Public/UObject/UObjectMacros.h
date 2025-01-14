@@ -24,6 +24,7 @@ ENUM_CLASS_FLAGS(EObjectFlags);
 
 #define GENERATED_BODY()
 #define UCLASS(...)
+#define UENUM(...)
 #define UPROPERTY()
 //#define UFUNCTION()
 
