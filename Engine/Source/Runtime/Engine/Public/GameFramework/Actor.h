@@ -22,7 +22,6 @@ class ENGINE_API AActor : public UObject
 public:
 	AActor();
 
-
 	/** 액터가 월드에 스폰된 후 호출됩니다. 플레이를 위한 액터 설정을 담당합니다. */
 	void PostSpawnInitialize(FTransform const& SpawnTransform, AActor* InOwner, APawn* InInstigator/*, bool bRemoteOwned, bool bNoFail, bool bDeferConstruction*/, ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::MultiplyWithRoot);
 
@@ -51,6 +50,48 @@ public:
 		return false;
 	}
 
+	/**
+	* 지정된 컴포넌트를 루트 컴포넌트로 설정합니다. NewRootComponent의 소유자는 이 액터여야 합니다.
+	* @return 성공하면 true를 반환합니다.
+	*/
+	bool SetRootComponent(USceneComponent* NewRootComponent);
+
+	/** Components 배열의 모든 컴포넌트가 등록되었는지 확인합니다. */
+	virtual void RegisterAllComponents();
+
+public:
+	/**
+	 * 'ComponentType' 클래스에서 파생된 모든 컴포넌트를 가져와 결과를 OutComponents 배열에 채웁니다.
+	 * 메모리 할당 비용을 피하기 위해 TInlineAllocator를 사용하는 TArrays를 사용하는 것이 좋습니다.
+	 * TInlineComponentArray는 이를 쉽게 하기 위해 정의되어 있습니다. 예를 들어:
+	 * {
+	 *     TInlineComponentArray<UPrimitiveComponent*> PrimComponents(Actor);
+	 * }
+	 *
+	 * @param bIncludeFromChildActors true인 경우 ChildActor 컴포넌트로 재귀하여 해당 액터의 적절한 유형의 컴포넌트를 찾습니다.
+	 */
+	template<class ComponentType>
+	void GetComponents(TArray<ComponentType*>& OutComponents/*, bool bIncludeFromChildActors = false*/) const
+	{
+		OutComponents.clear();
+
+		TSubclassOf<UActorComponent> ComponentClass = ComponentType::StaticClass();
+		for (TObjectPtr<UActorComponent> OwnedComponent : OwnedComponents)
+		{
+			if (OwnedComponent)
+			{
+				if (OwnedComponent->IsA(ComponentClass))
+				{
+					OutComponents.push_back((ComponentType*)OwnedComponent.get());
+				}
+			}
+			else
+			{
+				E_LOG(Error, TEXT("OwnedComponent is nullptr"));
+			}
+		}
+	}
+
 public:
 	/**
 	 * 이 액터의 소유자입니다. 주로 복제(bNetUseOwnerRelevancy 및 bOnlyRelevantToOwner) 및 가시성(PrimitiveComponent bOwnerNoSee 및 bOnlyOwnerSee)에 사용됩니다.
@@ -72,4 +113,12 @@ private:
 	/** 이 액터가 일으킨 피해 및 기타 게임플레이 이벤트에 대한 책임이 있는 폰입니다. */
 	//UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_Instigator, meta = (ExposeOnSpawn = true, AllowPrivateAccess = true), Category = Actor)
 	TEnginePtr<class APawn> Instigator;
+
+private:
+	/**
+	 * 이 액터가 소유한 모든 ActorComponent입니다. 액터는 많은 수의 컴포넌트를 가질 수 있으므로 Set으로 저장됩니다.
+	 * @see GetComponents()
+	 */
+	TSet<TObjectPtr<UActorComponent>> OwnedComponents;
+
 };  

@@ -20,3 +20,5 @@
 
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/Names.h"
+
+#include "Templates/SubclassOf.h"

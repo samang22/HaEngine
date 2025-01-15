@@ -1,5 +1,5 @@
 #include "UObject/UObjectBase.h"
-
+#include "Uobject/Object.h"
 
 #pragma warning(disable:26495)
 UObjectBase::UObjectBase()
@@ -15,4 +15,25 @@ UObjectBase::UObjectBase(EObjectFlags InObjectFlags, UClass* InClass, UObject* I
 
 UObjectBase::~UObjectBase()
 {
+}
+
+/**
+ * Outer 체인을 따라 특정 유형의 다음 객체를 검색합니다. (T는 UObject에서 파생되어야 합니다)
+ *
+ * @param   검색할 대상 클래스
+ * @return  이 객체의 Outer 체인에서 적절한 유형의 첫 번째 객체에 대한 포인터.
+ */
+UObject* UObjectBase::GetTypedOuter(UClass* Target) const
+{
+	//ensureMsgf(Target != UPackage::StaticClass(), TEXT("Calling GetTypedOuter to retrieve a package is now invalid, you should use GetPackage() instead."));
+
+	UObject* Result = NULL;
+	for (UObject* NextOuter = GetOuter(); Result == NULL && NextOuter != NULL; NextOuter = NextOuter->GetOuter())
+	{
+		if (NextOuter->IsA(Target))
+		{
+			Result = NextOuter;
+		}
+	}
+	return Result;
 }

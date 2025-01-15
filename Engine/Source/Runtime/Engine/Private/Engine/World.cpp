@@ -55,8 +55,9 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, co
 	LevelToSpawnIn->Actors.push_back(Actor);
 
 	AActor* NewActor = Actor.get();
+
 	// @TODO
-	// PostSpawnInitialize
+	// NewActor->PostSpawnInitialize
 
 	// Broadcast notification of spawn
 	OnActorSpawned.Broadcast(NewActor);

@@ -95,7 +95,7 @@ static TObjectPtr<T1> CastChecked(TObjectPtr<T2> InObj)
 template<class T1, class T2>
 static TEnginePtr<T1> CastChecked(TEnginePtr<T2> InObj)
 {
-	EnginePtr<T1> CastResult = std::dynamic_pointer_cast<T1>(InObj.lock());
+	TEnginePtr<T1> CastResult = std::dynamic_pointer_cast<T1>(InObj.lock());
 	CastResult.Get();
 	return CastResult;
 }
