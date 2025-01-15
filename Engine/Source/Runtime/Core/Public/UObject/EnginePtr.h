@@ -3,48 +3,48 @@
 
 // weak_ptr의 사용성을 개선한 EnginePtr 입니다.
 template<class _Ty>
-class EnginePtr : public weak_ptr<_Ty>
+class TEnginePtr : public weak_ptr<_Ty>
 {
 public:
-	EnginePtr() noexcept {}
-	EnginePtr(const EnginePtr& InOther) noexcept : weak_ptr<_Ty>(InOther) {}
+	TEnginePtr() noexcept {}
+	TEnginePtr(const TEnginePtr& InOther) noexcept : weak_ptr<_Ty>(InOther) {}
 	template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-	EnginePtr(const weak_ptr<_Ty2>& InOther) noexcept : weak_ptr<_Ty>(InOther) {}
+	TEnginePtr(const weak_ptr<_Ty2>& InOther) noexcept : weak_ptr<_Ty>(InOther) {}
 
 	template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-	EnginePtr(const shared_ptr<_Ty2>& InOther) noexcept : weak_ptr<_Ty>(InOther) {}
+	TEnginePtr(const TObjectPtr<_Ty2>& InOther) noexcept : weak_ptr<_Ty>(InOther) {}
 
-	EnginePtr& operator=(nullptr_t) noexcept {
+	TEnginePtr& operator=(nullptr_t) noexcept {
 		this->reset();
 		return *this;
 	}
 
-	EnginePtr& operator=(const EnginePtr& InOther) noexcept
+	TEnginePtr& operator=(const TEnginePtr& InOther) noexcept
 	{
-		EnginePtr(InOther).swap(*this);
+		TEnginePtr(InOther).swap(*this);
 		return *this;
 	}
 
 	template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-	EnginePtr& operator=(const EnginePtr<_Ty2>& _Right) noexcept {
-		EnginePtr(_Right).swap(*this);
+	TEnginePtr& operator=(const TEnginePtr<_Ty2>& _Right) noexcept {
+		TEnginePtr(_Right).swap(*this);
 		return *this;
 	}
 
-	EnginePtr& operator=(EnginePtr&& _Right) noexcept {
-		EnginePtr(_STD move(_Right)).swap(*this);
-		return *this;
-	}
-
-	template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-	EnginePtr& operator=(EnginePtr<_Ty2>&& _Right) noexcept {
-		EnginePtr(_STD move(_Right)).swap(*this);
+	TEnginePtr& operator=(TEnginePtr&& _Right) noexcept {
+		TEnginePtr(_STD move(_Right)).swap(*this);
 		return *this;
 	}
 
 	template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
-	EnginePtr& operator=(const shared_ptr<_Ty2>& _Right) noexcept {
-		EnginePtr(_Right).swap(*this);
+	TEnginePtr& operator=(TEnginePtr<_Ty2>&& _Right) noexcept {
+		TEnginePtr(_STD move(_Right)).swap(*this);
+		return *this;
+	}
+
+	template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
+	TEnginePtr& operator=(const TObjectPtr<_Ty2>& _Right) noexcept {
+		TEnginePtr(_Right).swap(*this);
 		return *this;
 	}
 
@@ -59,6 +59,10 @@ public:
 	}
 	template <class _Ty2 = _Ty, enable_if_t<!is_array_v<_Ty2>, int> = 0>
 	_NODISCARD _Ty2* Get() const noexcept {
+		return this->lock().get();
+	}
+	template <class _Ty2 = _Ty, enable_if_t<!is_array_v<_Ty2>, int> = 0>
+	_NODISCARD _Ty2* GetChecked() const noexcept {
 #if WITH_DEBUG
 		if (!IsValid())
 		{
@@ -81,12 +85,22 @@ public:
 };
 
 template<class _Ty1, class _Ty2>
-bool operator==(const EnginePtr<_Ty1> _Left, const EnginePtr<_Ty2> _Right)
+bool operator==(const TEnginePtr<_Ty1> _Left, const TEnginePtr<_Ty2> _Right)
 {
 	return _Left.Get() == _Right.Get();
 }
 template<class _Ty1, class _Ty2>
-bool operator!=(const EnginePtr<_Ty1> _Left, const EnginePtr<_Ty2> _Right)
+bool operator!=(const TEnginePtr<_Ty1> _Left, const TEnginePtr<_Ty2> _Right)
 {
 	return _Left.Get() != _Right.Get();
+}
+template<class _Ty1>
+bool operator==(const TEnginePtr<_Ty1> _Left, nullptr_t)
+{
+	return _Left.Get() == nullptr;
+}
+template<class _Ty1>
+bool operator!=(const TEnginePtr<_Ty1> _Left, nullptr_t)
+{
+	return _Left.Get() != nullptr;
 }

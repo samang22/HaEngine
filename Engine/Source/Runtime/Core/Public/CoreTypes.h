@@ -29,11 +29,12 @@
 
 #include "Misc/CoreMiscDefines.h"
 
-
 using namespace std;
 using FString = std::wstring;
 using FStringView = std::wstring_view;
 template<class T>
 using TArray = std::vector<T>;
+template<class T>
+using TObjectPtr = std::shared_ptr<T>;
 
 static inline const WIDECHAR* NAME_NONE = TEXT("");

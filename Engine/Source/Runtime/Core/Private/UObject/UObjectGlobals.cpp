@@ -44,7 +44,7 @@ FObjectInitializer::FObjectInitializer(shared_ptr<UObject>& InObj, const FStatic
 
 FObjectInitializer::~FObjectInitializer()
 {
-	//PostConstructInit();
+	PostConstructInit();
 }
 //#include "Math/SimpleMath.h"
 //void FObjectInitializer::InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults)
@@ -80,29 +80,29 @@ FObjectInitializer::~FObjectInitializer()
 //			});
 //	}
 //}
-//
-//void FObjectInitializer::PostConstructInit()
-//{
-//	if (bShouldInitializePropsFromArchetype)
-//	{
-//		UClass* BaseClass = /*(bIsCDO && !GIsDuplicatingClassForReinstancing) ? SuperClass :*/ Class;
-//		if (BaseClass == NULL)
-//		{
-//			_ASSERT(Class == UObject::StaticClass());
-//			BaseClass = Class;
-//		}
-//
-//		UObject* Defaults = ObjectArchetype ? ObjectArchetype : BaseClass->GetDefaultObject(false); // we don't create the CDO here if it doesn't already exist
-//		InitProperties(Obj, BaseClass, Defaults, false/*bCopyTransientsFromClassDefaults*/);
-//	}
-//
-//	// InitSubobjectProperties
-//	{
-//	}
-//
-//	SharedObj->PostInitProperties();
-//}
-//
+
+void FObjectInitializer::PostConstructInit()
+{
+	if (bShouldInitializePropsFromArchetype)
+	{
+		UClass* BaseClass = /*(bIsCDO && !GIsDuplicatingClassForReinstancing) ? SuperClass :*/ Class;
+		if (BaseClass == NULL)
+		{
+			_ASSERT(Class == UObject::StaticClass());
+			BaseClass = Class;
+		}
+
+		UObject* Defaults = ObjectArchetype ? ObjectArchetype : BaseClass->GetDefaultObject(false); // we don't create the CDO here if it doesn't already exist
+		//InitProperties(Obj, BaseClass, Defaults, false/*bCopyTransientsFromClassDefaults*/);
+	}
+
+	// InitSubobjectProperties
+	{
+	}
+
+	SharedObj->PostInitProperties();
+}
+
 CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params)
 {
 	UClass* InClass = Params.Class;

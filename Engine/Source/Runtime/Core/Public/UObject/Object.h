@@ -5,11 +5,18 @@ class FObjectInitializer;
 class CORE_API UObject : public UObjectBase
 {
 public:
+	/**
+	 * C++ 생성자 호출 후 및 속성(구성에서 로드된 속성 포함)이 초기화된 후 호출됩니다.
+	 * 이는 직렬화 또는 다른 설정이 이루어지기 전에 호출됩니다.
+	 */
+	virtual void PostInitProperties();
+
+public:
 	static void __DefaultConstructor(const FObjectInitializer& X);
 	static UClass* StaticClass();
 
 	template<class T>
-	shared_ptr<T> As()
+	TObjectPtr<T> As()
 	{
 		if (!this)
 		{
@@ -58,16 +65,16 @@ private:
 };
 
 template<class T1, class T2>
-static shared_ptr<T1> Cast(T2* InObj) { return std::dynamic_pointer_cast<T1>(InObj->shared_from_this()); }
+static TObjectPtr<T1> Cast(T2* InObj) { return std::dynamic_pointer_cast<T1>(InObj->shared_from_this()); }
 template<class T1, class T2>
-static shared_ptr<T1> Cast(shared_ptr<T2> InObj) { return std::dynamic_pointer_cast<T1>(InObj); }
+static TObjectPtr<T1> Cast(TObjectPtr<T2> InObj) { return std::dynamic_pointer_cast<T1>(InObj); }
 template<class T1, class T2>
-static EnginePtr<T1> Cast(EnginePtr<T2> InObj) { return std::dynamic_pointer_cast<T1>(InObj.lock()); }
+static TEnginePtr<T1> Cast(TEnginePtr<T2> InObj) { return std::dynamic_pointer_cast<T1>(InObj.lock()); }
 
 template<class T1, class T2>
-static shared_ptr<T1> CastChecked(T2* InObj)
+static TObjectPtr<T1> CastChecked(T2* InObj)
 {
-	shared_ptr<T1> CastResult = std::dynamic_pointer_cast<T1>(InObj->shared_from_this());
+	TObjectPtr<T1> CastResult = std::dynamic_pointer_cast<T1>(InObj->shared_from_this());
 	_ASSERT(CastResult.get());
 	return CastResult;
 }
@@ -79,14 +86,14 @@ static T1* CastCheckedRaw(T2* InObj)
 	return CastResult;
 }
 template<class T1, class T2>
-static shared_ptr<T1> CastChecked(shared_ptr<T2> InObj)
+static TObjectPtr<T1> CastChecked(TObjectPtr<T2> InObj)
 {
-	shared_ptr<T1> CastResult = std::dynamic_pointer_cast<T1>(InObj);
+	TObjectPtr<T1> CastResult = std::dynamic_pointer_cast<T1>(InObj);
 	_ASSERT(CastResult.get());
 	return CastResult;
 }
 template<class T1, class T2>
-static EnginePtr<T1> CastChecked(EnginePtr<T2> InObj)
+static TEnginePtr<T1> CastChecked(TEnginePtr<T2> InObj)
 {
 	EnginePtr<T1> CastResult = std::dynamic_pointer_cast<T1>(InObj.lock());
 	CastResult.Get();

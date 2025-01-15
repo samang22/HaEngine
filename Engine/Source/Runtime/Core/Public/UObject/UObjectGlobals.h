@@ -62,11 +62,11 @@ public:
 	 */
 	 //static void InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults);
 
-	 /**
-	  * Finalizes a constructed UObject by initializing properties,
-	  * instancing/initializing sub-objects, etc.
-	  */
-	  //void PostConstructInit();
+	/**
+	 * 생성된 UObject를 속성 초기화,
+	 * 서브 오브젝트 인스턴싱/초기화 등을 통해 최종 확정합니다.
+	 */
+	void PostConstructInit();
 };
 
 CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params);
