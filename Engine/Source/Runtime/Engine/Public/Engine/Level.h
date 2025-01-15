@@ -23,5 +23,13 @@ public:
 	ULevel();
 public:
 	/** 이 레벨의 모든 액터 배열 */
-	TArray<shared_ptr<AActor>> Actors;
+	TArray<TObjectPtr<AActor>> Actors;
+
+	/**
+	 * 이 레벨이 포함된 월드를 반환합니다.
+	 * 스트리밍 레벨의 경우 GetOuter()는 사용되지 않는 잔재 월드이므로 GetOuter()와는 다릅니다.
+	 * GC가 임의의 순서로 발생할 수 있으므로, BeginDestroy() 중에는 다른 UObject 참조와 마찬가지로 접근해서는 안 됩니다.
+	 */
+	UPROPERTY(Transient)
+	TEnginePtr<UWorld> OwningWorld;
 };

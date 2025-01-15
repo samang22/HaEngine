@@ -16,3 +16,13 @@ UClass* UObject::StaticClass()
 {
 	return UObjectRegisterEngineClass;
 }
+
+UWorld* UObject::GetWorld() const
+{
+	if (UObject* Outer = GetOuter())
+	{
+		return Outer->GetWorld();
+	}
+
+	return nullptr;
+}

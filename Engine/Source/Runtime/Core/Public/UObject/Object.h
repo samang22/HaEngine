@@ -52,6 +52,14 @@ public:
 	{
 		return (GetFlags() & FlagToCheck);
 	}
+
+	/**
+	* 이 객체가 포함된 UWorld를 반환합니다.
+	 * 기본적으로 Outer 체인을 따르지만, 그 방식이 작동하지 않을 경우에는 재정의되어야 합니다.
+	*/
+	virtual class UWorld* GetWorld() const;
+
+
 private:
 	template <typename ClassType>
 	static FORCEINLINE bool IsChildOfWorkaround(const ClassType* ObjClass, const ClassType* TestCls)

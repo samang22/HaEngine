@@ -56,12 +56,21 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, co
 
 	AActor* NewActor = Actor.get();
 
-	// @TODO
-	// NewActor->PostSpawnInitialize
+	NewActor->PostSpawnInitialize(UserTransform, SpawnParameters.Owner, SpawnParameters.Instigator, SpawnParameters.TransformScaleMethod);
 
 	// Broadcast notification of spawn
 	OnActorSpawned.Broadcast(NewActor);
 
 	return NewActor;
+}
+
+bool UWorld::IsGameWorld() const
+{
+	return WorldType == EWorldType::Game || WorldType == EWorldType::PIE || WorldType == EWorldType::GamePreview || WorldType == EWorldType::GameRPC;
+}
+
+bool UWorld::IsEditorWorld() const
+{
+	return WorldType == EWorldType::Editor || WorldType == EWorldType::EditorPreview || WorldType == EWorldType::PIE;
 }
 

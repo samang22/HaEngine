@@ -14,6 +14,7 @@ enum class ESpawnActorScaleMethod : uint8
 };
 
 class APawn;
+class ULevel;
 
 UCLASS()
 class ENGINE_API AActor : public UObject
@@ -50,6 +51,13 @@ public:
 		return false;
 	}
 
+	/** 캐시된 월드 포인터에 대한 게터로, 액터가 실제로 레벨에 생성되지 않은 경우 null을 반환합니다. */
+	virtual UWorld* GetWorld() const override final;
+
+	/** Return the ULevel that this Actor is part of. */
+	//UFUNCTION(BlueprintCallable, Category = Level)
+	ULevel* GetLevel() const;
+
 	/**
 	* 지정된 컴포넌트를 루트 컴포넌트로 설정합니다. NewRootComponent의 소유자는 이 액터여야 합니다.
 	* @return 성공하면 true를 반환합니다.
@@ -58,6 +66,17 @@ public:
 
 	/** Components 배열의 모든 컴포넌트가 등록되었는지 확인합니다. */
 	virtual void RegisterAllComponents();
+
+	/** Components 배열의 모든 컴포넌트가 등록되기 전에 호출되며, 에디터와 게임 플레이 중 모두 호출됩니다. */
+	virtual void PreRegisterAllComponents();
+
+	/**
+	 * 점진적으로 이 액터와 연관된 컴포넌트를 등록합니다. 레벨 스트리밍 중에 사용됩니다.
+	 *
+	 * @param NumComponentsToRegister 이번 실행에서 등록할 컴포넌트의 수입니다. 0으로 설정하면 모든 컴포넌트를 등록합니다.
+	 * @return 이 액터의 모든 컴포넌트가 등록되었을 때 true를 반환합니다.
+	 */
+	bool IncrementalRegisterComponents(int32 NumComponentsToRegister, FRegisterComponentContext* Context = nullptr);
 
 public:
 	/**
@@ -91,6 +110,18 @@ public:
 			}
 		}
 	}
+
+	/** 컴포넌트가 올바르게 소유자의 OwnedComponents 배열에 포함되어 있는지 확인하는 유틸리티 함수 */
+	bool OwnsComponent(UActorComponent* Component) const;
+
+public:
+	/**
+	 * 이 액터가 BeginPlay 이벤트를 받기 전에 Tick을 허용할지 여부입니다.
+	 * 일반적으로 우리는 BeginPlay 이후에만 액터를 Tick합니다; 이 설정을 통해 이러한 동작을 무효화할 수 있습니다.
+	 * 이 설정이 관련되기 위해서는 이 액터가 Tick할 수 있어야 합니다.
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = Tick)
+	uint8 bAllowTickBeforeBeginPlay : 1 = false;
 
 public:
 	/**

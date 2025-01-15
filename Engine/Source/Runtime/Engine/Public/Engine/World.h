@@ -73,6 +73,12 @@ public:
 	}
 
 public:
+	/** 이 월드가 게임 월드(PIE 월드 포함)인지 여부를 반환합니다. */
+	bool IsGameWorld() const;
+
+	/** 이 월드가 에디터 월드(에디터 미리보기 월드 포함)인지 여부를 반환합니다. */
+	bool IsEditorWorld() const;
+
 	/** 이 월드의 타입입니다. 사용되는 Context을 설명합니다(에디터, 게임, 프리뷰 등). */
 	EWorldType::Type WorldType = EWorldType::Type::None;
 

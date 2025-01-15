@@ -1,5 +1,8 @@
 #include "GameFramework/Actor.h"
 
+#include "Engine/World.h"
+#include "Engine/Level.h"
+
 /** 사용자가 자신의 네이티브 생성자에서 이를 잊어버렸을 때, 액터의 컴포넌트 계층 구조를 설정하는 유틸리티 */
 static USceneComponent* FixupNativeActorComponents(AActor* Actor)
 {
@@ -131,6 +134,25 @@ void AActor::SetOwner(AActor* NewOwner)
 	}
 }
 
+UWorld* AActor::GetWorld() const
+{
+	// CDO 객체는 월드에 속하지 않습니다
+	// 액터의 Outer가 파괴되었거나 접근할 수 없는 경우, 종료 중이며 월드는 nullptr이어야 합니다
+	if (!HasAnyFlags(RF_ClassDefaultObject))
+	{
+		if (ULevel* Level = GetLevel())
+		{
+			return Level->OwningWorld.GetChecked();
+		}
+	}
+	return nullptr;
+}
+
+ULevel* AActor::GetLevel() const
+{
+	return GetTypedOuter<ULevel>();
+}
+
 bool AActor::SetRootComponent(USceneComponent* NewRootComponent)
 {
 	if (RootComponent.Get() != NewRootComponent)
@@ -157,4 +179,53 @@ bool AActor::SetRootComponent(USceneComponent* NewRootComponent)
 
 void AActor::RegisterAllComponents()
 {
+	PreRegisterAllComponents();
+
+	// 0 - means register all components
+	bool bAllRegistered = IncrementalRegisterComponents(0);
+	_ASSERT(bAllRegistered);
+}
+
+void AActor::PreRegisterAllComponents()
+{
+}
+
+bool AActor::IncrementalRegisterComponents(int32 NumComponentsToRegister, FRegisterComponentContext* Context)
+{
+	if (NumComponentsToRegister == 0)
+	{
+		// 0 - means register all components
+		NumComponentsToRegister = std::numeric_limits<int32>::max();
+	}
+
+	UWorld* const World = GetWorld();
+	_ASSERT(World);
+
+	// 게임 월드가 아닌 경우, 지금 Tick 함수를 등록합니다. 게임 월드인 경우, BeginPlay() 바로 직전에 등록하여
+	// BeginPlay()가 실행되기 전에는 실제로 Tick하지 않도록 합니다(네트워크 게임에서는 다르게 작동할 수 있음).
+	if (bAllowTickBeforeBeginPlay || !World->IsGameWorld())
+	{
+		//RegisterAllActorTickFunctions(true, false); // 컴포넌트는 등록될 때 처리됩니다.
+	}
+
+	// RootComponent를 먼저 등록하여 다른 모든 자식 컴포넌트가 등록 시 신뢰성 있게 사용할 수 있도록 합니다 (예: GetLocation 호출).
+	if (RootComponent != nullptr && !RootComponent->IsRegistered())
+	{
+		//if (RootComponent->bAutoRegister)
+		{
+			// 컴포넌트를 등록하기 전에 트랜잭션 버퍼에 저장하여 "취소" 시 비등록 상태로 되돌아가도록 합니다.
+			// 이렇게 하면 복사/붙여넣기 또는 복제 작업을 취소할 때 원하지 않는 컴포넌트가 남아 있는 것을 방지할 수 있습니다.
+			//RootComponent->Modify(false);
+
+			RootComponent->RegisterComponentWithWorld(World, Context);
+		}
+	}
+
+	return true;
+}
+
+bool AActor::OwnsComponent(UActorComponent* Component) const
+{
+	TObjectPtr<UActorComponent> ComponentPtr = Component->As<UActorComponent>();
+	return OwnedComponents.contains(ComponentPtr);
 }
