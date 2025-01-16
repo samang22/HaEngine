@@ -43,7 +43,7 @@ AActor::AActor()
 
 }
 
-void AActor::PostSpawnInitialize(FTransform const& SpawnTransform, AActor* InOwner, APawn* InInstigator, ESpawnActorScaleMethod TransformScaleMethod)
+void AActor::PostSpawnInitialize(FTransform const& UserSpawnTransform, AActor* InOwner, APawn* InInstigator, ESpawnActorScaleMethod TransformScaleMethod)
 {
 	// 일반적인 흐름은 다음과 같습니다
 	// - 액터가 기본 설정을 구성합니다.
@@ -98,6 +98,14 @@ void AActor::PostSpawnInitialize(FTransform const& SpawnTransform, AActor* InOwn
 		RegisterAllComponents();
 	}
 
+	PostActorCreated();
+
+	// 네이티브 및 BP Construction Script를 실행합니다.
+	// 이후, 모든 컴포넌트가 생성되고 조립되었음을 가정할 수 있습니다.
+	//if (!bDeferConstruction)
+	{
+		FinishSpawning(UserSpawnTransform, true);
+	}
 }
 
 void AActor::SetInstigator(APawn* InInstigator)
@@ -311,6 +319,177 @@ bool AActor::IncrementalRegisterComponents(int32 NumComponentsToRegister, FRegis
 
 void AActor::PostRegisterAllComponents()
 {
+}
+
+void AActor::PostActorCreated()
+{
+}
+
+void AActor::FinishSpawning(const FTransform& UserTransform, bool bIsDefaultTransform, ESpawnActorScaleMethod TransformScaleMethod)
+{
+	_ASSERT(!bHasFinishedSpawning);
+	if (!bHasFinishedSpawning)
+	{
+		bHasFinishedSpawning = true;
+
+		FTransform FinalRootComponentTransform = (RootComponent ? RootComponent->GetComponentTransform() : UserTransform);
+
+		// Transform을 조정할 필요가 있는지 확인합니다
+		// (즉, 원래 SpawnActor 호출 시 전달된 것과 다른 변환이 여기에서 호출자가 전달하는 경우)
+		//if (RootComponent && !bIsDefaultTransform)
+		//{
+		//	FTransform const* const OriginalSpawnTransform = GSpawnActorDeferredTransformCache.Find(this);
+		//	if (OriginalSpawnTransform)
+		//	{
+		//		GSpawnActorDeferredTransformCache.Remove(this);
+
+		//		if (OriginalSpawnTransform->Equals(UserTransform) == false)
+		//		{
+		//			UserTransform.GetLocation().DiagnosticCheckNaN(TEXT("AActor::FinishSpawning: UserTransform.GetLocation()"));
+		//			UserTransform.GetRotation().DiagnosticCheckNaN(TEXT("AActor::FinishSpawning: UserTransform.GetRotation()"));
+
+		//			// caller passed a different transform!
+		//			// undo the original spawn transform to get back to the template transform, so we can recompute a good
+		//			// final transform that takes into account the template's transform
+		//			FTransform const TemplateTransform = RootComponent->GetComponentTransform() * OriginalSpawnTransform->Inverse();
+		//			FinalRootComponentTransform = TemplateTransform * UserTransform;
+		//		}
+		//	}
+
+		//	// should be fast and relatively rare
+		//	ValidateDeferredTransformCache();
+		//}
+
+		//FinalRootComponentTransform.GetLocation().DiagnosticCheckNaN(TEXT("AActor::FinishSpawning: FinalRootComponentTransform.GetLocation()"));
+		//FinalRootComponentTransform.GetRotation().DiagnosticCheckNaN(TEXT("AActor::FinishSpawning: FinalRootComponentTransform.GetRotation()"));
+
+		{
+			//ExecuteConstruction(FinalRootComponentTransform, nullptr, InstanceDataCache, bIsDefaultTransform, TransformScaleMethod);
+			OnConstruction(FinalRootComponentTransform);
+		}
+
+		{
+			PostActorConstruction();
+		}
+	}
+}
+
+void AActor::PostActorConstruction()
+{
+	UWorld* const World = GetWorld();
+	bool const bActorsInitialized = World && World->AreActorsInitialized();
+
+	if (bActorsInitialized)
+	{
+		PreInitializeComponents();
+	}
+
+	// 이 액터가 동적으로 스폰된 복제된(Replicated) 액터인 경우, 복제된 속성이 역직렬화될 때까지 BeginPlay 및 UpdateOverlaps 호출을 연기합니다.
+	//const bool bDeferBeginPlayAndUpdateOverlaps = (bExchangedRoles && RemoteRole == ROLE_Authority) && !GIsReinstancing;
+
+	if (bActorsInitialized)
+	{
+		_ASSERT(false);
+		//		// Call InitializeComponent on components
+		//		InitializeComponents();
+		//
+		//		// actor should have all of its components created and registered now, do any collision checking and handling that we need to do
+		//		if (World)
+		//		{
+		//			switch (SpawnCollisionHandlingMethod)
+		//			{
+		//			case ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn:
+		//			{
+		//				// Try to find a spawn position
+		//				FVector AdjustedLocation = GetActorLocation();
+		//				FRotator AdjustedRotation = GetActorRotation();
+		//				if (World->FindTeleportSpot(this, AdjustedLocation, AdjustedRotation))
+		//				{
+		//					SetActorLocationAndRotation(AdjustedLocation, AdjustedRotation, false, nullptr, ETeleportType::TeleportPhysics);
+		//				}
+		//			}
+		//			break;
+		//			case ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding:
+		//			{
+		//				// Try to find a spawn position			
+		//				FVector AdjustedLocation = GetActorLocation();
+		//				FRotator AdjustedRotation = GetActorRotation();
+		//				if (World->FindTeleportSpot(this, AdjustedLocation, AdjustedRotation))
+		//				{
+		//					SetActorLocationAndRotation(AdjustedLocation, AdjustedRotation, false, nullptr, ETeleportType::TeleportPhysics);
+		//				}
+		//				else
+		//				{
+		//					UE_LOG(LogSpawn, Warning, TEXT("SpawnActor failed because of collision at the spawn location [%s] for [%s]"), *AdjustedLocation.ToString(), *GetClass()->GetName());
+		//					Destroy();
+		//				}
+		//			}
+		//			break;
+		//			case ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding:
+		//				if (World->EncroachingBlockingGeometry(this, GetActorLocation(), GetActorRotation()))
+		//				{
+		//					UE_LOG(LogSpawn, Warning, TEXT("SpawnActor failed because of collision at the spawn location [%s] for [%s]"), *GetActorLocation().ToString(), *GetClass()->GetName());
+		//					Destroy();
+		//				}
+		//				break;
+		//			case ESpawnActorCollisionHandlingMethod::Undefined:
+		//			case ESpawnActorCollisionHandlingMethod::AlwaysSpawn:
+		//			default:
+		//				// note we use "always spawn" as default, so treat undefined as that
+		//				// nothing to do here, just proceed as normal
+		//				break;
+		//			}
+		//		}
+		//
+		//		if (IsValidChecked(this))
+		//		{
+		//			PostInitializeComponents();
+		//			if (IsValidChecked(this))
+		//			{
+		//				if (!bActorInitialized)
+		//				{
+		//					UE_LOG(LogActor, Fatal, TEXT("%s failed to route PostInitializeComponents.  Please call Super::PostInitializeComponents() in your <className>::PostInitializeComponents() function. "), *GetFullName());
+		//				}
+		//
+		//				bool bRunBeginPlay = !bDeferBeginPlayAndUpdateOverlaps && (BeginPlayCallDepth > 0 || World->HasBegunPlay());
+		//				if (bRunBeginPlay)
+		//				{
+		//					if (AActor* ParentActor = GetParentActor())
+		//					{
+		//						// Child Actors cannot run begin play until their parent has run
+		//						bRunBeginPlay = (ParentActor->HasActorBegunPlay() || ParentActor->IsActorBeginningPlay());
+		//					}
+		//				}
+		//
+		//#if WITH_EDITOR
+		//				if (bRunBeginPlay && bIsEditorPreviewActor)
+		//				{
+		//					bRunBeginPlay = false;
+		//				}
+		//#endif
+		//
+		//				if (bRunBeginPlay)
+		//				{
+		//					SCOPE_CYCLE_COUNTER(STAT_ActorBeginPlay);
+		//					DispatchBeginPlay();
+		//				}
+		//			}
+		//		}
+	}
+	else
+	{
+		// 초기 undo 기록이 만들어질 때 객체가 무효화되도록 하여,
+		// 액터가 삭제된 것으로 처리되도록 합니다.
+		// 그런 경우 undo 시 추가가 실제로 작동하게 됩니다.
+		//MarkAsGarbage();
+		//Modify(false);
+		//ClearGarbage();
+	}
+}
+
+void AActor::PreInitializeComponents()
+{
+	_ASSERT(false);
 }
 
 bool AActor::OwnsComponent(UActorComponent* Component) const

@@ -18,8 +18,17 @@ public:
 	//UFUNCTION(BlueprintCallable, Category = "Transformation")
 	USceneComponent* GetAttachParent() const;
 
+	/** 현재 컴포넌트의 컴포넌트-월드 변환을 가져옵니다. */
+	FORCEINLINE const FTransform& GetComponentTransform() const
+	{
+		return ComponentToWorld;
+	}
 private:
 	/** What we are currently attached to. If valid, RelativeLocation etc. are used relative to this object */
 	//UPROPERTY(ReplicatedUsing = OnRep_AttachParent)
 	TEnginePtr<USceneComponent> AttachParent;
+
+private:
+	/** 현재 컴포넌트의 Transform, 월드 기준 */
+	FTransform ComponentToWorld;
 };

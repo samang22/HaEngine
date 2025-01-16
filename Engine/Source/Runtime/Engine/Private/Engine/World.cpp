@@ -14,8 +14,11 @@ FActorSpawnParameters::FActorSpawnParameters()
 void UWorld::InitalizeNewWorld()
 {
 	PersistentLevel = NewObject<ULevel>(this, ULevel::StaticClass(), TEXT("PersistentLevel"));
+	PersistentLevel->OwningWorld = this->As<UWorld>();
+	
 	AActor* Actor = SpawnActor<AActor>(nullptr, FTransform::Identity);
 	shared_ptr<AActor> A = Actor->As<AActor>();
+	//CastChecked();
 }
 
 AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, const FActorSpawnParameters& SpawnParameters)
@@ -62,6 +65,11 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, co
 	OnActorSpawned.Broadcast(NewActor);
 
 	return NewActor;
+}
+
+bool UWorld::AreActorsInitialized() const
+{
+	return bActorsInitialized && PersistentLevel && PersistentLevel->Actors.size();
 }
 
 bool UWorld::IsGameWorld() const

@@ -73,6 +73,10 @@ public:
 	}
 
 public:
+	/** 액터가 초기화되고 게임을 시작할 준비가 되면 true를 반환합니다. */
+	bool AreActorsInitialized() const;
+
+public:
 	/** 이 월드가 게임 월드(PIE 월드 포함)인지 여부를 반환합니다. */
 	bool IsGameWorld() const;
 
@@ -98,4 +102,6 @@ public:
 	/** 이 월드의 씬 매니저에 대한 인터페이스. */
 	class FSceneInterface* Scene = nullptr;
 
+	/** 액터가 게임을 위해 초기화되었는지 여부 */
+	uint8 bActorsInitialized : 1 = false;
 };

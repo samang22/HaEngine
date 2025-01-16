@@ -83,6 +83,30 @@ public:
 	 * 이 함수를 호출하기 전에 bHasRegisteredAllComponents는 true로 설정되어야 합니다.
 	 */
 	virtual void PostRegisterAllComponents();
+
+public:
+	/**
+	 * 액터가 월드에 스폰된 후(즉, UWorld::SpawnActor로부터), 편집기와 게임 플레이 중 모두 호출됩니다.
+	 * 루트 컴포넌트를 가진 액터의 경우, 위치와 회전이 이미 설정되어 있을 것입니다.
+	 * 이것은 ConstructionScript를 호출하기 전에 호출되지만, 네이티브 컴포넌트가 생성된 후에 호출됩니다.
+	 */
+	virtual void PostActorCreated();
+
+	/** 일반적으로 연기된 스포닝의 경우, 스포닝 프로세스를 완료하기 위해 호출됩니다. */
+	void FinishSpawning(const FTransform& Transform, bool bIsDefaultTransform = false/*, const FComponentInstanceDataCache* InstanceDataCache = nullptr*/, ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::OverrideRootScale);
+
+	/**
+	 * 이 클래스의 인스턴스가 배치되거나(편집기에서) 스폰될 때 호출됩니다.
+	 * @param Transform - 액터가 생성된 변환입니다.
+	 */
+	virtual void OnConstruction(const FTransform& Transform) {}
+
+	/** 액터의 생성이 완료된 후 호출됩니다. 액터 스폰 프로세스를 마무리하는 역할을 합니다. */
+	void PostActorConstruction();
+
+	/** 컴포넌트가 초기화되기 직전에 호출되며, 게임 플레이 중에만 호출됩니다. */
+	virtual void PreInitializeComponents();
+
 public:
 	/**
 	 * 'ComponentType' 클래스에서 파생된 모든 컴포넌트를 가져와 결과를 OutComponents 배열에 채웁니다.
@@ -160,4 +184,7 @@ private:
 private:
 	/** PostRegisterAllComponents()가 호출되기 직전에 true로 설정되고, PostUnregisterAllComponents()가 호출되기 직전에 false로 설정됩니다. */
 	uint8 bHasRegisteredAllComponents : 1 = false;
+
+	/** 이 액터에 대해 FinishSpawning이 호출되었는지 여부. 호출되지 않은 경우, 액터는 잘못된 상태에 있습니다. */
+	uint8 bHasFinishedSpawning : 1 = false;
 };  
