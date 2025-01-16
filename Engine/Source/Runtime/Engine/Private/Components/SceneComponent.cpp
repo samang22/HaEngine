@@ -3,3 +3,8 @@
 USceneComponent::USceneComponent()
 {
 }
+
+USceneComponent* USceneComponent::GetAttachParent() const
+{
+    return AttachParent;
+}

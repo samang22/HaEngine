@@ -72,6 +72,10 @@ public:
 		return this->lock().get();
 	}
 
+	FORCEINLINE operator _Ty* () const { return Get(); }
+	FORCEINLINE _Ty* operator->() const { return Get(); }
+	FORCEINLINE _Ty& operator*() const { return *Get(); }
+
 	explicit operator bool() const noexcept
 	{
 		return IsValid();

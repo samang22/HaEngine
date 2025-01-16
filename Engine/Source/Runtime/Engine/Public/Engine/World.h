@@ -93,4 +93,9 @@ private:
 	 * 이 이벤트는 새로 생성된 액터에만 해당됩니다.
 	 */
 	FDelegate<AActor*> OnActorSpawned;
+
+public:
+	/** 이 월드의 씬 매니저에 대한 인터페이스. */
+	class FSceneInterface* Scene = nullptr;
+
 };

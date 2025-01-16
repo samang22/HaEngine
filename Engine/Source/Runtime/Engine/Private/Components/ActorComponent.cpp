@@ -1,6 +1,6 @@
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
-
+#include "Engine/World.h"
 
 ENGINE_API void FRegisterComponentContext::SendRenderDynamicData(FRegisterComponentContext* Context, UPrimitiveComponent* PrimitiveComponent)
 {
@@ -51,12 +51,108 @@ void UActorComponent::RegisterComponentWithWorld(UWorld* InWorld, FRegisterCompo
 	{
 		OnComponentCreated();
 	}
+
+	WorldPrivate = InWorld;
+
+	ExecuteRegisterEvents(Context);
+
 }
 
 void UActorComponent::OnComponentCreated()
 {
 	_ASSERT(!bHasBeenCreated);
 	bHasBeenCreated = true;
+}
+
+void UActorComponent::ExecuteRegisterEvents(FRegisterComponentContext* Context)
+{
+	if (!bRegistered)
+	{
+		OnRegister();
+
+		if (!bRegistered)
+		{
+			E_LOG(Error, TEXT("Failed to route OnRegister ({})"), GetName());
+		}
+	}
+
+	if (/*FApp::CanEverRender() &&*/ !bRenderStateCreated && WorldPrivate->Scene && ShouldCreateRenderState())
+	{
+		CreateRenderState_Concurrent(Context);
+		if (!bRenderStateCreated)
+		{
+			E_LOG(Error, TEXT("Failed to route CreateRenderState_Concurrent ({})"), GetName());
+		}
+	}
+
+	// CreatePhysicsState(/*bAllowDeferral=*/true);
+}
+
+void UActorComponent::OnRegister()
+{
+	_ASSERT(!bRegistered);
+	bRegistered = true;
+
+	UpdateComponentToWorld();
+
+	// 일반적인 ActorComponent는 이 시점이 아니라, FinishSpawning여기서 Active 하고 있다
+	//if (true/*bAutoActivate*/)
+	//{
+	//	AActor* Owner = GetOwner();
+	//	if (!WorldPrivate->IsGameWorld() || Owner == nullptr /*|| Owner->IsActorInitialized()*/)
+	//	{
+	//		Activate(true);
+	//	}
+	//}
+}
+
+void UActorComponent::CreateRenderState_Concurrent(FRegisterComponentContext* Context)
+{
+	_ASSERT(IsRegistered());
+	_ASSERT(WorldPrivate->Scene);
+	_ASSERT(!bRenderStateCreated);
+	bRenderStateCreated = true;
+
+	/*bRenderStateDirty = false;
+	bRenderTransformDirty = false;
+	bRenderDynamicDataDirty = false;
+	bRenderInstancesDirty = false;
+
+#if LOG_RENDER_STATE
+	UE_LOG(LogActorComponent, Log, TEXT("CreateRenderState_Concurrent: %s"), *GetPathName());
+#endif
+
+#if WITH_EDITOR
+	FObjectCacheEventSink::NotifyRenderStateChanged_Concurrent(this);
+#endif*/
+}
+
+void UActorComponent::Activate(bool bReset)
+{
+	if (bReset || ShouldActivate() == true)
+	{
+		SetComponentTickEnabled(true);
+		SetActiveFlag(true);
+
+		//OnComponentActivated.Broadcast(this, bReset);
+	}
+}
+
+void UActorComponent::SetComponentTickEnabled(bool bEnabled)
+{
+	// @TODO
+	// 이것도 해야함 RegisterActorTickFunctions
+}
+
+void UActorComponent::SetActiveFlag(const bool bNewIsActive)
+{
+	bIsActive = bNewIsActive;
+}
+
+bool UActorComponent::ShouldActivate() const
+{
+	// 활성 상태가 아닌 경우, 활성화해야 합니다.
+	return !IsActive();
 }
 
 AActor* UActorComponent::GetActorOwnerNoninline() const

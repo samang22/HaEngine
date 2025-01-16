@@ -93,7 +93,7 @@ void AActor::PostSpawnInitialize(FTransform const& SpawnTransform, AActor* InOwn
 	// SCS 실행 후 씬 루트를 설정할 수 있을 때까지 네이티브 등록을 연기해야 합니다.
 	// 참고: 이 API는 액터 인스턴스에서 PostRegisterAllComponents()를 호출합니다. 연기된 경우, PostRegisterAllComponents()는 루트가 SCS에 의해 설정될 때까지 호출되지 않습니다.
 	//bHasDeferredComponentRegistration = (SceneRootComponent == nullptr && Cast<UBlueprintGeneratedClass>(GetClass()) != nullptr);
-	//if (!bHasDeferredComponentRegistration && GetWorld())
+	if (/*!bHasDeferredComponentRegistration && */GetWorld())
 	{
 		RegisterAllComponents();
 	}
@@ -107,7 +107,7 @@ void AActor::SetInstigator(APawn* InInstigator)
 
 void AActor::SetOwner(AActor* NewOwner)
 {
-	if (Owner.Get() != NewOwner /*&& IsValidChecked(this)*/)
+	if (Owner != NewOwner /*&& IsValidChecked(this)*/)
 	{
 		if (NewOwner != nullptr && NewOwner->IsOwnedBy(this))
 		{
@@ -190,6 +190,30 @@ void AActor::PreRegisterAllComponents()
 {
 }
 
+// Walks through components hierarchy and returns closest to root parent component that is unregistered
+// Only for components that belong to the same owner
+static USceneComponent* GetUnregisteredParent(UActorComponent* Component)
+{                
+	USceneComponent* ParentComponent = nullptr;
+	USceneComponent* SceneComponent = dynamic_cast<USceneComponent*>(Component);
+
+	while (SceneComponent &&
+		SceneComponent->GetAttachParent() &&
+		SceneComponent->GetAttachParent()->GetOwner() == Component->GetOwner() &&
+		!SceneComponent->GetAttachParent()->IsRegistered())
+	{
+		SceneComponent = SceneComponent->GetAttachParent();
+		if (/*SceneComponent->bAutoRegister && IsValidChecked*/(SceneComponent))
+		{
+			// We found unregistered parent that should be registered
+			// But keep looking up the tree
+			ParentComponent = SceneComponent;
+		}
+	}
+
+	return ParentComponent;
+}
+
 bool AActor::IncrementalRegisterComponents(int32 NumComponentsToRegister, FRegisterComponentContext* Context)
 {
 	if (NumComponentsToRegister == 0)
@@ -221,7 +245,72 @@ bool AActor::IncrementalRegisterComponents(int32 NumComponentsToRegister, FRegis
 		}
 	}
 
-	return true;
+	int32 NumTotalRegisteredComponents = 0;
+	int32 NumRegisteredComponentsThisRun = 0;
+	TArray<UActorComponent*> Components;
+	GetComponents(Components);
+	TSet<UActorComponent*> RegisteredParents;
+
+	for (int32 CompIdx = 0; CompIdx < Components.size() && NumRegisteredComponentsThisRun < NumComponentsToRegister; CompIdx++)
+	{
+		UActorComponent* Component = Components[CompIdx];
+		if (!Component->IsRegistered() /*&& Component->bAutoRegister && IsValidChecked(Component)*/)
+		{
+			// Ensure that all parent are registered first
+			USceneComponent* UnregisteredParentComponent = GetUnregisteredParent(Component);
+			if (UnregisteredParentComponent)
+			{
+				bool bParentAlreadyHandled = RegisteredParents.contains(UnregisteredParentComponent);
+				RegisteredParents.emplace(UnregisteredParentComponent);
+				if (bParentAlreadyHandled)
+				{
+					E_LOG(Error, TEXT("AActor::IncrementalRegisterComponents parent component '{}' cannot be registered in actor '{}'"),
+						UnregisteredParentComponent->GetName(), GetName());
+					break;
+				}
+
+				// Register parent first, then return to this component on a next iteration
+				Component = UnregisteredParentComponent;
+				CompIdx--;
+				NumTotalRegisteredComponents--; // because we will try to register the parent again later...
+			}
+
+			// 컴포넌트를 등록하기 전에 트랜잭션 버퍼에 저장하여 "취소" 시 비등록 상태로 되돌아가도록 합니다.
+			// 이렇게 하면 복사/붙여넣기 또는 복제 작업을 취소할 때 원하지 않는 컴포넌트가 남아 있는 것을 방지할 수 있습니다.
+			//Component->Modify(false);
+
+			Component->RegisterComponentWithWorld(World, Context);
+			NumRegisteredComponentsThisRun++;
+		}
+
+		NumTotalRegisteredComponents++;
+	}
+
+	if (Components.size() == NumTotalRegisteredComponents)
+	{
+		// 최적화가 활성화되고 이미 호출된 경우 월드 포스트 등록을 건너뜁니다
+		//const bool bCallWorldPostRegister = (!bHasRegisteredAllComponents /*|| GOptimizeActorRegistration == 0*/);
+
+		// 더 이상 연기되지 않으므로 이 플래그를 초기화합니다
+		//bHasDeferredComponentRegistration = false;
+
+		bHasRegisteredAllComponents = true;
+		// 마지막으로 PostRegisterAllComponents를 호출합니다
+		PostRegisterAllComponents();
+
+		//if (bCallWorldPostRegister)
+		//{
+		//	// 모든 컴포넌트가 등록된 후 배우는 완전히 추가된 것으로 간주됩니다: 소유 세계에 알립니다.
+		//	World->NotifyPostRegisterAllActorComponents(this);
+		//}
+		return true;
+	}
+	_ASSERT(false);
+	return false;
+}
+
+void AActor::PostRegisterAllComponents()
+{
 }
 
 bool AActor::OwnsComponent(UActorComponent* Component) const

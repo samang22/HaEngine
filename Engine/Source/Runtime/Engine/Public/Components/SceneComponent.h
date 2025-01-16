@@ -13,4 +13,13 @@ class ENGINE_API USceneComponent : public UActorComponent
 	GENERATED_BODY()
 public:
 	USceneComponent();
+
+	/** Get the SceneComponent we are attached to. */
+	//UFUNCTION(BlueprintCallable, Category = "Transformation")
+	USceneComponent* GetAttachParent() const;
+
+private:
+	/** What we are currently attached to. If valid, RelativeLocation etc. are used relative to this object */
+	//UPROPERTY(ReplicatedUsing = OnRep_AttachParent)
+	TEnginePtr<USceneComponent> AttachParent;
 };

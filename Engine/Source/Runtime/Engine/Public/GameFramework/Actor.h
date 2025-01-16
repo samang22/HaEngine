@@ -78,6 +78,11 @@ public:
 	 */
 	bool IncrementalRegisterComponents(int32 NumComponentsToRegister, FRegisterComponentContext* Context = nullptr);
 
+	/**
+	 * Components 배열의 모든 컴포넌트가 등록된 후에 호출되며, 편집기와 게임 플레이 중 모두 호출됩니다.
+	 * 이 함수를 호출하기 전에 bHasRegisteredAllComponents는 true로 설정되어야 합니다.
+	 */
+	virtual void PostRegisterAllComponents();
 public:
 	/**
 	 * 'ComponentType' 클래스에서 파생된 모든 컴포넌트를 가져와 결과를 OutComponents 배열에 채웁니다.
@@ -152,4 +157,7 @@ private:
 	 */
 	TSet<TObjectPtr<UActorComponent>> OwnedComponents;
 
+private:
+	/** PostRegisterAllComponents()가 호출되기 직전에 true로 설정되고, PostUnregisterAllComponents()가 호출되기 직전에 false로 설정됩니다. */
+	uint8 bHasRegisteredAllComponents : 1 = false;
 };  
