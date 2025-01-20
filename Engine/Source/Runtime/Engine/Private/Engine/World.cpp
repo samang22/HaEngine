@@ -17,7 +17,10 @@ void UWorld::InitalizeNewWorld()
 	PersistentLevel->OwningWorld = this->As<UWorld>();
 	
 	AActor* Actor = SpawnActor<AActor>(nullptr, FTransform::Identity);
-	shared_ptr<AActor> A = Actor->As<AActor>();
+	FActorSpawnParameters ActorSpawnParameters;
+	Actor->Value = 12345;
+	ActorSpawnParameters.Template = Actor;
+	AActor* Actor2 = SpawnActor<AActor>(nullptr, FTransform::Identity, ActorSpawnParameters);
 	//CastChecked();
 }
 

@@ -87,7 +87,7 @@ CORE_API UClass* GetPrivateStaticClassBody(
 	FString InClassName,
 	UClass::ClassConstructorType InClassConstructor,
 	UClass::StaticClassFunctionType InSuperClassFn,
-	//function<void()> InClassReflection,
+	function<void()> InClassReflection,
 	const type_info& InClassTypeInfo,
 	const uint64 InClassSize
 );
@@ -96,9 +96,10 @@ template<class T>
 UClass* TGetPrivateStaticClassBody(
 	FString InClassName,
 	UClass::ClassConstructorType InClassConstructor,
-	UClass::StaticClassFunctionType InSuperClassFn)
+	UClass::StaticClassFunctionType InSuperClassFn,
+	function<void()> InClassReflection)
 {
-	return GetPrivateStaticClassBody(InClassName, InClassConstructor, InSuperClassFn,
+	return GetPrivateStaticClassBody(InClassName, InClassConstructor, InSuperClassFn, InClassReflection,
 		typeid(T), sizeof(T));
 }
 

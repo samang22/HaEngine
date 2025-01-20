@@ -60,7 +60,7 @@ public:
 	 * @param   DefaultData         초기화에 사용할 원본 데이터를 포함하는 버퍼
 	 * @param   bCopyTransientsFromClassDefaults    true인 경우, 클래스 기본값에서 일시적인 데이터를 복사하고, 그렇지 않으면 DefaultData에서 일시적인 데이터를 복사합니다.
 	 */
-	 //static void InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults);
+	 static void InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults);
 
 	/**
 	 * 생성된 UObject를 속성 초기화,

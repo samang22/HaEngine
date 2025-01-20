@@ -2,7 +2,7 @@
 #include "UObject/Class.h"
 
 UClass* UObjectRegisterEngineClass = TGetPrivateStaticClassBody<UObject>(
-	TEXT("UObject"), InternalConstructor<UObject>, nullptr);;
+	TEXT("UObject"), InternalConstructor<UObject>, nullptr, nullptr);
 
 void UObject::PostInitProperties()
 {

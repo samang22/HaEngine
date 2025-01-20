@@ -1,0 +1,72 @@
+언리얼 엔진 스타일의 자체 엔진입니다.
+자체 엔진으로 언리얼 엔진과 다릅니다.
+이코드를 학습해서 어디가서 언리얼 엔진이 이렇더라 라고 하시면 안됩니다.
+
+- Sharpmake 사용법 및 bat 스크립트 제작, setup bat 스크립트 제작
+- EngineConsole
+- Core 모듈
+    -> [o]ModuleManager 제작(IMPLE 그 Macro만 활성화)
+- Launch 모듈 제작 (부팅 가능한 구조)
+    -> [o]GameEngine 구조 (Init, Tick loop, Exit 만들기)
+    -> [o]FEngineLoop 만들기
+    -> [o]EnginePreInit 등 제작
+    -> [o]기본 게임루프 뼈대 만들기
+    -> [o]Engine 모듈 추가
+- Core 모듈 제작 (UClass, UObject 제작 가능하게)
+    -> [o]FEngineLoop::Init() 부분 FindClass 가능하게 구현하기
+    -> [o]UClass 만들기
+    -> [o]ObjectMacros.h 만들기
+    -> [o]GUObjectArray 만들기
+    -> [o]NewObject 만들기
+    -> [o]UObject 만들기
+    -> [o]UEngine 만들기
+    -> [o]GetPrivateStaticClassBody 수동으로 호출
+- Header Parser 도입, 필요에 따라 코드 수정, 관련 스크립트 제작
+- Engine
+    -> [o]CreateDefaultObject
+    -> [o]Log추가
+- Config 제작
+    -> [o]경로 관리자 제작
+    -> [o]IniParser 추가
+    -> [o]Config 추가
+    -> [o]EngineConfig project 제작
+    -> [o]FindClass Config파일에 작성한 이름으로 만들기
+- EngineSettings 모듈 제작(그냥 Engine모듈에서 처리)
+    -> [o]UGameMapsSettings 제작
+- User Project 제작 (LoadLibrary로 유저 프로젝트 로드 정도)
+    -> [o]dll load
+    -> [o]User 설정 파일 추가
+    -> [o]Actor class 제작
+    -> [o]GameInstance, GameMode class만 추가 구현은 나중에 (설정 파일로 부터 UClass 로드 잘되는지 확인)
+- Engine 모듈 제작
+    -> [o]World(Editor), Level
+    -> [o]ActorComponent, USceneComponent, UPrimitiveComponent, UMeshComponent, UStaticMeshComponent 우선 class만 제작 구현은 나중에
+    -> [o]SpawnActor
+	-> [o]FObjectInitializer::InitProperties (우선은 관련 함수 만들어두기)
+	-> [o]AActor::PostSpawnInitialize
+- Reflection
+    -> [o]라이브러리 추가
+    -> [o]Header parser에서 reflection 되도록 기능 추가 (InitProperties 대응)
+
+- MFC추가
+    -> [] 로그 뷰어 추가
+
+
+
+- RenderCore, RHI, Dx11 추가
+- StaticMeshActor 만들기
+    -> []FBX Loader, AssetManager, ...
+- Editor 카메라 처리
+
+- Engine 계속 제작
+    -> []GameInstance, GameMode 제작
+    -> []User Project GameInstance, GameMode 추가
+    -> []Editor <-> PIE 제작
+
+    -> []Spawn된 Actor BeginPlay & Tick
+
+
+- 디퍼드 렌더링, PBR 추가, 시간나면 그림자 추가
+
+
+

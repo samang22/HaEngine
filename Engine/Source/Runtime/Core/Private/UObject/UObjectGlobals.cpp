@@ -2,8 +2,8 @@
 #include "UObject/Class.h"
 #include "UObject/Object.h"
 //#include "Logging/Logger.h"
-//
-bool GIsRequestingExit = false; /* Indicates that MainLoop() should be exited at the end of the current iteration */
+
+bool					GIsRequestingExit = false;
 
 bool CORE_API IsEngineExitRequested()
 {
@@ -28,7 +28,7 @@ FStaticConstructObjectParameters::FStaticConstructObjectParameters(UClass* InCla
 	}
 }
 
-FObjectInitializer::FObjectInitializer(shared_ptr<UObject>& InObj, const FStaticConstructObjectParameters& StaticConstructParams)
+FObjectInitializer::FObjectInitializer(TObjectPtr<UObject>& InObj, const FStaticConstructObjectParameters& StaticConstructParams)
 	: SharedObj(InObj)
 	, Class(StaticConstructParams.Class)
 	, OuterPrivate(StaticConstructParams.Outer)
@@ -47,39 +47,45 @@ FObjectInitializer::~FObjectInitializer()
 	PostConstructInit();
 }
 //#include "Math/SimpleMath.h"
-//void FObjectInitializer::InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults)
-//{
-//	if (DefaultData)
-//	{
-//		type Type = resolve(Hash(DefaultData->GetClass()->ClassName.data()));
-//		Type.data([&](meta::data Data)
-//			{
-//				Data.prop([&](meta::prop p)
-//					{
-//						FProperty Prop = p.value().cast<FProperty>();
-//						void* Dest = Data.get(handle(Type.GetNode(), Obj)).data();
-//						void* Src = Data.get(handle(Type.GetNode(), DefaultsClass)).data();
-//						switch (Prop.PropertyType)
-//						{
-//						case T_FVector:
-//						{
-//							FVector* _Dest = (FVector*)Dest;
-//							FVector* _Src = (FVector*)Src;
-//							*_Dest = *_Src;
-//							break;
-//						}
-//						case T_FRotator:
-//						{
-//							FRotator* _Dest = (FRotator*)Dest;
-//							FRotator* _Src = (FRotator*)Src;
-//							*_Dest = *_Src;
-//							break;
-//						}
-//						}
-//					});
-//			});
-//	}
-//}
+void FObjectInitializer::InitProperties(UObject* Obj, UClass* DefaultsClass, UObject* DefaultData, bool bCopyTransientsFromClassDefaults)
+{
+	if (DefaultData)
+	{
+		type Type = resolve(Hash(DefaultData->GetClass()->ClassName.data()));
+		Type.data([&](meta::data Data)
+			{
+				Data.prop([&](meta::prop p)
+					{
+						FProperty Prop = p.value().cast<FProperty>();
+						void* Dst = Data.get(handle(Type.GetNode(), Obj)).data();
+						void* Src = Data.get(handle(Type.GetNode(), DefaultData)).data();
+						switch (Prop.PropertyType)
+						{
+						default:
+							if (Prop.PropertySize > 0)
+							{
+								memcpy(Dst, Src, Prop.PropertySize);
+							}
+							break;
+							/*case T_FVector:
+							{
+								FVector* _Dest = (FVector*)Dest;
+								FVector* _Src = (FVector*)Src;
+								*_Dest = *_Src;
+								break;
+							}
+							case T_FRotator:
+							{
+								FRotator* _Dest = (FRotator*)Dest;
+								FRotator* _Src = (FRotator*)Src;
+								*_Dest = *_Src;
+								break;
+							}*/
+						}
+					});
+			});
+	}
+}
 
 void FObjectInitializer::PostConstructInit()
 {
@@ -93,7 +99,7 @@ void FObjectInitializer::PostConstructInit()
 		}
 
 		UObject* Defaults = ObjectArchetype ? ObjectArchetype : BaseClass->GetDefaultObject(false); // we don't create the CDO here if it doesn't already exist
-		//InitProperties(Obj, BaseClass, Defaults, false/*bCopyTransientsFromClassDefaults*/);
+		InitProperties(Obj, BaseClass, Defaults, false/*bCopyTransientsFromClassDefaults*/);
 	}
 
 	// InitSubobjectProperties
@@ -103,7 +109,7 @@ void FObjectInitializer::PostConstructInit()
 	SharedObj->PostInitProperties();
 }
 
-CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params)
+CORE_API TObjectPtr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params)
 {
 	UClass* InClass = Params.Class;
 	FName& InName = Params.Name;
@@ -119,12 +125,12 @@ CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObje
 		++NewIndex;
 	}
 
-	shared_ptr<UObject> Result = NULL;
+	TObjectPtr<UObject> Result = NULL;
 
 	InClass->ClassConstructor(FObjectInitializer(Result, Params));
 
-	//auto& ObjectVector = ObjectMap[InClass];
-	//ObjectVector.emplace_back(Result);
+	/*auto& ObjectVector = ObjectMap[InClass];
+	ObjectVector.emplace_back(Result);*/
 
 	return Result;
 }

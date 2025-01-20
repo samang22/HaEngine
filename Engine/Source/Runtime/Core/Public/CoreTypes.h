@@ -30,6 +30,9 @@
 
 #include "Misc/CoreMiscDefines.h"
 
+// Reflection
+#include "Reflection/Reflection.h"
+
 using namespace std;
 using FString = std::wstring;
 using FStringView = std::wstring_view;

@@ -150,7 +150,7 @@ public:
 	 * 이 설정이 관련되기 위해서는 이 액터가 Tick할 수 있어야 합니다.
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = Tick)
-	uint8 bAllowTickBeforeBeginPlay : 1 = false;
+	bool bAllowTickBeforeBeginPlay = false;
 
 public:
 	/**
@@ -187,4 +187,8 @@ private:
 
 	/** 이 액터에 대해 FinishSpawning이 호출되었는지 여부. 호출되지 않은 경우, 액터는 잘못된 상태에 있습니다. */
 	uint8 bHasFinishedSpawning : 1 = false;
+
+public:
+	UPROPERTY()
+	int Value = 0;
 };  
