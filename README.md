@@ -7,4 +7,13 @@ Catching Up Unreal Engine
 	- Viausl Studio 2022
 	- C++를 사용한 데스크톱 개발
 	- Windows용 C++ CMake 도구
-	- MSVC vXXX - VS 2022 C++ x64/x86 빌드
+	- MSVC v143 - VS 2022 C++ x64/x86 빌드 도구(최신)
+	- 최신 v143 빌드 도구용 C++ MFC(x86 및 x64)
+	
+* clone시 서브모듈로 재귀 필수
+
+Build Guide
+- Run Setup.bat
+- Run GenerateSoltion.bat
+	- or UserProject/UserProject HaGame.sproject 더블 클릭
+- Run HE.sln

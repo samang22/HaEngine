@@ -14,6 +14,13 @@
 #include "policy.hpp"
 #include "meta.hpp"
 
+#if WITH_EDITOR
+#define DLLEXPORT __declspec(dllexport)
+#define DLLIMPORT __declspec(dllimport)
+#else
+#define DLLEXPORT
+#define DLLIMPORT
+#endif
 
 namespace meta {
 

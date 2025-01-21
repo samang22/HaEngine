@@ -9,8 +9,13 @@
 //-------------------------------------------------------------------------------------
 
 #pragma once
+#if WITH_EDITOR
 #define DLLEXPORT __declspec(dllexport)
 #define DLLIMPORT __declspec(dllimport)
+#else
+#define DLLEXPORT
+#define DLLIMPORT
+#endif
 
 #if (defined(_WIN32) || defined(WINAPI_FAMILY)) && !(defined(_XBOX_ONE) && defined(_TITLE)) && !defined(_GAMING_XBOX)
 #include <dxgi1_2.h>

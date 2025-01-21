@@ -97,10 +97,9 @@ UClass* TGetPrivateStaticClassBody(
 	FString InClassName,
 	UClass::ClassConstructorType InClassConstructor,
 	UClass::StaticClassFunctionType InSuperClassFn,
-	function<void()> InClassReflection)
+	function<void()> InConstructFProperties /* InClassReflection*/)
 {
-	return GetPrivateStaticClassBody(InClassName, InClassConstructor, InSuperClassFn, InClassReflection,
-		typeid(T), sizeof(T));
+	return GetPrivateStaticClassBody(InClassName, InClassConstructor, InSuperClassFn, InConstructFProperties, typeid(T), sizeof(T));
 }
 
 /**

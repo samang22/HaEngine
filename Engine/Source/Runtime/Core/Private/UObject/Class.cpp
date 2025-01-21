@@ -91,12 +91,21 @@ void UClass::InternalCreateDefaultObjectWrapper() const
 UClass* GetPrivateStaticClassBody(FString InClassName,
 	UClass::ClassConstructorType InClassConstructor,
 	UClass::StaticClassFunctionType InSuperClassFn,
-	function<void()> InClassReflection,
+	function<void()> InConstructFProperties,
 	const type_info& InClassTypeInfo, const uint64 InClassSize)
 {
-	if (InClassReflection)
+	// UE 예시)
+	// GetPrivateStaticClassBody
+	// ...
+	// - Z_Construct_UClass_AXXX 에서 UProperty 등록 과정을 거치며 FProperty를 생성하고 있다
+	// 	if (!Z_Registration_Info_UClass_AStudyCharacter.OuterSingleton)
+	/*{
+		UECodeGen_Private::ConstructUClass(Z_Registration_Info_UClass_AStudyCharacter.OuterSingleton, Z_Construct_UClass_AStudyCharacter_Statics::ClassParams);
+	}*/
+	// 
+	if (InConstructFProperties)
 	{
-		InClassReflection();
+		InConstructFProperties();
 	}
 	GetObjectArray().Create(typeid(UClass), sizeof(UClass));
 

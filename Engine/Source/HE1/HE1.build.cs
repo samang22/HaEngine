@@ -6,19 +6,19 @@ public class HE1 : CommonProject
 {
     public HE1()
     {
-        //ResourceFilesExtensions.Add(".rc");
-        //ResourceFilesExtensions.Add(".ico");
-        //ResourceFilesExtensions.Add(".bmp");
-        //ResourceFilesExtensions.Add(".rc2");
+        ResourceFilesExtensions.Add(".rc");
+        ResourceFilesExtensions.Add(".ico");
+        ResourceFilesExtensions.Add(".bmp");
+        ResourceFilesExtensions.Add(".rc2");
     }
     public override void ConfigureAll(Configuration conf, EngineTarget target)
     {
         base.ConfigureAll(conf, target);
-        //if (target.LaunchType == ELaunchType.Editor)
-        //{
-            //conf.Options.Add(Options.Vc.General.MfcSupport.UseMfcDynamic);
-            //conf.Options.Add(Options.Vc.Linker.SubSystem.Windows);
-        //}
+        if (target.LaunchType == ELaunchType.Editor)
+        {
+            conf.Options.Add(Options.Vc.General.MfcSupport.UseMfcDynamic);
+            conf.Options.Add(Options.Vc.Linker.SubSystem.Windows);
+        }
 
         //conf.SolutionFolder = "Engine";
         conf.Output = Configuration.OutputType.Exe;
