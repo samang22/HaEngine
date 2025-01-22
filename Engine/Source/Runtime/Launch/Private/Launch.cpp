@@ -18,7 +18,7 @@ int32 LAUNCH_API EnginePreInit(const TCHAR* CmdLine)
 /**
  * Inits the engine loop
  */
-int32 LAUNCH_API EngineInit()
+int32 LAUNCH_API EngineInit(HWND hViewportWnd) 
 {
 	int32 ErrorLevel = GEngineLoop.Init(NULL);
 
@@ -38,7 +38,7 @@ int32 LAUNCH_API GuardedMain(const TCHAR* CmdLine)
 	int32 ErrorLevel = EnginePreInit(CmdLine);
 	if (ErrorLevel != 0) { return ErrorLevel; }
 
-	ErrorLevel = EngineInit();
+	ErrorLevel = EngineInit(NULL);
 	if (ErrorLevel != 0) { return ErrorLevel; }
 
 	while (!IsEngineExitRequested())

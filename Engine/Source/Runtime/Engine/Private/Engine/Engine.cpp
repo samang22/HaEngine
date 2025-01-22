@@ -2,6 +2,7 @@
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, Engine);
 
+TObjectPtr<UEngine> GEngine;
 ENGINE_API UWorld* GWorld = nullptr;
 
 UEngine::UEngine()
@@ -18,6 +19,7 @@ void UEngine::Init(HWND hViewportHandle)
 	World->WorldType - EWorldType::Editor;
 	EditorWorld = World;
 	GWorld = World.get();
+
 	GWorld->InitalizeNewWorld();
 }
   

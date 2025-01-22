@@ -9,6 +9,7 @@ Catching Up Unreal Engine
 	- Windows용 C++ CMake 도구
 	- MSVC v143 - VS 2022 C++ x64/x86 빌드 도구(최신)
 	- 최신 v143 빌드 도구용 C++ MFC(x86 및 x64)
+	- 최신 버전을 제외한 다른 버전들은 에러를 발생시킬 우려가 크므로, 삭제하길 바람
 	
 * clone시 서브모듈로 재귀 필수
 

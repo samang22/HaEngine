@@ -19,3 +19,6 @@ protected:
 };
 
 extern ENGINE_API UWorld* GWorld;
+
+/** Global engine pointer. Can be 0 so don't use without checking. */
+extern ENGINE_API TObjectPtr<UEngine> GEngine;

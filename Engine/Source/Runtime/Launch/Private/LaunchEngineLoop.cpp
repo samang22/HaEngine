@@ -2,7 +2,6 @@
 #include "Engine/Engine.h"
 
 CORE_API map<FString, UClass*>& GetClassMap(); 
-shared_ptr<UEngine> GEngine;
 
 FEngineLoop::~FEngineLoop()
 {
