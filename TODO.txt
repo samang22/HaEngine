@@ -49,8 +49,9 @@
     -> [o]Header parser에서 reflection 되도록 기능 추가 (InitProperties 대응)
 
 - MFC추가
-    -> [] 로그 뷰어 추가
-
+    -> [o] 로그 뷰어 추가
+    -> [o] WorldOutliner
+    -> [o] Detail
 
 
 - RenderCore, RHI, Dx11 추가
