@@ -20,7 +20,7 @@ int32 LAUNCH_API EnginePreInit(const TCHAR* CmdLine)
  */
 int32 LAUNCH_API EngineInit(HWND hViewportWnd) 
 {
-	int32 ErrorLevel = GEngineLoop.Init(NULL);
+	int32 ErrorLevel = GEngineLoop.Init(hViewportWnd);
 
 	return(ErrorLevel);
 }
