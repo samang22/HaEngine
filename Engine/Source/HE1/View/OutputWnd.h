@@ -10,6 +10,7 @@ class COutputList : public CListBox
 // 생성입니다.
 public:
 	COutputList() noexcept;
+	void CopyStringToClipboard(const CString& InString);
 
 // 구현입니다.
 public:

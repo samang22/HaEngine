@@ -55,6 +55,9 @@
 
 
 - RenderCore, RHI, Dx11 추가
+    -> [] Dx 초기화
+    -> [] 우선 shader에서 간단한 삼각형 렌더링 목적으로 기능 구현하기
+
 - StaticMeshActor 만들기
     -> []FBX Loader, AssetManager, ...
 - Editor 카메라 처리

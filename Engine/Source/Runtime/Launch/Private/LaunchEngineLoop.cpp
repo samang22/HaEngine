@@ -9,16 +9,22 @@ FEngineLoop::~FEngineLoop()
 	FModuleManager::Get(true);
 	FLogger::Get(true);
 
+	GEngine = nullptr;
 
 	// Unregister Class
 	{
 		for (auto It : GetClassMap())
 		{
+			It.second->~UClass();
 			GetObjectArray().Free(typeid(UClass), It.second);
 			It.second = nullptr;
 		}
 		GetClassMap().clear();
 	}
+
+	{
+		GetObjectArray().Destroy();
+	}   
 }
 
 int32 FEngineLoop::PreInit(const TCHAR* CmdLine)

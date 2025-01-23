@@ -57,9 +57,10 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// 출력 창을 만듭니다.
 	const DWORD dwStyle = LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL;
 
-	if (!m_wndOutputBuild.Create(dwStyle, rectDummy, &m_wndTabs, 2) ||
-		!m_wndOutputDebug.Create(dwStyle, rectDummy, &m_wndTabs, 3) ||
-		!m_wndOutputFind.Create(dwStyle, rectDummy, &m_wndTabs, 4))
+	//if (!m_wndOutputBuild.Create(dwStyle, rectDummy, &m_wndTabs, 2) ||
+	//	!m_wndOutputDebug.Create(dwStyle, rectDummy, &m_wndTabs, 3) ||
+	//	!m_wndOutputFind.Create(dwStyle, rectDummy, &m_wndTabs, 4))
+	if (!m_wndOutputDebug.Create(dwStyle, rectDummy, &m_wndTabs, 2))
 	{
 		TRACE0("출력 창을 만들지 못했습니다.\n");
 		return -1;      // 만들지 못했습니다.
@@ -76,13 +77,13 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	bNameValid = strTabName.LoadString(IDS_DEBUG_TAB);
 	ASSERT(bNameValid);
 	m_wndTabs.AddTab(&m_wndOutputDebug, strTabName, (UINT)1);
-	bNameValid = strTabName.LoadString(IDS_FIND_TAB);
-	ASSERT(bNameValid);
-	m_wndTabs.AddTab(&m_wndOutputFind, strTabName, (UINT)2);
+	//bNameValid = strTabName.LoadString(IDS_FIND_TAB);
+	//ASSERT(bNameValid);
+	//m_wndTabs.AddTab(&m_wndOutputFind, strTabName, (UINT)2);
 	m_wndTabs.SetActiveTabColor(RGB(32, 32, 32));
 	m_wndTabs.SetActiveTabTextColor(RGB(255, 255, 255));
 
-	const int TabCount = 2;
+	const int TabCount = 1;
 	for (int i = 0; i < TabCount; ++i)
 	{
 		m_wndTabs.SetTabBkColor(i, RGB(32, 32, 32));
@@ -90,17 +91,11 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	// 출력 탭을 더미 텍스트로 채웁니다.
-	FillBuildWindow();
-	FillDebugWindow();
-	FillFindWindow();
+	//FillBuildWindow();
+	//FillDebugWindow();
+	//FillFindWindow();
 
 	FLogger::Get()->LogDelegate.AddRow(this, &COutputWnd::OnLog);
-
-	//GLogger->SetLogCallback([this](FLogLevel InLogLevel, FStringView InMessage)
-	//	{
-	//		FString NewString = TEXT("[") + FString(GetLogName(InLogLevel)) + TEXT("] ") + InMessage.data();
-	//		m_wndOutputDebug.AddString(NewString.data());
-	//	});
 
 	return 0;
 }
@@ -171,9 +166,9 @@ void COutputWnd::UpdateFonts()
 		DEFAULT_QUALITY,           // nQuality 
 		DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily 
 		_T("Arial"));             // lpszFacename
-	m_wndOutputBuild.SetFont(&Font);
+	//m_wndOutputBuild.SetFont(&Font);
 	m_wndOutputDebug.SetFont(&Font);
-	m_wndOutputFind.SetFont(&Font);
+	//m_wndOutputFind.SetFont(&Font);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -181,6 +176,33 @@ void COutputWnd::UpdateFonts()
 
 COutputList::COutputList() noexcept
 {
+}
+
+void COutputList::CopyStringToClipboard(const CString& InString)
+{
+	if (OpenClipboard())
+	{
+		EmptyClipboard();
+
+		// 문자열 크기와 널 종단 문자를 포함한 버퍼 크기 계산
+		HGLOBAL hClipboardData = GlobalAlloc(GMEM_DDESHARE, (InString.GetLength() + 1) * sizeof(TCHAR));
+
+		if (hClipboardData)
+		{
+			// 전역 메모리 잠금
+			TCHAR* pchData = (TCHAR*)GlobalLock(hClipboardData);
+
+			if (pchData)
+			{
+				_tcscpy_s(pchData, InString.GetLength() + 1, (LPCTSTR)InString);
+				GlobalUnlock(hClipboardData);
+
+				// 클립보드에 유니코드 텍스트 설정
+				SetClipboardData(CF_UNICODETEXT, hClipboardData);
+			}
+		}
+		CloseClipboard();
+	}
 }
 
 COutputList::~COutputList()
@@ -226,12 +248,19 @@ void COutputList::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
 void COutputList::OnEditCopy()
 {
-	MessageBox(_T("출력 복사"));
+	//MessageBox(_T("출력 복사"));
+	const int CurSel = GetCurSel();
+	if (CurSel < 0) { return; }
+	CString CopyString;
+	GetText(CurSel, CopyString);
+	if (CopyString.IsEmpty()) { return; }
+	CopyStringToClipboard(CopyString);
 }
 
 void COutputList::OnEditClear()
 {
-	MessageBox(_T("출력 지우기"));
+	//MessageBox(_T("출력 지우기"));
+	ResetContent();
 }
 
 void COutputList::OnViewOutput()
