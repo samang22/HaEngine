@@ -48,19 +48,6 @@ FLogger* FLogger::Get(const bool bDestroy)
 BOOST_LOG_ATTRIBUTE_KEYWORD(Severity, "Severity", ELogVerbosity)
 BOOST_LOG_ATTRIBUTE_KEYWORD(Timestamp, "TimeStamp", boost::posix_time::ptime)
 
-const TCHAR* GetLogName(ELogVerbosity InLogVerbosity)
-{
-	switch (InLogVerbosity)
-	{
-	case ELogVerbosity::Fatal:  return TEXT("Fatal");
-	case ELogVerbosity::Error:  return TEXT("Error");
-	case ELogVerbosity::Warning:	 return TEXT("Warning");
-	case ELogVerbosity::Log: return TEXT("Log");
-	}
-	_ASSERT(false);
-	return nullptr;
-}
-
 FLogger::FLogger()
 {
 	// FileSink
@@ -144,6 +131,8 @@ void FLogger::LogF(ELogVerbosity InLogVerbosity, FStringView InMessage)
 		_ASSERT(false);
 		break;
 	}
+
+	LogDelegate.Broadcast(InLogVerbosity, InMessage);
 
 	if (IsDebuggerPresent())
 	{

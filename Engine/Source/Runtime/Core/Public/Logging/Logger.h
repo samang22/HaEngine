@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreTypes.h"
+#include "Delegate/Delegate.h"
 
 //namespace ELogVerbosity
 //{
@@ -25,6 +26,18 @@
 	};
 //}
 
+inline const TCHAR* GetLogName(ELogVerbosity InLogLevel)
+{
+	switch (InLogLevel)
+	{
+	case Log:	 return TEXT("Log");
+	case Warning: return TEXT("Warning");
+	case Error: return TEXT("Error");
+	case Fatal: return TEXT("Fatal");
+	}
+	_ASSERT(false);
+	return nullptr;
+}
 
 class CORE_API FLogger
 {
@@ -33,6 +46,8 @@ public:
 	
 	FLogger();
 	void LogF(ELogVerbosity InLogVerbosity, FStringView InMessage);
+
+	FDelegate<ELogVerbosity, FStringView> LogDelegate;
 };
 
 #define E_LOG(LogVerbosity, FormatMsg, ...) FLogger::Get()->LogF(ELogVerbosity::LogVerbosity, format(FormatMsg, __VA_ARGS__));

@@ -10,20 +10,14 @@ class AActor;
 
 class CMFCApplication : public CWinAppEx
 {
-	friend class CPropertiesWnd;
+	friend class CDetailsPanel;
+
 public:
 	CMFCApplication() noexcept {}
 
 public:
 	void OnWorldInitialized(class UWorld* NewWorld);
-	void OnActorSpawned(AActor* NewActor);
 	void OnRefreshActors(vector<shared_ptr<AActor>>& NewActors);
-	void OnActorSelected_Details(void* SelectedActor);
-
-	// 재정의입니다.
-protected:
-	AActor* LastSelectedActor = nullptr;
-	std::map<std::wstring, CMFCPropertyGridProperty*> DetailsUI;
 
 public:
 	virtual BOOL InitInstance();

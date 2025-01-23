@@ -3,27 +3,27 @@
 #include "Misc/MFCHeaders.h"
 #include "MainFrame/MainFrm.h"
 
-#include "PropertiesWnd.h"
+#include "DetailsPanel.h"
 #include "Resource/Resource.h"
 #include "Application.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CResourceViewBar
 
-CPropertiesWnd::CPropertiesWnd() noexcept
+CDetailsPanel::CDetailsPanel() noexcept
 {
 	m_nComboHeight = 0;
 }
 
-CPropertiesWnd::~CPropertiesWnd()
+CDetailsPanel::~CDetailsPanel()
 {
 }
 
-BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
+BEGIN_MESSAGE_MAP(CDetailsPanel, CDockablePane)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_COMMAND(ID_EXPAND_ALL, OnExpandAllProperties)
@@ -42,9 +42,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CResourceViewBar 메시지 처리기
 
-void CPropertiesWnd::AdjustLayout()
+void CDetailsPanel::AdjustLayout()
 {
-	if (GetSafeHwnd () == nullptr || (AfxGetMainWnd() != nullptr && AfxGetMainWnd()->IsIconic()))
+	if (GetSafeHwnd() == nullptr || (AfxGetMainWnd() != nullptr && AfxGetMainWnd()->IsIconic()))
 	{
 		return;
 	}
@@ -56,10 +56,10 @@ void CPropertiesWnd::AdjustLayout()
 
 	//m_wndObjectCombo.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), m_nComboHeight, SWP_NOACTIVATE | SWP_NOZORDER);
 	m_wndToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top + m_nComboHeight, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
-	m_wndPropList.SetWindowPos(nullptr, rectClient.left, rectClient.top + m_nComboHeight + cyTlb, rectClient.Width(), rectClient.Height() -(m_nComboHeight+cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
+	m_wndPropList.SetWindowPos(nullptr, rectClient.left, rectClient.top + m_nComboHeight + cyTlb, rectClient.Width(), rectClient.Height() - (m_nComboHeight + cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
-int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
+int CDetailsPanel::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CDockablePane::OnCreate(lpCreateStruct) == -1)
 		return -1;
@@ -79,7 +79,7 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	//m_wndObjectCombo.AddString(_T("애플리케이션"));
 	//m_wndObjectCombo.AddString(_T("속성 창"));
 	//m_wndObjectCombo.SetCurSel(0);
-	
+
 	CRect rectCombo;
 	//m_wndObjectCombo.GetClientRect (&rectCombo);
 
@@ -90,7 +90,7 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("디테일 창을 만들지 못했습니다. \n");
 		return -1;      // 만들지 못했습니다.
 	}
-	m_wndPropList.SetCustomColors(RGB(32, 32, 32), RGB(255, 255, 255), 
+	m_wndPropList.SetCustomColors(RGB(32, 32, 32), RGB(255, 255, 255),
 		RGB(56, 56, 56), RGB(255, 255, 255), RGB(32, 32, 32), RGB(255, 255, 255), RGB(255, 255, 255));
 	InitPropList();
 
@@ -110,52 +110,52 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-void CPropertiesWnd::OnSize(UINT nType, int cx, int cy)
+void CDetailsPanel::OnSize(UINT nType, int cx, int cy)
 {
 	CDockablePane::OnSize(nType, cx, cy);
 	AdjustLayout();
 }
 
-void CPropertiesWnd::OnExpandAllProperties()
+void CDetailsPanel::OnExpandAllProperties()
 {
 	m_wndPropList.ExpandAll();
 }
 
-void CPropertiesWnd::OnUpdateExpandAllProperties(CCmdUI* /* pCmdUI */)
+void CDetailsPanel::OnUpdateExpandAllProperties(CCmdUI* /* pCmdUI */)
 {
 }
 
-void CPropertiesWnd::OnSortProperties()
+void CDetailsPanel::OnSortProperties()
 {
 	m_wndPropList.SetAlphabeticMode(!m_wndPropList.IsAlphabeticMode());
 }
 
-void CPropertiesWnd::OnUpdateSortProperties(CCmdUI* pCmdUI)
+void CDetailsPanel::OnUpdateSortProperties(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_wndPropList.IsAlphabeticMode());
 }
 
-void CPropertiesWnd::OnProperties1()
+void CDetailsPanel::OnProperties1()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 }
 
-void CPropertiesWnd::OnUpdateProperties1(CCmdUI* /*pCmdUI*/)
+void CDetailsPanel::OnUpdateProperties1(CCmdUI* /*pCmdUI*/)
 {
 	// TODO: 여기에 명령 업데이트 UI 처리기 코드를 추가합니다.
 }
 
-void CPropertiesWnd::OnProperties2()
+void CDetailsPanel::OnProperties2()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 }
 
-void CPropertiesWnd::OnUpdateProperties2(CCmdUI* /*pCmdUI*/)
+void CDetailsPanel::OnUpdateProperties2(CCmdUI* /*pCmdUI*/)
 {
 	// TODO: 여기에 명령 업데이트 UI 처리기 코드를 추가합니다.
 }
 
-void CPropertiesWnd::InitPropList()
+void CDetailsPanel::InitPropList()
 {
 	SetPropListFont();
 
@@ -166,7 +166,7 @@ void CPropertiesWnd::InitPropList()
 
 	CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("모양"));
 
-	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("3D 모양"), (_variant_t) false, _T("창에 굵은 글꼴이 아닌 글꼴을 지정하고, 컨트롤에 3D 테두리를 지정합니다.")));
+	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("3D 모양"), (_variant_t)false, _T("창에 굵은 글꼴이 아닌 글꼴을 지정하고, 컨트롤에 3D 테두리를 지정합니다.")));
 
 	CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(_T("테두리"), _T("Dialog Frame"), _T("None, Thin, Resizable 또는 Dialog Frame 중 하나를 지정합니다."));
 	pProp->AddOption(_T("None"));
@@ -176,17 +176,17 @@ void CPropertiesWnd::InitPropList()
 	pProp->AllowEdit(FALSE);
 
 	pGroup1->AddSubItem(pProp);
-	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("캡션"), (_variant_t) _T("정보"), _T("창의 제목 표시줄에 표시되는 텍스트를 지정합니다.")));
+	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("캡션"), (_variant_t)_T("정보"), _T("창의 제목 표시줄에 표시되는 텍스트를 지정합니다.")));
 
 	m_wndPropList.AddProperty(pGroup1);
 
 	CMFCPropertyGridProperty* pSize = new CMFCPropertyGridProperty(_T("창 크기"), 0, TRUE);
 
-	pProp = new CMFCPropertyGridProperty(_T("높이"), (_variant_t) 250l, _T("창의 높이를 지정합니다."));
+	pProp = new CMFCPropertyGridProperty(_T("높이"), (_variant_t)250l, _T("창의 높이를 지정합니다."));
 	pProp->EnableSpinControl(TRUE, 50, 300);
 	pSize->AddSubItem(pProp);
 
-	pProp = new CMFCPropertyGridProperty( _T("너비"), (_variant_t) 150l, _T("창의 너비를 지정합니다."));
+	pProp = new CMFCPropertyGridProperty(_T("너비"), (_variant_t)150l, _T("창의 너비를 지정합니다."));
 	pProp->EnableSpinControl(TRUE, 50, 200);
 	pSize->AddSubItem(pProp);
 
@@ -195,13 +195,13 @@ void CPropertiesWnd::InitPropList()
 	CMFCPropertyGridProperty* pGroup2 = new CMFCPropertyGridProperty(_T("글꼴"));
 
 	LOGFONT lf;
-	CFont* font = CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT));
+	CFont* font = CFont::FromHandle((HFONT)GetStockObject(DEFAULT_GUI_FONT));
 	font->GetLogFont(&lf);
 
 	_tcscpy_s(lf.lfFaceName, _T("맑은 고딕"));
 
 	pGroup2->AddSubItem(new CMFCPropertyGridFontProperty(_T("글꼴"), lf, CF_EFFECTS | CF_SCREENFONTS, _T("창의 기본 글꼴을 지정합니다.")));
-	pGroup2->AddSubItem(new CMFCPropertyGridProperty(_T("시스템 글꼴을 사용합니다."), (_variant_t) true, _T("창에서 MS Shell Dlg 글꼴을 사용하도록 지정합니다.")));
+	pGroup2->AddSubItem(new CMFCPropertyGridProperty(_T("시스템 글꼴을 사용합니다."), (_variant_t)true, _T("창에서 MS Shell Dlg 글꼴을 사용하도록 지정합니다.")));
 
 	m_wndPropList.AddProperty(pGroup2);
 
@@ -230,27 +230,27 @@ void CPropertiesWnd::InitPropList()
 	CMFCPropertyGridProperty* pGroup411 = new CMFCPropertyGridProperty(_T("두 번째 하위 수준"));
 	pGroup41->AddSubItem(pGroup411);
 
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("항목 1"), (_variant_t) _T("값 1"), _T("설명입니다.")));
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("항목 2"), (_variant_t) _T("값 2"), _T("설명입니다.")));
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("항목 3"), (_variant_t) _T("값 3"), _T("설명입니다.")));
+	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("항목 1"), (_variant_t)_T("값 1"), _T("설명입니다.")));
+	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("항목 2"), (_variant_t)_T("값 2"), _T("설명입니다.")));
+	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("항목 3"), (_variant_t)_T("값 3"), _T("설명입니다.")));
 
 	pGroup4->Expand(FALSE);
 	m_wndPropList.AddProperty(pGroup4);
 }
 
-void CPropertiesWnd::OnSetFocus(CWnd* pOldWnd)
+void CDetailsPanel::OnSetFocus(CWnd* pOldWnd)
 {
 	CDockablePane::OnSetFocus(pOldWnd);
 	m_wndPropList.SetFocus();
 }
 
-void CPropertiesWnd::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
+void CDetailsPanel::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	CDockablePane::OnSettingChange(uFlags, lpszSection);
 	SetPropListFont();
 }
 
-LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
+LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 {
 	/*if (!GEngine)
 	{
@@ -277,7 +277,7 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 	return TRUE;
 }
 
-void CPropertiesWnd::SetPropListFont()
+void CDetailsPanel::SetPropListFont()
 {
 	::DeleteObject(m_fntPropList.Detach());
 

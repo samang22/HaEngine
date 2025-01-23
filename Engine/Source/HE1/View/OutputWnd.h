@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #if WITH_EDITOR
+#include "Logging/Logger.h"
 /////////////////////////////////////////////////////////////////////////////
 // COutputList 창
 
@@ -57,6 +58,9 @@ protected:
 // 구현입니다.
 public:
 	virtual ~COutputWnd();
+
+protected:
+	void OnLog(ELogVerbosity InLogVerbosity, FStringView InMessage);
 
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

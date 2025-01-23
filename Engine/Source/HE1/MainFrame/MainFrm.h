@@ -6,9 +6,9 @@
 #if WITH_EDITOR
 #include "Misc/MFCHeaders.h"
 #include "View/FileView.h"
-#include "View/ClassView.h"
+#include "View/WorldOutliner.h"
 #include "View/OutputWnd.h"
-#include "View/PropertiesWnd.h"
+#include "View/DetailsPanel.h"
 #include "UI/afxmenubar_custom.h"
 
 class CMainFrame : public CFrameWndEx
@@ -37,15 +37,18 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
+	
+public:
+	CDetailsPanel& GetDetailPanel() { return m_wndDetailsPanel; }
 
 protected:  // 컨트롤 모음이 포함된 멤버입니다.
 	CMFCMenuBar_Custom       m_wndMenuBar;
 	CMFCToolBar       m_wndToolBar;
 	CMFCStatusBar     m_wndStatusBar;
 	CFileView         m_wndFileView;
-	CClassView        m_wndClassView;
+	CWorldOutliner    m_wndWorldOutliner;
 	COutputWnd        m_wndOutput;
-	CPropertiesWnd    m_wndProperties;
+	CDetailsPanel    m_wndDetailsPanel;
 
 // 생성된 메시지 맵 함수
 protected:

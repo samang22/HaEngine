@@ -1,6 +1,9 @@
 #include "Engine/World.h"
 #include "Engine/Level.h"
 
+FDelegate<UWorld*> WorldCreatedDelegate;
+FDelegate<UWorld*> WorldDestroyedDelegate;
+
 FActorSpawnParameters::FActorSpawnParameters()
 	: Name(NAME_NONE)
 	, Template(nullptr)
@@ -11,17 +14,38 @@ FActorSpawnParameters::FActorSpawnParameters()
 {
 }
 
+UWorld::UWorld()
+{
+	if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
+
+	WorldCreatedDelegate.Broadcast(this);
+}
+
+UWorld::~UWorld()
+{
+	if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
+	WorldDestroyedDelegate.Broadcast(this);
+}
+
 void UWorld::InitalizeNewWorld()
 {
 	PersistentLevel = NewObject<ULevel>(this, ULevel::StaticClass(), TEXT("PersistentLevel"));
 	PersistentLevel->OwningWorld = this->As<UWorld>();
-	
+
 	AActor* Actor = SpawnActor<AActor>(nullptr, FTransform::Identity);
 	FActorSpawnParameters ActorSpawnParameters;
 	Actor->Value = 12345;
+	Actor->NoCopyValue = 321;
+	Actor->Value2 = 2;
 	ActorSpawnParameters.Template = Actor;
-	AActor* Actor2 = SpawnActor<AActor>(nullptr, FTransform::Identity, ActorSpawnParameters);
-	//CastChecked();
+	for (int i = 0; i < 10; ++i)
+	{
+		AActor* Actor2 = SpawnActor<AActor>(nullptr, FTransform::Identity, ActorSpawnParameters);
+		Actor2->Value2 = i;
+		//CastChecked();
+
+		E_LOG(Warning, TEXT("Actor: {}"), i);
+	}
 }
 
 AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, const FActorSpawnParameters& SpawnParameters)
@@ -66,6 +90,8 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, co
 
 	// Broadcast notification of spawn
 	OnActorSpawned.Broadcast(NewActor);
+	E_LOG(Log, TEXT("Actor Spawned({})"), Class->GetName());
+	E_LOG(Warning, TEXT("Actor Spawned({})"), Class->GetName());
 
 	return NewActor;
 }

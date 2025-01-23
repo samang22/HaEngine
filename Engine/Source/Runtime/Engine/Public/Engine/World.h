@@ -45,6 +45,9 @@ class ENGINE_API UWorld : public UObject
 	GENERATED_BODY()
 
 public:
+	UWorld();
+	~UWorld();
+
 	void InitalizeNewWorld();
 
 public:
@@ -91,7 +94,7 @@ private:
 	shared_ptr<ULevel> PersistentLevel;
 	FTransform Transform;
 
-private:
+public:
 	/**
 	 * 액터가 스폰될 때마다 알림을 브로드캐스트합니다.
 	 * 이 이벤트는 새로 생성된 액터에만 해당됩니다.
@@ -104,4 +107,7 @@ public:
 
 	/** 액터가 게임을 위해 초기화되었는지 여부 */
 	uint8 bActorsInitialized : 1 = false;
+
 };
+extern ENGINE_API FDelegate<UWorld*> WorldCreatedDelegate;
+extern ENGINE_API FDelegate<UWorld*> WorldDestroyedDelegate;

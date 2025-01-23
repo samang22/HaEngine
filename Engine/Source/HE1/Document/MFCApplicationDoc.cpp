@@ -9,9 +9,9 @@
 #if WITH_EDITOR
 #include <propkey.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 // CMFCApplicationDoc
 

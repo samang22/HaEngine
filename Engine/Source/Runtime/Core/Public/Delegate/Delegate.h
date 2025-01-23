@@ -1,6 +1,6 @@
 #pragma once
 #include "UObject/Object.h"
-#include "Logging/Logger.h"
+//#include "Logging/Logger.h"
 
 template<class ... Args>
 class FDelegate

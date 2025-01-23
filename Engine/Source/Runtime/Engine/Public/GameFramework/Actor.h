@@ -191,4 +191,9 @@ private:
 public:
 	UPROPERTY()
 	int Value = 0;
+
+	int NoCopyValue = 0;
+
+	UPROPERTY();
+	int Value2 = 0;
 };  

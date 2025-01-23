@@ -4,10 +4,11 @@
 #include "MainFrame/MainFrm.h"
 #include "OutputWnd.h"
 #include "Resource/Resource.h"
+#include "Logging/Logger.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // COutputBar
@@ -18,6 +19,19 @@ COutputWnd::COutputWnd() noexcept
 
 COutputWnd::~COutputWnd()
 {
+}
+
+void COutputWnd::OnLog(ELogVerbosity InLogVerbosity, FStringView InMessage)
+{
+	FString NewString = TEXT("[") + FString(GetLogName(InLogVerbosity)) + TEXT("] ") + InMessage.data();
+	m_wndOutputDebug.AddString(NewString.data());
+
+	// 스크롤을 가장 아래로 내린다
+	int ItemCount = m_wndOutputDebug.GetCount();
+	if (ItemCount > 0)
+	{
+		m_wndOutputDebug.SetTopIndex(ItemCount - 1);
+	}
 }
 
 BEGIN_MESSAGE_MAP(COutputWnd, CDockablePane)
@@ -80,6 +94,8 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	FillDebugWindow();
 	FillFindWindow();
 
+	FLogger::Get()->LogDelegate.AddRow(this, &COutputWnd::OnLog);
+
 	//GLogger->SetLogCallback([this](FLogLevel InLogLevel, FStringView InMessage)
 	//	{
 	//		FString NewString = TEXT("[") + FString(GetLogName(InLogLevel)) + TEXT("] ") + InMessage.data();
@@ -125,9 +141,9 @@ void COutputWnd::FillBuildWindow()
 
 void COutputWnd::FillDebugWindow()
 {
-	/*m_wndOutputDebug.AddString(_T("여기에 디버그 출력이 표시됩니다."));
+	m_wndOutputDebug.AddString(_T("여기에 디버그 출력이 표시됩니다."));
 	m_wndOutputDebug.AddString(_T("출력이 목록 뷰 행에 표시되지만"));
-	m_wndOutputDebug.AddString(_T("표시 방법을 원하는 대로 변경할 수 있습니다."));*/
+	m_wndOutputDebug.AddString(_T("표시 방법을 원하는 대로 변경할 수 있습니다."));
 }
 
 void COutputWnd::FillFindWindow()

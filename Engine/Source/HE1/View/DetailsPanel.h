@@ -6,22 +6,22 @@ class CPropertiesToolBar : public CMFCToolBar
 public:
 	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
 	{
-		CMFCToolBar::OnUpdateCmdUI((CFrameWnd*) GetOwner(), bDisableIfNoHndler);
+		CMFCToolBar::OnUpdateCmdUI((CFrameWnd*)GetOwner(), bDisableIfNoHndler);
 	}
 
 	virtual BOOL AllowShowOnList() const { return FALSE; }
 };
 
-class CPropertiesWnd : public CDockablePane
+class CDetailsPanel : public CDockablePane
 {
 	friend class CMFCApplication;
-// 생성입니다.
+	// 생성입니다.
 public:
-	CPropertiesWnd() noexcept;
+	CDetailsPanel() noexcept;
 
 	void AdjustLayout();
 
-// 특성입니다.
+	// 특성입니다.
 public:
 	void SetVSDotNetLook(BOOL bSet)
 	{
@@ -29,15 +29,17 @@ public:
 		m_wndPropList.SetGroupNameFullWidth(bSet);
 	}
 
+	CMFCPropertyGridCtrl& GetPropList() { return m_wndPropList; }
+
 protected:
 	CFont m_fntPropList;
 	CComboBox m_wndObjectCombo;
 	CPropertiesToolBar m_wndToolBar;
 	CMFCPropertyGridCtrl m_wndPropList;
 
-// 구현입니다.
+	// 구현입니다.
 public:
-	virtual ~CPropertiesWnd();
+	virtual ~CDetailsPanel();
 
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

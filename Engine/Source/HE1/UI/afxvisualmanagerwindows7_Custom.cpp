@@ -54,9 +54,9 @@
 #include "afxribbonprogressbar.h"
 #include "afxribbonlinkctrl.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 #define AFX_RT_STYLE_XML _T("STYLE_XML")
 

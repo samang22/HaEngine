@@ -12,8 +12,7 @@ extern int32 LAUNCH_API GuardedMain(const TCHAR* CmdLine);
 #include "MainFrame/MainFrm.h"
 #include "Document/MFCApplicationDoc.h"
 #include "View/MFCApplicationView.h"
-//#include "Engine/World.h"
-//#include "GameFramework/Actor.h"
+#include "CoreMinimal.h"
 
 void LAUNCH_API EngineTick();
 
@@ -74,13 +73,6 @@ BOOL CMFCApplication::InitInstance()
 	EnableShellOpen();
 	RegisterShellFileTypes(TRUE);
 
-	// Engine Delegate
-	//{
-	//	::ActorSpawnedDelegate.AddRaw<CMFCApplication>(this, &CMFCApplication::OnActorSpawned);
-	//	::WorldInitializedDelegate.AddRaw<CMFCApplication>(this, &CMFCApplication::OnWorldInitialized);
-	//	::PIEToEditorDelegate.AddRaw<CMFCApplication>(this, &CMFCApplication::OnRefreshActors);
-	//}
-
 	// 명령줄에 지정된 명령을 디스패치합니다.
 	// 응용 프로그램이 /RegServer, /Register, /Unregserver 또는 /Unregister로 시작된 경우 FALSE를 반환합니다.
 	if (!ProcessShellCommand(cmdInfo))
@@ -100,179 +92,23 @@ BOOL CMFCApplication::InitInstance()
 void CMFCApplication::OnWorldInitialized(UWorld* NewWorld)
 {
 	//CMainFrame* MainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-	//MainFrame->m_wndClassView.DeleteAllItems();
-	//MainFrame->m_wndClassView.InsertRootItem(NewWorld->GetName().c_str());
-	//MainFrame->m_wndClassView.Invalidate();
-	//MainFrame->m_wndClassView.UpdateWindow();
-}
-
-void CMFCApplication::OnActorSpawned(AActor* NewActor)
-{
-	//const FString NewName = NewActor->GetName() + TEXT(" (") + NewActor->GetClass()->GetName() + TEXT(")");
-	//// TODO Parent
-	//CMainFrame* MainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-	//MainFrame->m_wndClassView.InsertItem(NewActor, NewName.c_str(), 1, 1, NULL);
+	//MainFrame->m_wndWorldOutliner.DeleteAllItems();
+	//MainFrame->m_wndWorldOutliner.InsertRootItem(NewWorld->GetName().c_str());
+	//MainFrame->m_wndWorldOutliner.Invalidate();
+	//MainFrame->m_wndWorldOutliner.UpdateWindow();
 }
 
 void CMFCApplication::OnRefreshActors(vector<shared_ptr<AActor>>& NewActors)
 {
 	/*OnActorSelected_Details(nullptr);
 	CMainFrame* MainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-	MainFrame->m_wndClassView.DeleteAllItems();
-	MainFrame->m_wndClassView.InsertRootItem(GEngine->GetWorld()->GetName().c_str());
+	MainFrame->m_wndWorldOutliner.DeleteAllItems();
+	MainFrame->m_wndWorldOutliner.InsertRootItem(GEngine->GetWorld()->GetName().c_str());
 
 	for (shared_ptr<AActor>& It : NewActors)
 	{
 		OnActorSpawned(It.get());
 	}*/
-}
-
-void CMFCApplication::OnActorSelected_Details(void* SelectedActor)
-{
-	//CMainFrame* MainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
-	//CMFCPropertyGridCtrl& Details = MainFrame->m_wndProperties.m_wndPropList;
-	//AActor* Actor = static_cast<AActor*>(SelectedActor);
-
-	//bool bSameActor = true;
-	//if (LastSelectedActor != Actor)
-	//{
-	//	bSameActor = false;
-	//	DetailsUI.clear();
-	//	Details.RemoveAll();
-	//	LastSelectedActor = Actor;
-	//}
-
-	//if (LastSelectedActor == nullptr)
-	//{
-	//	Details.Invalidate();
-	//	Details.UpdateWindow();
-	//	return;
-	//}
-
-	//// 이름 중복에 유의!
-	//{
-	//	{
-	//		CMFCPropertyGridProperty* Prop_Name = nullptr;
-	//		static const FString Prop_NameKey = TEXT("Prop_Name");
-	//		if (bSameActor) { Prop_Name = DetailsUI.find(Prop_NameKey)->second; }
-	//		else
-	//		{
-	//			Prop_Name = new CMFCPropertyGridProperty(TEXT("Name"), Actor->GetName().c_str());
-	//			DetailsUI.emplace(Prop_NameKey, Prop_Name);
-	//			Details.AddProperty(Prop_Name);
-	//		}
-	//	}
-	//	{
-	//		vector<UActorComponent*> Components;
-	//		Actor->GetComponents<UActorComponent>(Components);
-	//		for (UActorComponent* Component : Components)
-	//		{
-	//			// Component Start
-	//			const FString ComponentName = Component->GetName() + TEXT(" (") + Component->GetClass()->GetName() + TEXT(")");
-	//			CMFCPropertyGridProperty* Prop_Component = nullptr;
-	//			if (bSameActor) { Prop_Component = DetailsUI.find(ComponentName)->second; }
-	//			else
-	//			{
-	//				Prop_Component = new CMFCPropertyGridProperty(ComponentName.c_str());
-	//				DetailsUI.emplace(ComponentName, Prop_Component);
-	//			}
-
-	//			// Component Reflection Data
-	//			{
-	//				type Type = resolve(Hash(Component->GetClass()->ClassName.data()));
-	//				Type.data([&](meta::data Data)
-	//					{
-	//						Data.prop([&](meta::prop p)
-	//							{
-	//								FProperty Prop = p.value().cast<FProperty>();
-	//								const FString PropName = to_wstring(Prop.Name);
-
-	//								const FString Prop_Key = Component->GetName() + TEXT("_") + PropName + TEXT("_Prop_Key");
-
-	//								switch (Prop.PropertyType)
-	//								{
-	//								case T_FVector:
-	//								{
-	//									FVector* Vector = (FVector*)Data.get(handle(Type.GetNode(), Component)).data();
-	//									CMFCPropertyGridProperty* Property = nullptr;
-
-	//									if (bSameActor)
-	//									{
-	//										Property = DetailsUI.find(Prop_Key)->second;
-	//										CMFCPropertyGridProperty* Item = Property->GetSubItem(0);
-
-	//										if (!FMath::IsNearlyEqual(Property->GetSubItem(0)->GetValue().fltVal, Vector->x, 0.1f))
-	//										{
-	//											Property->GetSubItem(0)->SetValue(Vector->x);
-	//										}
-	//										if (!FMath::IsNearlyEqual(Property->GetSubItem(1)->GetValue().fltVal, Vector->y, 0.1f))
-	//										{
-	//											Property->GetSubItem(1)->SetValue(Vector->y);
-	//										}
-	//										if (!FMath::IsNearlyEqual(Property->GetSubItem(2)->GetValue().fltVal, Vector->z, 0.1f))
-	//										{
-	//											Property->GetSubItem(2)->SetValue(Vector->z);
-	//										}
-	//									}
-	//									else
-	//									{
-	//										Property = new CMFCPropertyGridProperty(PropName.c_str());
-	//										DetailsUI.emplace(Prop_Key, Property);
-
-	//										Property->AddSubItem(new CMFCPropertyGridProperty(_T("X"), (_variant_t)Vector->x, (PropName + _T(" X 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->x));
-	//										Property->AddSubItem(new CMFCPropertyGridProperty(_T("Y"), (_variant_t)Vector->y, (PropName + _T(" Y 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->y));
-	//										Property->AddSubItem(new CMFCPropertyGridProperty(_T("Z"), (_variant_t)Vector->z, (PropName + _T(" Z 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->z));
-	//										Prop_Component->AddSubItem(Property);
-	//									}
-	//									break;
-	//								}
-	//								case T_FRotator:
-	//								{
-	//									FRotator* Rotator = (FRotator*)Data.get(handle(Type.GetNode(), Component)).data();
-	//									CMFCPropertyGridProperty* Property = nullptr;
-
-	//									if (bSameActor)
-	//									{
-	//										Property = DetailsUI.find(Prop_Key)->second;
-	//										CMFCPropertyGridProperty* Item = Property->GetSubItem(0);
-
-	//										if (!FMath::IsNearlyEqual(Property->GetSubItem(0)->GetValue().fltVal, Rotator->Roll, 0.1f))
-	//										{
-	//											Property->GetSubItem(0)->SetValue(Rotator->Roll);
-	//										}
-	//										if (!FMath::IsNearlyEqual(Property->GetSubItem(1)->GetValue().fltVal, Rotator->Pitch, 0.1f))
-	//										{
-	//											Property->GetSubItem(1)->SetValue(Rotator->Pitch);
-	//										}
-	//										if (!FMath::IsNearlyEqual(Property->GetSubItem(2)->GetValue().fltVal, Rotator->Yaw, 0.1f))
-	//										{
-	//											Property->GetSubItem(2)->SetValue(Rotator->Yaw);
-	//										}
-	//									}
-	//									else
-	//									{
-	//										Property = new CMFCPropertyGridProperty(PropName.c_str());
-	//										DetailsUI.emplace(Prop_Key, Property);
-
-	//										Property->AddSubItem(new CMFCPropertyGridProperty(_T("Roll"), (_variant_t)Rotator->Roll, (PropName + _T(" Roll 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Roll));
-	//										Property->AddSubItem(new CMFCPropertyGridProperty(_T("Pitch"), (_variant_t)Rotator->Pitch, (PropName + _T(" Pitch 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Pitch));
-	//										Property->AddSubItem(new CMFCPropertyGridProperty(_T("Yaw"), (_variant_t)Rotator->Yaw, (PropName + _T(" Yaw 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Yaw));
-	//										Prop_Component->AddSubItem(Property);
-	//									}
-	//									break;
-	//								}
-	//								}
-	//							});
-	//					});
-	//			}
-
-	//			if (!bSameActor)
-	//			{
-	//				Details.AddProperty(Prop_Component);
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 void CMFCApplication::PreLoadState()
@@ -295,18 +131,24 @@ void CMFCApplication::SaveCustomState()
 BOOL CMFCApplication::OnIdle(LONG lCount)
 {
 	CWinAppEx::OnIdle(lCount);
-	//bool bExit = IsEngineExitRequested();
-	//if (bExit)
-	//{
-	//	AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_APP_EXIT, 0);
-	//	return FALSE;
-	//}
+	bool bExit = IsEngineExitRequested();
+	if (bExit)
+	{
+		AfxGetMainWnd()->PostMessage(WM_COMMAND, ID_APP_EXIT, 0);
+		return FALSE;
+	}
 
-	//EngineTick();
-	////if (LastSelectedActor)
-	////{
-	////	OnActorSelected_Details(LastSelectedActor);
-	////}
+	if (GetAsyncKeyState(VK_F3) & 0x8000)
+	{
+		static int Val = 0;
+		E_LOG(Log, TEXT("Test: {}"), ++Val);
+	}
+
+	EngineTick();
+	//if (LastSelectedActor)
+	//{
+	//	OnActorSelected_Details(LastSelectedActor);
+	//}
 
 	return TRUE;
 }

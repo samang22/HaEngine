@@ -5,9 +5,9 @@
 #include "Resource/Resource.h"
 #include "Application.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
+//#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CFileView

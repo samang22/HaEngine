@@ -28,7 +28,7 @@ public:
 
 	ENGINE_API static void SendRenderDynamicData(FRegisterComponentContext* Context, UPrimitiveComponent* PrimitiveComponent);
 
-	int32 Count() const { return AddPrimitiveBatches.size(); }
+	int32 Count() const { return (int32)AddPrimitiveBatches.size(); }
 	void Process();
 
 private:

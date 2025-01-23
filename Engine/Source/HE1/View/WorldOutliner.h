@@ -3,12 +3,14 @@
 #if WITH_EDITOR
 #include "ViewTree.h"
 #include <map>
+class AActor;
+class UWorld;
 
 class CClassToolBar : public CMFCToolBar
 {
 	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
 	{
-		CMFCToolBar::OnUpdateCmdUI((CFrameWnd*) GetOwner(), bDisableIfNoHndler);
+		CMFCToolBar::OnUpdateCmdUI((CFrameWnd*)GetOwner(), bDisableIfNoHndler);
 	}
 
 	virtual BOOL AllowShowOnList() const { return FALSE; }
@@ -21,19 +23,20 @@ public:
 	afx_msg void OnTvnSelchanged(NMHDR* pNMHDR, LRESULT* pResult);
 };
 
-class CClassView : public CDockablePane
+class CWorldOutliner : public CDockablePane
 {
 public:
-	CClassView() noexcept;
-	virtual ~CClassView();
+	CWorldOutliner() noexcept;
+	virtual ~CWorldOutliner();
 
 	void AdjustLayout();
 	void OnChangeVisualStyle();
 	void InsertRootItem(const wchar_t* NewName);
-	void InsertItem(void* ActorPointer, const wchar_t* NewName, int nImage, int nSelectedImage, _In_ HTREEITEM hParent);
+	void InsertItem(AActor* ActorPointer, const wchar_t* NewName, int nImage, int nSelectedImage, _In_ HTREEITEM hParent);
 	void DeleteAllItems();
 
 	void OnSelectedItemChanged(HTREEITEM NewSelectedItem);
+	void OnActorSelectedAndMakeDetails(AActor* SelectedActor);
 
 protected:
 	CClassToolBar m_wndToolBar;
@@ -45,11 +48,20 @@ protected:
 
 private:
 	HTREEITEM hClassViewRoot = NULL;
-	std::map<HTREEITEM, void*> Actors;
+	std::map<HTREEITEM, AActor*> Actors;
 
-// 재정의입니다.
+private: // 선택된 Actor 관련
+	AActor* LastSelectedActor = nullptr;
+	std::map<std::wstring, CMFCPropertyGridProperty*> DetailsUI;
+
+	// 재정의입니다.
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+
+protected:
+	void OnWorldCreated(UWorld* NewWorld);
+	void OnWorldDestroyed(UWorld* NewWorld);
+	void OnActorSpawned(AActor* NewActor);
 
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
