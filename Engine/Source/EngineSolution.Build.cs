@@ -47,10 +47,10 @@ public class EngineSolution : Solution
             conf.AddProject<Engine>(target);
             conf.AddProject<Launch>(target);
             // conf.AddProject<Network>(target);
-            // conf.AddProject<RenderCore>(target);
+            conf.AddProject<RenderCore>(target);
             // conf.AddProject<Renderer>(target);
-            // conf.AddProject<RHI>(target);
-            // conf.AddProject<D3D11RHI>(target);
+            conf.AddProject<RHI>(target);
+            conf.AddProject<D3D11RHI>(target);
             // conf.AddProject<Slate>(target);
 
             // config

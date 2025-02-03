@@ -49,11 +49,10 @@ struct FProperty
 struct FPropertyInfo
 {
 	FPropertyInfo(const FProperty& InProperty, void* InPropertyAddress)
-		:PropertyType(InProperty.PropertyType), bBaseType(InProperty.bBaseType), PropertySize(InProperty.PropertySize)
+		:PropertyType(InProperty.PropertyType), PropertySize(InProperty.PropertySize)
 		, PropertyAddress(InPropertyAddress) {}
 
 	EPropertyType PropertyType = EPropertyType::T_NONE; // 변수 타입
-	bool bBaseType = false; // int 등과 같은 기본 자료는 size 구해서 copy 할 목적
 	size_t PropertySize = 0;// 변수 타입 크기(우선은 기본 자료형만)
 
 	void* PropertyAddress = nullptr; // 실제 Property의 주소
