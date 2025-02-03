@@ -1,5 +1,6 @@
 #include "LaunchEngineLoop.h"
 #include "Engine/Engine.h"
+#include "RHI.h"                                                                            
 
 CORE_API map<FString, UClass*>& GetClassMap(); 
 
@@ -32,6 +33,10 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 	FLogger::Get();
 	FModuleManager::Get();
 	FConfigCacheIni::Get();
+
+	{
+		RHIInit();
+	}
 
 #if WITH_EDITOR
 #ifdef USER_PROJECT_NAME

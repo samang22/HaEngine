@@ -13,6 +13,8 @@ public class Engine : CommonProject
     {
         base.ConfigureAll(conf, target);
         conf.AddPublicDependency<Core>(target);
+        conf.AddPublicDependency<RenderCore>(target);
+        conf.AddPublicDependency<RHI>(target);
         //conf.AddPublicDependency<Engine>(target);
         //if (target.LaunchType == ELaunchType.Editor)
         //{

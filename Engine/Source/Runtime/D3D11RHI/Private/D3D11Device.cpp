@@ -1,0 +1,3 @@
+#include "D3D11RHIPrivate.h"
+
+IMPLEMENT_MODULE(FD3D11DynamicRHIModule, D3D11RHI);

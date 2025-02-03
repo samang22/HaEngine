@@ -1,13 +1,14 @@
 #include "Misc/ConfigCacheIni.h"
 #include "Logging/Logger.h"
 #include "Misc/Paths.h"
+#include "Misc/Names.h"
 
 FConfigCacheIni* GConfig = nullptr;
 
 FConfigCacheIni::FConfigCacheIni()
 {
-
-
+	LoadIniFile(GEngineIni, GBaseEngineIni, false);
+	LoadIniFile(GEngineIni, GDefaultEngineIni, true);
 }
 
 bool FConfigCacheIni::LoadIniFile(FStringView InKey, const FString& InIniFileName, const bool bTryOverride)

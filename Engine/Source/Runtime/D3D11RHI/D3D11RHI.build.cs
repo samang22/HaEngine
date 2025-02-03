@@ -13,5 +13,7 @@ public class D3D11RHI : CommonProject
     {
         base.ConfigureAll(conf, target);
         conf.AddPublicDependency<Core>(target);
+        conf.AddPublicDependency<RenderCore>(target);
+        conf.AddPublicDependency<RHI>(target);
     }
 }

@@ -94,16 +94,16 @@ public:
 	CORE_API IModuleInterface* LoadModule(const FName InModuleName);
 
 	/**
-	  * Loads a module by name.
-	  *
-	  * @param ModuleName The module to find and load.
-	  * @return The interface to the module, or nullptr if the module was not found.
-	  * @see GetModulePtr, GetModuleChecked, LoadModuleChecked
+	*이름으로 모듈을 로드합니다.
+		*
+		* @param ModuleName 찾고 로드할 모듈의 이름입니다.
+		* @return 모듈에 대한 인터페이스를 반환하며, 모듈을 찾을 수 없으면 nullptr을 반환합니다.
+		* @see GetModulePtr, GetModuleChecked, LoadModuleChecked
 	  */
 	template<typename TModuleInterface>
 	static TModuleInterface* LoadModulePtr(const FName InModuleName)
 	{
-		return static_cast<TModuleInterface*>(FModuleManager::Get()->LoadModule(InModuleName));
+		return dynamic_cast<TModuleInterface*>(FModuleManager::Get()->LoadModule(InModuleName));
 	}
 
 	/**

@@ -4,9 +4,6 @@ UGameMapSettings::UGameMapSettings()
 {
 	if (!HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
 
-	GConfig->LoadIniFile(GEngineIni, GBaseEngineIni, false);
-	GConfig->LoadIniFile(GEngineIni, GDefaultEngineIni, true);
-
 	FConfigFile& ConfigFile = GConfig->GetConfig(GEngineIni);
 
     {

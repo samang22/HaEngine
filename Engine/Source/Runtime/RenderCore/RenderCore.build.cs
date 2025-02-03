@@ -13,5 +13,6 @@ public class RenderCore : CommonProject
     {
         base.ConfigureAll(conf, target);
         conf.AddPublicDependency<Core>(target);
+        conf.AddPublicDependency<RHI>(target);
     }
 }
