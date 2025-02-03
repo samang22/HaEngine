@@ -15,6 +15,9 @@
  * @see https://docs.unrealengine.com/latest/INT/Engine/Levels
  * @see UActor
  */
+
+class AActor;
+
 UCLASS()
 class ENGINE_API ULevel : public UObject
 {
@@ -30,6 +33,6 @@ public:
 	 * 스트리밍 레벨의 경우 GetOuter()는 사용되지 않는 잔재 월드이므로 GetOuter()와는 다릅니다.
 	 * GC가 임의의 순서로 발생할 수 있으므로, BeginDestroy() 중에는 다른 UObject 참조와 마찬가지로 접근해서는 안 됩니다.
 	 */
-	UPROPERTY(Transient)
+	//UPROPERTY(Transient)
 	TEnginePtr<UWorld> OwningWorld;
 };

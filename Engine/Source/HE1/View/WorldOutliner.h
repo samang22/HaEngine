@@ -3,6 +3,7 @@
 #if WITH_EDITOR
 #include "ViewTree.h"
 #include <map>
+class UObject;
 class AActor;
 class UWorld;
 
@@ -37,6 +38,7 @@ public:
 
 	void OnSelectedItemChanged(HTREEITEM NewSelectedItem);
 	void OnActorSelectedAndMakeDetails(AActor* SelectedActor);
+	void FillDetails(const bool bSameActor, CMFCPropertyGridProperty* ParentUI, UObject* InObject);
 
 protected:
 	CClassToolBar m_wndToolBar;
@@ -50,9 +52,10 @@ private:
 	HTREEITEM hClassViewRoot = NULL;
 	std::map<HTREEITEM, AActor*> Actors;
 
-private: // 선택된 Actor 관련
+public: // 선택된 Actor 관련
 	AActor* LastSelectedActor = nullptr;
 	std::map<std::wstring, CMFCPropertyGridProperty*> DetailsUI;
+	std::map<CMFCPropertyGridProperty*, FPropertyInfo> PropertyInfos;
 
 	// 재정의입니다.
 public:

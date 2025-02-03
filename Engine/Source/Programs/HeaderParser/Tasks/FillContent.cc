@@ -1,5 +1,6 @@
 #include "FillContent.h"
 #include <algorithm>
+#include <iostream>
 
 void FFillContentTask::RunTask(Value::ConstValueIterator& InDoc, string& InOutContent)
 {
@@ -75,6 +76,35 @@ void FFillContentTask::RunTask(Value::ConstValueIterator& InDoc, string& InOutCo
 								InOutContent += (string)"\t\t\t" + ".data<&" + ThisClassName + "::" + PropertyName + ",meta::as_alias_t>"
 									+ "(\"" + PropertyName + "\"_hash, make_pair(0, FProperty{ ";
 
+								{
+									// Ex. EditAnywhere
+									const Value& PropertyMeta = Members[i - 1]["meta"];
+									if (PropertyMeta.Size() > 0)
+									{
+										InOutContent += ".PropertyFlags = ";
+										{
+											for (int i = 0; i < PropertyMeta.Size(); ++i)
+											{
+												if (PropertyMeta[i] == "EditAnywhere")
+												{
+													InOutContent += "EPropertyFlags::EditAnywhere";
+												}
+												else if (PropertyMeta[i] == "VisibleAnywhere")
+												{
+													InOutContent += "EPropertyFlags::VisibleAnywhere";
+												}
+												if ((i + 1) != PropertyMeta.Size())
+												{
+													InOutContent += "|";
+												}
+											}
+										}
+
+										InOutContent += ", ";
+									}
+									//auto ItFind = PropertyMeta.FindMember("EditAnywhere");
+
+								}
 								{
 									const Value& DataType_Type = Members[i - 1]["dataType"]["type"];
 									const string strDataType_Type = DataType_Type.GetString();

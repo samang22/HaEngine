@@ -346,9 +346,10 @@ void CWorldOutliner::OnSelectedItemChanged(HTREEITEM NewSelectedItem)
 	// Item을 WorldOutliner에서 선택한 경우 이쪽으로 선택한 아이템의 정보(HTREEITEM)
 	// 가 들어옵니다.
 
-	// 선택한 아이템이 RootNode인 경우 무시
+	// 선택한 아이템이 RootNode인 경우 nullptr 전달
 	if (NewSelectedItem == hClassViewRoot)
 	{
+		OnActorSelectedAndMakeDetails(nullptr);
 		return;
 	}
 
@@ -368,6 +369,7 @@ void CWorldOutliner::OnSelectedItemChanged(HTREEITEM NewSelectedItem)
 
 void CWorldOutliner::OnActorSelectedAndMakeDetails(AActor* SelectedActor)
 {
+
 	if (LastSelectedActor == SelectedActor) { return; }
 
 	CMainFrame* MainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
@@ -378,6 +380,7 @@ void CWorldOutliner::OnActorSelectedAndMakeDetails(AActor* SelectedActor)
 	{
 		bSameActor = false;
 		DetailsUI.clear();
+		PropertyInfos.clear();
 		Details.RemoveAll();
 		LastSelectedActor = SelectedActor;
 	}
@@ -413,61 +416,8 @@ void CWorldOutliner::OnActorSelectedAndMakeDetails(AActor* SelectedActor)
 					Prop_ActorUProperty_Name = new CMFCPropertyGridProperty(TEXT("Actor 속성"));
 					DetailsUI.emplace(Prop_ActorUPropertyNameKey, Prop_ActorUProperty_Name);
 				}
-				type Type = resolve(Hash(SelectedActor->GetClass()->ClassName.data()));
-				Type.data([&](meta::data Data)
-					{
-						Data.prop([&](meta::prop p)
-							{
-								FProperty Property = p.value().cast<FProperty>();
-								const FString PropName = to_wstring(Property.Name);
-								const FString Prop_Key = SelectedActor->GetName() + TEXT("_") + PropName + TEXT("_Key");
 
-								CMFCPropertyGridProperty* Prop_ActorUProperty = nullptr;
-								if (bSameActor)
-								{
-									Prop_ActorUProperty = DetailsUI.find(Prop_Key)->second;
-								}
-								else
-								{
-									CMFCPropertyGridProperty* NewPropUI = nullptr;
-									switch (Property.PropertyType)
-									{
-										/*case T_ENGINE_PTR:
-											break;*/
-									case T_BOOL:
-									{
-										bool* Value = (bool*)Data.get(handle(Type.GetNode(), SelectedActor)).data();
-										NewPropUI = new CMFCPropertyGridProperty(PropName.data(), (_variant_t)*Value, _T(""));
-										break;
-									}
-									/*case T_UINT8:
-										break;*/
-									case T_INT:
-									{
-										int* Value = (int*)Data.get(handle(Type.GetNode(), SelectedActor)).data();
-										NewPropUI = new CMFCPropertyGridProperty(PropName.data(), (_variant_t)*Value, TEXT(""));
-										break;
-									}
-									case T_FLOAT:
-										break;
-									case T_FVECTOR:
-										break;
-									case T_FROTATOR:
-										break;
-									default:
-										//_ASSERT(false);
-										break;
-									}
-									if (NewPropUI)
-									{
-										DetailsUI.emplace(Prop_Key, NewPropUI);
-										Prop_ActorUProperty_Name->AddSubItem(NewPropUI);
-									}
-								}
-							}
-						);
-					}
-				);
+				FillDetails(bSameActor, Prop_ActorUProperty_Name, SelectedActor);
 
 				Details.AddProperty(Prop_ActorUProperty_Name);
 			}
@@ -588,6 +538,78 @@ void CWorldOutliner::OnActorSelectedAndMakeDetails(AActor* SelectedActor)
 	}
 }
 
+void CWorldOutliner::FillDetails(const bool bSameActor, CMFCPropertyGridProperty* ParentUI, UObject* InObject)
+{
+	type Type = resolve(Hash(InObject->GetClass()->ClassName.data()));
+	Type.data([&](meta::data Data)
+		{
+			Data.prop([&](meta::prop p)
+				{
+					FProperty Property = p.value().cast<FProperty>();
+					if (Property.PropertyFlags == EPropertyFlags::NoFlags)
+					{
+						return;
+					}
+					FString PropName = to_wstring(Property.Name);
+					const FString Prop_Key = InObject->GetName() + TEXT("_") + PropName + TEXT("_Key");
+
+					CMFCPropertyGridProperty* Prop_ActorUProperty = nullptr;
+					if (bSameActor)
+					{
+						Prop_ActorUProperty = DetailsUI.find(Prop_Key)->second;
+					}
+					else
+					{
+						CMFCPropertyGridProperty* NewPropUI = nullptr;
+						void* PropertyAddress = nullptr;
+						switch (Property.PropertyType)
+						{
+							/*case T_ENGINE_PTR:
+								break;*/
+						case T_BOOL:
+						{
+							bool* Value = (bool*)Data.get(handle(Type.GetNode(), InObject)).data();
+							NewPropUI = new CMFCPropertyGridProperty(PropName.data(), _variant_t(*Value), _T(""));
+							PropertyAddress = (void*)Value;
+							break;
+						}
+						/*case T_UINT8:
+							break;*/
+						case T_INT:
+						{
+							int* Value = (int*)Data.get(handle(Type.GetNode(), InObject)).data();
+							NewPropUI = new CMFCPropertyGridProperty(PropName.data(), _variant_t(*Value), TEXT(""));
+							PropertyAddress = (void*)Value;
+							break;
+						}
+						case T_FLOAT:
+							_ASSERT(false);
+							break;
+						case T_FVECTOR:
+							_ASSERT(false);
+							break;
+						case T_FROTATOR:
+							_ASSERT(false);
+							break;
+						default:
+							_ASSERT(false);
+							break;
+						}
+						if (NewPropUI)
+						{
+							if (Property.PropertyFlags & EPropertyFlags::VisibleAnywhere) { NewPropUI->Enable(false); }
+							DetailsUI.emplace(Prop_Key, NewPropUI);
+							auto It = PropertyInfos.emplace(NewPropUI, FPropertyInfo(Property, PropertyAddress));
+							NewPropUI->SetData((DWORD_PTR)&It.first->second);
+							ParentUI->AddSubItem(NewPropUI);
+						}
+					}
+				}
+			);
+		}
+	);
+}
+
 void CWorldOutliner::FillClassView()
 {
 	//hClassViewRoot = m_wndWorldOutliner.InsertItem(_T("Map"), 0, 0);
@@ -639,7 +661,7 @@ void CMyViewTree::OnTvnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 	// 선택된 항목의 핸들을 가져옴 
 	HTREEITEM hSelectedItem = pNMTreeView->itemNew.hItem;
 	// 선택된 항목의 텍스트를 가져옴
-	CString strItemText = GetItemText(hSelectedItem);
+	//CString strItemText = GetItemText(hSelectedItem);
 
 	CWorldOutliner* WorldOutliner = static_cast<CWorldOutliner*>(GetParent());
 	WorldOutliner->OnSelectedItemChanged(hSelectedItem);

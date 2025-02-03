@@ -1,5 +1,5 @@
 ﻿#if WITH_EDITOR
-//#include "EngineMinimal.h"
+#include "EngineMinimal.h"
 #include "Misc/MFCHeaders.h"
 #include "MainFrame/MainFrm.h"
 
@@ -252,19 +252,68 @@ void CDetailsPanel::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 
 LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 {
-	/*if (!GEngine)
+	if (!GEngine)
 	{
 		return FALSE;
 	}
 
-	if (!theApp.LastSelectedActor)
+	CMainFrame* MainFrame = (CMainFrame*)AfxGetMainWnd();
+	AActor* LastSelectedActor = MainFrame->m_wndWorldOutliner.LastSelectedActor;
+	if (!LastSelectedActor)
 	{
 		return FALSE;
 	}
 
 	CMFCPropertyGridProperty* Prop = (CMFCPropertyGridProperty*)lparam;
+	FPropertyInfo* PropertyInfo = (FPropertyInfo*)Prop->GetData();
 	FString PropName = Prop->GetName();
-	if (PropName == TEXT("X") || PropName == TEXT("Y") || PropName == TEXT("Z") ||
+
+	switch (PropertyInfo->PropertyType)
+	{
+	case T_NONE:
+		break;
+	case T_ENGINE_PTR:
+		break;
+	case T_BOOL:
+	{
+		bool CurrentValue = Prop->GetValue().boolVal;
+		bool* Address = (bool*)PropertyInfo->PropertyAddress;
+		*Address = CurrentValue;
+		break;
+	}
+	case T_UINT8:
+		break;
+	case T_INT:
+	{
+		int32 CurrentValue = Prop->GetValue().intVal;
+		int32* Address = (int32*)PropertyInfo->PropertyAddress;
+		*Address = CurrentValue;
+		break;
+	}
+	case T_FLOAT:
+		break;
+	case T_FVECTOR:
+		break;
+	case T_FROTATOR:
+		break;
+	default:
+		break;
+	}
+
+
+	//if (PropName.find(TEXT("T_BOOL_")) != FString::npos)
+	//{
+	//	bool CurrentValue = Prop->GetValue().boolVal;
+	//	bool* Address = (bool*)Prop->GetData();
+	//	*Address = CurrentValue;
+	//}
+	//else if (PropName.find(TEXT("T_INT_")) != FString::npos)
+	//{
+	//	int CurrentValue = Prop->GetValue().intVal;
+	//	int* Address = (int*)Prop->GetData();
+	//	*Address = CurrentValue;
+	//}
+	/*if (PropName == TEXT("X") || PropName == TEXT("Y") || PropName == TEXT("Z") ||
 		PropName == TEXT("Pitch") || PropName == TEXT("Yaw") || PropName == TEXT("Roll"))
 	{
 		float OriginalValue = Prop->GetOriginalValue().fltVal;
@@ -272,8 +321,8 @@ LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		float* Address = (float*)Prop->GetData();
 		*Address = CurrentValue;
 		Prop->SetOriginalValue(CurrentValue);
-	}
-	theApp.LastSelectedActor;*/
+	}*/
+
 	return TRUE;
 }
 

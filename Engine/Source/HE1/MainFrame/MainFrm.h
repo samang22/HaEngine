@@ -41,7 +41,7 @@ public:
 public:
 	CDetailsPanel& GetDetailPanel() { return m_wndDetailsPanel; }
 
-protected:  // 컨트롤 모음이 포함된 멤버입니다.
+public:  // 컨트롤 모음이 포함된 멤버입니다.
 	CMFCMenuBar_Custom       m_wndMenuBar;
 	CMFCToolBar       m_wndToolBar;
 	CMFCStatusBar     m_wndStatusBar;
