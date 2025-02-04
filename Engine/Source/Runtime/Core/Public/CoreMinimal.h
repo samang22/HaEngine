@@ -22,3 +22,4 @@
 #include "Misc/Names.h"
 
 #include "Templates/SubclassOf.h"
+#include "Templates/RefCounting.h"

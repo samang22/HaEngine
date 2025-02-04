@@ -18,6 +18,11 @@ public class Launch : CommonProject
 
         // 기본적으로, Engine 모듈 안에 Core를 포함하고 있기 때문에 생략해도 상관은 없다.
         conf.AddPublicDependency<Engine>(target);
+
+        // 임시
+        conf.AddPublicDependency<D3D11RHI>(target);
+
+
         //if (target.LaunchType == ELaunchType.Editor)
         //{
         //    conf.AddPublicDependency<RHI>(target);

@@ -15,5 +15,17 @@ public class D3D11RHI : CommonProject
         conf.AddPublicDependency<Core>(target);
         conf.AddPublicDependency<RenderCore>(target);
         conf.AddPublicDependency<RHI>(target);
+
+        string[] AllD3DLibs = new string[]
+        {
+            "dxgi.lib",
+            //"d3d9.lib",
+            "d3d11.lib",
+            "dxguid.lib",
+            "D3DCompiler.lib",
+            //"dinput8.lib",
+            //"xapobase.lib",
+        };
+        conf.LibraryFiles.AddRange(AllD3DLibs);
     }
 }

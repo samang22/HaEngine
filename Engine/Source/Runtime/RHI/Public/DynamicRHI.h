@@ -1,6 +1,8 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "RHIFeatureLevel.h"
+#include "RHIDefinitions.h"
+#include "RHIUtilites.h"
 
 /** 동적으로 바인딩된 RHI가 구현하는 인터페이스입니다. */
 class FDynamicRHI
