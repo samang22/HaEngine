@@ -23,3 +23,29 @@ enum class EGpuVendorId : uint32
     Codeplay = 0x10004,    // VkVendorId
     Mesa = 0x10005,    // VkVendorId
 };
+
+inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
+{
+    switch ((EGpuVendorId)VendorId)
+    {
+    case EGpuVendorId::NotQueried:
+        return EGpuVendorId::NotQueried;
+
+    case EGpuVendorId::Amd:
+    case EGpuVendorId::Mesa:
+    case EGpuVendorId::ImgTec:
+    case EGpuVendorId::Nvidia:
+    case EGpuVendorId::Arm:
+    case EGpuVendorId::Broadcom:
+    case EGpuVendorId::Qualcomm:
+    case EGpuVendorId::Intel:
+    case EGpuVendorId::SamsungAMD:
+    case EGpuVendorId::Microsoft:
+        return (EGpuVendorId)VendorId;
+
+    default:
+        break;
+    }
+
+    return EGpuVendorId::Unknown;
+}
