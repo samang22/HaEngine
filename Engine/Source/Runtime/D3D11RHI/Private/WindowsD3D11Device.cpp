@@ -1,4 +1,6 @@
 #include "D3D11RHIPrivate.h"
+#include "RenderResource.h"
+#include "RHICommandList.h"
 
 FD3D11DynamicRHI* GD3D11RHI = nullptr;
 
@@ -650,9 +652,11 @@ void FD3D11DynamicRHI::InitD3DDevice()
                 }
             }
 
-            //StateCache.Init(Direct3DDeviceIMContext.Get());
+            StateCache.Init(Direct3DDeviceIMContext);
         }
-        //FRenderResource::InitPreRHIResources();
+
+        GRHICommandList.GetImmediateCommandList().InitializeImmediateContexts();
+        FRenderResource::InitPreRHIResources();
     }
 }
 

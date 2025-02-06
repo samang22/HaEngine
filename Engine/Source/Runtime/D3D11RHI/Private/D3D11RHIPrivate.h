@@ -6,6 +6,8 @@
 #include "DynamicRHI.h"
 #include "D3D11Util.h"
 #include "D3D11ThirdParty.h"
+#include "D3D11StateCache.h"
+#include "RHIContext.h"
 
 typedef ID3D11DeviceContext FD3D11DeviceContext;
 typedef ID3D11Device FD3D11Device;
@@ -68,7 +70,7 @@ private:
 };
 
 /** 동적으로 바인딩된 RHI가 구현하는 인터페이스입니다. */
-class D3D11RHI_API FD3D11DynamicRHI : public FDynamicRHI
+class D3D11RHI_API FD3D11DynamicRHI : public FDynamicRHI, public IRHICommandContext
 {
 public:
 
@@ -81,6 +83,9 @@ public:
     {
         return Direct3DDeviceIMContext;
     }
+
+public:
+    virtual class IRHICommandContext* RHIGetDefaultContext() final override;
 
 public:
     /** Initialization constructor. */
@@ -113,4 +118,6 @@ protected:
 
 protected:
     FD3D11Adapter Adapter;
+
+    FD3D11StateCache StateCache;
 };

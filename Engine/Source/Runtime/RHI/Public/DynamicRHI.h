@@ -3,6 +3,7 @@
 #include "RHIFeatureLevel.h"
 #include "RHIDefinitions.h"
 #include "RHIUtilites.h"
+#include "RHIContext.h"
 
 /** 동적으로 바인딩된 RHI가 구현하는 인터페이스입니다. */
 class FDynamicRHI
@@ -15,6 +16,8 @@ public:
 	virtual void Init() = 0;
 	/** RHI의 실제 소멸자가 호출되기 전에 종료 및 리소스 파괴를 처리하여 RHI의 모든 리소스가 종료를 위해 여전히 사용 가능하도록 합니다. */
 	virtual void Shutdown() = 0;
+
+	virtual IRHICommandContext* RHIGetDefaultContext() = 0;
 };
 
 
@@ -37,3 +40,11 @@ public:
 *   동적 RHI 인스턴스를 생성하기 위해 호출됩니다.
 */
 FDynamicRHI* PlatformCreateDynamicRHI();
+
+// 동적으로 바인딩된 RHI 구현을 가리키는 전역 포인터.
+extern RHI_API FDynamicRHI* GDynamicRHI;
+
+FORCEINLINE class IRHICommandContext* RHIGetDefaultContext()
+{
+	return GDynamicRHI->RHIGetDefaultContext();
+}
