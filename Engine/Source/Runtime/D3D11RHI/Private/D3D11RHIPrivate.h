@@ -85,6 +85,7 @@ public:
     }
 
 public:
+    virtual FViewportRHIRef RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat) override;
     virtual class IRHICommandContext* RHIGetDefaultContext() final override;
 
 public:

@@ -3,6 +3,7 @@
 #include "Engine/World.h"
 #include "Engine.generated.h"
 
+class UEditorViewportClient;
 
 UCLASS()
 class ENGINE_API UEngine : public UObject
@@ -16,6 +17,8 @@ protected:
     HWND MainViewportHandle = NULL;
     shared_ptr<UWorld> World;
     shared_ptr<UWorld> EditorWorld;
+
+    TObjectPtr<UEditorViewportClient> EditorViewportClient;
 };
 
 extern ENGINE_API UWorld* GWorld;

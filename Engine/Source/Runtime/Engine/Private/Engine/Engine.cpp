@@ -1,4 +1,5 @@
 #include "Engine/Engine.h"
+#include "EditorViewportClient.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, Engine);
 
@@ -21,5 +22,8 @@ void UEngine::Init(HWND hViewportHandle)
 	GWorld = World.get();
 
 	GWorld->InitalizeNewWorld();
+
+	EditorViewportClient = NewObject<UEditorViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
+	EditorViewportClient->Init(hViewportHandle, GWorld);
 }
   

@@ -11,6 +11,7 @@
 #include <chrono>
 #include <span>
 #include <cmath>
+#include <atomic>
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
