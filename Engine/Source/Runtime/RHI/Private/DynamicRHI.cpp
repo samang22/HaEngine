@@ -10,7 +10,7 @@ void RHIInit()
     {
         GDynamicRHI = PlatformCreateDynamicRHI();
 
-        _ASSERT(false);
-        //GDynamicRHI->Init();
+        GDynamicRHI->Init();
     }
+    _ASSERT(GDynamicRHI);
 }

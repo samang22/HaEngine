@@ -1,5 +1,6 @@
 #include "D3D11RHIPrivate.h"
 
+FD3D11DynamicRHI* GD3D11RHI = nullptr;
 
 /**
  * CreateDXGIFactory1이 D3D11 DLL에서 지연 로드되는 가져오기이기 때문에, 사용자가 VistaSP2/DX10을 사용하지 않는 경우
@@ -68,7 +69,7 @@ static bool SafeTestD3D11CreateDevice(IDXGIAdapter* Adapter, D3D_FEATURE_LEVEL M
     ID3D11DeviceContext* D3DDeviceContext = nullptr;
     uint32 DeviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
     // Use a debug device if specified on the command line.
-    if (WITH_DEBUG)//(GRHIGlobals.IsDebugLayerEnabled)
+    if (false/*WITH_DEBUG*/)//(GRHIGlobals.IsDebugLayerEnabled)
     {
         DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
@@ -172,7 +173,107 @@ static uint32 CountAdapterOutputs(TRefCountPtr<IDXGIAdapter>& Adapter)
     return OutputCount;
 }
 
-FD3D11DynamicRHI* GD3D11RHI = nullptr;
+static bool CheckD3D11StoredMessages()
+{
+    bool bResult = false;
+
+    TRefCountPtr<ID3D11Debug> DebugDevice = nullptr;
+    VERIFYD3D11RESULT_EX(GD3D11RHI->GetDevice()->QueryInterface(__uuidof(ID3D11Debug), (void**)DebugDevice.GetInitReference()), GD3D11RHI->GetDevice());
+    if (DebugDevice)
+    {
+        TRefCountPtr<ID3D11InfoQueue> d3dInfoQueue;
+        if (SUCCEEDED(GD3D11RHI->GetDevice()->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)d3dInfoQueue.GetInitReference())))
+        {
+            D3D11_MESSAGE* d3dMessage = nullptr;
+            SIZE_T AllocateSize = 0;
+
+            static bool bBreakOnWarning = false;// FParse::Param(FCommandLine::Get(), TEXT("d3dbreakonwarning"));
+
+            int StoredMessageCount = (int)d3dInfoQueue->GetNumStoredMessagesAllowedByRetrievalFilter();
+            for (int MessageIndex = 0; MessageIndex < StoredMessageCount; MessageIndex++)
+            {
+                SIZE_T MessageLength = 0;
+                HRESULT hr = d3dInfoQueue->GetMessage(MessageIndex, nullptr, &MessageLength);
+
+                // realloc the message
+                if (MessageLength > AllocateSize)
+                {
+                    if (d3dMessage)
+                    {
+                        std::free(d3dMessage);
+                        d3dMessage = nullptr;
+                        AllocateSize = 0;
+                    }
+
+                    d3dMessage = (D3D11_MESSAGE*)std::malloc(MessageLength);
+                    AllocateSize = MessageLength;
+                }
+
+                if (d3dMessage)
+                {
+                    // get the actual message data from the queue
+                    hr = d3dInfoQueue->GetMessage(MessageIndex, d3dMessage, &MessageLength);
+
+                    switch (d3dMessage->Severity)
+                    {
+                    case D3D11_MESSAGE_SEVERITY_CORRUPTION:
+                    case D3D11_MESSAGE_SEVERITY_ERROR:
+                    {
+                        E_LOG(Error, TEXT("[D3DDebug] {}"), ANSI_TO_TCHAR(d3dMessage->pDescription));
+                        bResult = true;
+                        break;
+                    }
+                    case D3D11_MESSAGE_SEVERITY_WARNING:
+                    {
+                        E_LOG(Warning, TEXT("[D3DDebug] {}"), ANSI_TO_TCHAR(d3dMessage->pDescription));
+                        if (bBreakOnWarning)
+                        {
+                            bResult = true;
+                        }
+                        break;
+                    }
+                    default:
+                    {
+                        E_LOG(Log, TEXT("[D3DDebug] {}"), ANSI_TO_TCHAR(d3dMessage->pDescription));
+                    }
+                    }
+                }
+            }
+            d3dInfoQueue->ClearStoredMessages();
+            if (AllocateSize > 0)
+            {
+                std::free(d3dMessage);
+            }
+        }
+    }
+
+    return bResult;
+}
+
+static LONG __stdcall D3D11VectoredExceptionHandler(EXCEPTION_POINTERS* InInfo)
+{
+    // Only handle D3D error codes here
+    if (InInfo->ExceptionRecord->ExceptionCode == _FACDXGI)
+    {
+        if (CheckD3D11StoredMessages())
+        {
+            if (IsDebuggerPresent())
+            {
+                // 여기에 도달하면, 이 오류 메시지에 대해 BreakOnSeverity가 설정되었음을 의미하므로, 
+                // 디버거가 연결된 경우 여기도 디버그 브레이크를 요청합니다.
+                //UE_DEBUG_BREAK();
+                _ASSERT(false);
+            }
+        }
+
+        // Handles the exception
+        return EXCEPTION_CONTINUE_EXECUTION;
+    }
+
+    // continue searching
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
 
 void FD3D11DynamicRHIModule::StartupModule()
 {
@@ -198,7 +299,7 @@ FDynamicRHI* FD3D11DynamicRHIModule::CreateRHI(ERHIFeatureLevel::Type RequestedF
     IDXGIFactory1* DXGIFactory1;
     VERIFYD3D11RESULT(ChosenAdapter.DXGIAdapter->GetParent(__uuidof(DXGIFactory1), reinterpret_cast<void**>(&DXGIFactory1)));
 
-    GD3D11RHI = new FD3D11DynamicRHI();
+    GD3D11RHI = new FD3D11DynamicRHI(DXGIFactory1, ChosenAdapter.MaxSupportedFeatureLevel, ChosenAdapter);
     return GD3D11RHI;
 }
 
@@ -209,7 +310,7 @@ void FD3D11DynamicRHIModule::FindAdapter()
 
     // DXGIFactory1을 생성하려고 시도합니다. Vista SP2 이상을 실행하지 않는 경우 실패합니다.
     TRefCountPtr<IDXGIFactory1> DXGIFactory1;
-    SafeCreateDXGIFactory(DXGIFactory1.GetInitReference(), WITH_DEBUG);
+    SafeCreateDXGIFactory(DXGIFactory1.GetInitReference(), false/*WITH_DEBUG*/);
     if (!DXGIFactory1)
     {
         return;
@@ -388,43 +489,175 @@ void FD3D11DynamicRHIModule::FindAdapter()
         }
     }
 
-    //if (true /*bFavorDiscreteAdapter*/)
-    //{
-    //    if (PreferredAdapter.IsValid())
-    //    {
-    //        ChosenAdapter = PreferredAdapter;
-    //    }
-    //    else if (BestMemoryAdapter.IsValid())
-    //    {
-    //        ChosenAdapter = BestMemoryAdapter;
-    //    }
-    //    else if (FirstDiscreteAdapter.IsValid())
-    //    {
-    //        ChosenAdapter = FirstDiscreteAdapter;
-    //    }
-    //    else
-    //    {
-    //        ChosenAdapter = FirstAdapter;
-    //    }
-    //}
-    //else
-    //{
-    //    ChosenAdapter = FirstAdapter;
-    //}
+    if (true /*bFavorDiscreteAdapter*/)
+    {
+        if (PreferredAdapter.IsValid())
+        {
+            ChosenAdapter = PreferredAdapter;
+        }
+        else if (BestMemoryAdapter.IsValid())
+        {
+            ChosenAdapter = BestMemoryAdapter;
+        }
+        else if (FirstDiscreteAdapter.IsValid())
+        {
+            ChosenAdapter = FirstDiscreteAdapter;
+        }
+        else
+        {
+            ChosenAdapter = FirstAdapter;
+        }
+    }
+    else
+    {
+        ChosenAdapter = FirstAdapter;
+    }
 
-    //if (ChosenAdapter.IsValid())
-    //{
-    //    E_LOG(Info, TEXT("Chosen D3D11 Adapter:"));
-    //    LogDXGIAdapterDesc(ChosenAdapter.DXGIAdapterDesc);
-    //}
-    //else
-    //{
-    //    E_LOG(Error, TEXT("Failed to choose a D3D11 Adapter."));
-    //}
+    if (ChosenAdapter.IsValid())
+    {
+        E_LOG(Log, TEXT("Chosen D3D11 Adapter:"));
+        LogDXGIAdapterDesc(ChosenAdapter.DXGIAdapterDesc);
+    }
+    else
+    {
+        E_LOG(Error, TEXT("Failed to choose a D3D11 Adapter."));
+    }
 
     //GRHIAdapterName = ChosenAdapter.DXGIAdapterDesc.Description;
     //GRHIVendorId = ChosenAdapter.DXGIAdapterDesc.VendorId;
     //GRHIDeviceId = ChosenAdapter.DXGIAdapterDesc.DeviceId;
     //GRHIDeviceRevision = ChosenAdapter.DXGIAdapterDesc.Revision;
     //GRHIDeviceIsIntegrated = ChosenAdapter.bIsIntegrated;
+}
+
+void FD3D11DynamicRHI::InitD3DDevice()
+{
+    // UE는 더 이상 DEVICE_LOST 시의 정리 및 복구를 지원하지 않습니다.
+
+    // 만약 아직 장치가 없거나, 첫 번째 뷰포트이거나, 기존 장치가 제거된 경우, 장치를 생성합니다.
+    if (!Direct3DDevice)
+    {
+        E_LOG(Log, TEXT("Creating new Direct3DDevice"));
+
+        ClearState();
+        // Direct3D 11에서 하드웨어 또는 소프트웨어 장치를 생성하려는 경우, pAdapter를 NULL이 아닌 값으로 설정하여 다른 입력이 다음과 같이 제한되도록 합니다:
+        //      DriverType는 D3D_DRIVER_TYPE_UNKNOWN이어야 합니다.
+        //      Software는 NULL이어야 합니다.
+
+        D3D_DRIVER_TYPE DriverType = D3D_DRIVER_TYPE_UNKNOWN;
+
+        uint32 DeviceFlags = /*D3D11RHI_ShouldAllowAsyncResourceCreation()*/true ? 0 : D3D11_CREATE_DEVICE_SINGLETHREADED;
+
+        if (WITH_DEBUG)
+        {
+            //DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+
+            E_LOG(Log, TEXT("InitD3DDevice: -D3DDebug = {}"), WITH_DEBUG ? TEXT("on") : TEXT("off"));
+
+            E_LOG(Log, TEXT("    GPU DeviceId: {:#x} (for the marketing name, search the web for \"GPU Device Id\")"), Adapter.DXGIAdapterDesc.DeviceId);
+
+            D3D_FEATURE_LEVEL ActualFeatureLevel = (D3D_FEATURE_LEVEL)0;
+
+            {
+                E_LOG(Log, TEXT("Creating D3DDevice using adapter:"));
+                LogDXGIAdapterDesc(Adapter.DXGIAdapterDesc);
+
+                // Creating the Direct3D device.
+                VERIFYD3D11RESULT(D3D11CreateDevice(
+                    Adapter.DXGIAdapter,
+                    DriverType,
+                    NULL,
+                    DeviceFlags,
+                    &FeatureLevel,
+                    1,
+                    D3D11_SDK_VERSION,
+                    Direct3DDevice.GetInitReference(),
+                    &ActualFeatureLevel,
+                    Direct3DDeviceIMContext.GetInitReference()
+                ));
+            }
+
+            // 요청한 기능 수준을 확보해야 합니다. 이를 지원하는지 확인
+            _ASSERT(ActualFeatureLevel == FeatureLevel);
+
+            if (false/*WITH_DEBUG*/)
+            {
+                TRefCountPtr<ID3D11InfoQueue> d3dInfoQueue;
+                if (SUCCEEDED(GD3D11RHI->GetDevice()->QueryInterface(__uuidof(ID3D11InfoQueue), (void**)d3dInfoQueue.GetInitReference())))
+                {
+                    /* 콜백 설치 */
+                    ExceptionHandlerHandle = AddVectoredExceptionHandler(1, D3D11VectoredExceptionHandler);
+
+                    /* 메시지 필터링 */
+                    const bool bLogWarnings = true;// D3D11_ShouldBreakOnD3DDebugWarnings() || D3D11_ShouldLogD3DDebugWarnings();
+                    D3D11_INFO_QUEUE_FILTER NewFilter;
+                    ZeroMemory(&NewFilter, sizeof(NewFilter));
+
+                    D3D11_MESSAGE_SEVERITY DenySeverity[] = { D3D11_MESSAGE_SEVERITY_INFO, D3D11_MESSAGE_SEVERITY_WARNING };
+                    NewFilter.DenyList.NumSeverities = 1 + (bLogWarnings ? 0 : 1);
+                    NewFilter.DenyList.pSeverityList = DenySeverity;
+
+
+                    // 여기에 추가된 이유를 주의 깊게 설명해야 합니다! 나중에 누군가가 이를 보고 여전히 필요한지 파악할 수 있어야 합니다.
+                    D3D11_MESSAGE_ID DenyIds[] = {
+                        // OMSETRENDERTARGETS_INVALIDVIEW - 깊이 및 색상 타겟이 정확히 동일한 크기를 가지지 않으면 d3d가 불평합니다. 그러나 실제로
+                        //  색상 타겟이 더 작으면 문제가 없습니다. 그래서 이 오류를 끕니다. FD3D11DynamicRHI::SetRenderTarget에서 수동으로
+                        //  깊이가 색상보다 작고 MSAA 설정이 일치하는지 테스트합니다.
+                        D3D11_MESSAGE_ID_OMSETRENDERTARGETS_INVALIDVIEW,
+
+                        // QUERY_BEGIN_ABANDONING_PREVIOUS_RESULTS - RHI는 쿼리를 만들고 발행하는 인터페이스와 해당 데이터를 사용하는 별도의 인터페이스를 노출합니다.
+                        //      현재는 쿼리가 발행되고 결과가 의도적으로 무시될 수 있는 상황이 있습니다. 이 메시지를 필터링하여 디버그 메시지가 넘쳐 다른 중요한 경고를 가리는 것을 방지합니다.
+                        D3D11_MESSAGE_ID_QUERY_BEGIN_ABANDONING_PREVIOUS_RESULTS,
+                        D3D11_MESSAGE_ID_QUERY_END_ABANDONING_PREVIOUS_RESULTS,
+
+                        // D3D11_MESSAGE_ID_CREATEINPUTLAYOUT_EMPTY_LAYOUT - null 정점 선언을 사용할 때 트리거되는 경고입니다.
+                        //       이는 정점 셰이더가 ID를 기반으로 정점을 생성할 때 하려는 작업입니다.
+                        D3D11_MESSAGE_ID_CREATEINPUTLAYOUT_EMPTY_LAYOUT,
+
+                        // D3D11_MESSAGE_ID_DEVICE_DRAW_INDEX_BUFFER_TOO_SMALL - 이 경고는 Slate 드로우로 인해 트리거되며, 실제로는 유효한 인덱스 범위를 사용하고 있습니다.
+                        //      이 유효하지 않은 경고는 VS 2012가 설치된 경우에만 발생하는 것으로 보입니다. MS에 보고되었습니다.  
+                        //      지금은 DrawIndexedPrimitive에서 인덱스 버퍼의 범위를 벗어난 읽기 오류를 잡는 assert가 있습니다.
+                        D3D11_MESSAGE_ID_DEVICE_DRAW_INDEX_BUFFER_TOO_SMALL,
+
+                        // D3D11_MESSAGE_ID_DEVICE_DRAW_RENDERTARGETVIEW_NOT_SET - 이 경고는 섀도우 깊이 렌더링으로 인해 트리거되며, 셰이더가
+                        //      컬러를 출력하지만 컬러 렌더 타겟을 바인딩하지 않기 때문에 발생합니다. 이는 안전하며 바인딩되지 않은 렌더 타겟에 대한 쓰기가 폐기됩니다.
+                        //      또한, 씬 렌더링 외부에서 렌더링할 때 누적 요소로 인해 트리거되며, 이는 바인딩되지 않은 노말을 포함한 GBuffer로 출력합니다.
+                        (D3D11_MESSAGE_ID)3146081, // D3D11_MESSAGE_ID_DEVICE_DRAW_RENDERTARGETVIEW_NOT_SET,
+
+                        // 재사용되는 렌더타겟의 디버그 이름을 변경할 때 계속 스팸 메시지가 발생합니다.
+                        D3D11_MESSAGE_ID_SETPRIVATEDATA_CHANGINGPARAMS,
+
+                    };
+
+                    NewFilter.DenyList.NumIDs = sizeof(DenyIds) / sizeof(D3D11_MESSAGE_ID);
+                    NewFilter.DenyList.pIDList = (D3D11_MESSAGE_ID*)&DenyIds;
+
+                    d3dInfoQueue->PushStorageFilter(&NewFilter);
+
+                    /* ensure callback is called */
+                    /*d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, D3D11_ShouldBreakOnD3DDebugErrors());
+                    d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, D3D11_ShouldBreakOnD3DDebugErrors());
+                    if (bLogWarnings)
+                    {
+                        d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, D3D11_ShouldBreakOnD3DDebugWarnings());
+                    }*/
+                    d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, true);
+                    d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, true);
+                    if (bLogWarnings)
+                    {
+                        d3dInfoQueue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, true);
+                    }
+                }
+            }
+
+            //StateCache.Init(Direct3DDeviceIMContext.Get());
+        }
+        //FRenderResource::InitPreRHIResources();
+    }
+}
+
+
+void FD3D11DynamicRHI::Init()
+{
+    InitD3DDevice();
 }

@@ -7,8 +7,8 @@ class ID3D11Device;
 	D3D11Util.h: D3D RHI utility definitions.
 =============================================================================*/
 
-//#define D3D11RHI_IMMEDIATE_CONTEXT	(GD3D11RHI->GetDeviceContext())
-//#define D3D11RHI_DEVICE				(GD3D11RHI->GetDevice())
+#define D3D11RHI_IMMEDIATE_CONTEXT	(GD3D11RHI->GetDeviceContext())
+#define D3D11RHI_DEVICE				(GD3D11RHI->GetDevice())
 
 /**
  * 결과가 실패가 아닌지 확인합니다. 실패한 경우 애플리케이션은 종료되지 않고 적절한 오류 메시지만 로그합니다.

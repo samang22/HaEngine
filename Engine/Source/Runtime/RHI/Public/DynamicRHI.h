@@ -8,6 +8,13 @@
 class FDynamicRHI
 {
 public:
+	/** 동적 RHI를 타입을 알 필요 없이 삭제할 수 있도록 가상 소멸자를 선언합니다. */
+	virtual ~FDynamicRHI() {}
+
+	/** GDynamicRHI가 호출될 때 설정되도록 IDynamicRHIModule::CreateRHI와 분리된 RHI를 초기화합니다. */
+	virtual void Init() = 0;
+	/** RHI의 실제 소멸자가 호출되기 전에 종료 및 리소스 파괴를 처리하여 RHI의 모든 리소스가 종료를 위해 여전히 사용 가능하도록 합니다. */
+	virtual void Shutdown() = 0;
 };
 
 
