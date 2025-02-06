@@ -59,4 +59,68 @@ public:
         }
         return EndVal;
     }
+
+
+    /**
+     * 비교 값을 기준으로 값을 반환합니다. 이 함수의 주요 목적은 컴파일러 내재 함수(intrinsics)를 통해
+     * 부동 소수점 비교 기반의 분기를 피하는 것입니다.
+     *
+     * NaN의 경우 플랫폼별로 차이가 있을 수 있으므로, 이에 대해서는 정의하지 않았습니다.
+     *
+     * @param   Comparand       비교 값을 기준으로 한 값
+     * @param   ValueGEZero     Comparand가 0보다 크거나 같을 때 반환할 값
+     * @param   ValueLTZero     Comparand가 0보다 작을 때 반환할 값
+     *
+     * @return  Comparand가 0보다 크거나 같으면 ValueGEZero, 그렇지 않으면 ValueLTZero를 반환합니다.
+     */
+    static constexpr FORCEINLINE float FloatSelect(float Comparand, float ValueGEZero, float ValueLTZero)
+    {
+        return Comparand >= 0.f ? ValueGEZero : ValueLTZero;
+    }
+
+    /**
+     * 비교 값을 기준으로 값을 반환합니다. 이 함수의 주요 목적은 컴파일러 내재 함수(intrinsics)를 통해
+     * 부동 소수점 비교 기반의 분기를 피하는 것입니다.
+     *
+     * NaN의 경우 플랫폼별로 차이가 있을 수 있으므로, 이에 대해서는 정의하지 않았습니다.
+     *
+     * @param   Comparand       비교 값을 기준으로 한 값
+     * @param   ValueGEZero     Comparand가 0보다 크거나 같을 때 반환할 값
+     * @param   ValueLTZero     Comparand가 0보다 작을 때 반환할 값
+     *
+     * @return  Comparand가 0보다 크거나 같으면 ValueGEZero, 그렇지 않으면 ValueLTZero를 반환합니다.
+     */
+    static constexpr FORCEINLINE double FloatSelect(double Comparand, double ValueGEZero, double ValueLTZero)
+    {
+        return Comparand >= 0.0 ? ValueGEZero : ValueLTZero;
+    }
+
+    /** 일반적인 방식으로 절대 값을 계산합니다 */
+    template< class T >
+    static constexpr FORCEINLINE T Abs(const T A)
+    {
+        return (A < (T)0) ? -A : A;
+    }
+
+    /** T와 0의 관계에 따라 1, 0 또는 -1을 반환합니다 */
+    template< class T >
+    static constexpr FORCEINLINE T Sign(const T A)
+    {
+        return (A > (T)0) ? (T)1 : ((A < (T)0) ? (T)-1 : (T)0);
+    }
+
+    /** 일반적인 방식으로 더 큰 값을 반환합니다 */
+    template< class T >
+    static constexpr FORCEINLINE T Max(const T A, const T B)
+    {
+        return (B < A) ? A : B;
+    }
+
+    /** 일반적인 방식으로 더 작은 값을 반환합니다 */
+    template< class T >
+    static constexpr FORCEINLINE T Min(const T A, const T B)
+    {
+        return (A < B) ? A : B;
+    }
+
 };

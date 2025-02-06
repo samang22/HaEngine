@@ -83,6 +83,10 @@ public:
     {
         return Direct3DDeviceIMContext;
     }
+    IDXGIFactory1* GetFactory() const
+    {
+        return DXGIFactory1;
+    }
 
 public:
     virtual FViewportRHIRef RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat) override;

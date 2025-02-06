@@ -1,9 +1,17 @@
 #include "ViewportClient.h"
+#include "RenderResource.h"
 
 void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 {
     hViewportHandle = hInViewportHandle;
     World = InWorld;
 
-    // @TODO : Viewport 만들기
+	{
+		RECT WindowRect;
+		GetClientRect(hViewportHandle, &WindowRect);
+		ViewportSize.x = WindowRect.right;
+		ViewportSize.y = WindowRect.bottom;
+	}
+
+	Viewport = GDynamicRHI->RHICreateViewport(hInViewportHandle, ViewportSize.x, ViewportSize.y, false, PF_A2B10G10R10);
 }

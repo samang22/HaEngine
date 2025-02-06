@@ -99,3 +99,99 @@ enum EPixelFormat : uint8
 	PF_ASTC_12x12_NORM_RG = 91,
 	PF_MAX = 92,
 };
+
+enum class EPixelFormatCapabilities : uint32
+{
+	None = 0,
+	Texture1D = 1ull << 1,
+	Texture2D = 1ull << 2,
+	Texture3D = 1ull << 3,
+	TextureCube = 1ull << 4,
+	RenderTarget = 1ull << 5,
+	DepthStencil = 1ull << 6,
+	TextureMipmaps = 1ull << 7,
+	TextureLoad = 1ull << 8,
+	TextureSample = 1ull << 9,
+	TextureGather = 1ull << 10,
+	TextureAtomics = 1ull << 11,
+	TextureBlendable = 1ull << 12,
+	TextureStore = 1ull << 13,
+
+	Buffer = 1ull << 14,
+	VertexBuffer = 1ull << 15,
+	IndexBuffer = 1ull << 16,
+	BufferLoad = 1ull << 17,
+	BufferStore = 1ull << 18,
+	BufferAtomics = 1ull << 19,
+
+	UAV = 1ull << 20,
+	TypedUAVLoad = 1ull << 21,
+	TypedUAVStore = 1ull << 22,
+
+	TextureFilterable = 1ull << 23,
+
+	AnyTexture = Texture1D | Texture2D | Texture3D | TextureCube,
+
+	AllTextureFlags = AnyTexture | RenderTarget | DepthStencil | TextureMipmaps | TextureLoad | TextureSample | TextureGather | TextureAtomics | TextureBlendable | TextureStore,
+	AllBufferFlags = Buffer | VertexBuffer | IndexBuffer | BufferLoad | BufferStore | BufferAtomics,
+	AllUAVFlags = UAV | TypedUAVLoad | TypedUAVStore,
+
+	AllFlags = AllTextureFlags | AllBufferFlags | AllUAVFlags
+};
+ENUM_CLASS_FLAGS(EPixelFormatCapabilities);
+
+/**
+ * 픽셀 포맷에 대한 정보입니다. 이 구조체의 대부분은 정적 초기화 이후에 유효하지만, RHI 모듈에서 초기화된 상태를 유지하는 일부 상태가 있습니다. 이러한 상태는 RHI가 없는 일반 프로그램에서는 사용되지 않아야 합니다 (댓글에서 언급됨).
+ */
+struct FPixelFormatInfo
+{
+	FPixelFormatInfo() = delete;
+	FPixelFormatInfo(
+		EPixelFormat InUnrealFormat,
+		const TCHAR* InName,
+		int32 InBlockSizeX,
+		int32 InBlockSizeY,
+		int32 InBlockSizeZ,
+		int32 InBlockBytes,
+		int32 InNumComponents,
+		bool  InSupported);
+
+	const TCHAR* Name;
+	EPixelFormat                UnrealFormat;
+	int32                       BlockSizeX;
+	int32                       BlockSizeY;
+	int32                       BlockSizeZ;
+	int32                       BlockBytes;
+	int32                       NumComponents;
+
+	/** 플랫폼별 포맷에 대한 기능 (RHI 모듈에 의해 초기화됨 - 그렇지 않으면 유효하지 않음) */
+	EPixelFormatCapabilities    Capabilities = EPixelFormatCapabilities::None;
+
+	/** 플랫폼별로 변환된 포맷 (RHI 모듈에 의해 초기화됨 - 그렇지 않으면 유효하지 않음) */
+	uint32                      PlatformFormat{ 0 };
+
+	/** 현재 플랫폼/렌더링 조합에서 텍스처 포맷이 지원되는지 여부 */
+	uint8                       Supported : 1;
+
+	// false인 경우, 32비트 플로트로 간주됩니다 (RHI 모듈에 의해 초기화됨 - 그렇지 않으면 유효하지 않음)
+	uint8                       bIs24BitUnormDepthStencil : 1;
+
+	/**
+	 * 2D/3D 이미지/텍스처 크기를 바이트 단위로 가져옵니다. 이는 인코딩된 이미지 데이터의 저장을 위한 것이며, GPU 정렬/패딩 제약 조건을 조정하지 않습니다. 또한 타일 또는 패킹된 mip 테일 (즉, 콘솔용으로 요리된 mip)에는 유효하지 않습니다. 일반적인 블록 기반 픽셀 포맷의 텍스처/이미지 작업 시에만 사용하십시오.
+	 */
+	CORE_API uint64 Get2DImageSizeInBytes(uint32 InWidth, uint32 InHeight) const;
+	CORE_API uint64 Get2DTextureMipSizeInBytes(uint32 InTextureWidth, uint32 InTextureHeight, uint32 InMipIndex) const;
+	CORE_API uint64 Get2DTextureSizeInBytes(uint32 InTextureWidth, uint32 InTextureHeight, uint32 InMipCount) const;
+	CORE_API uint64 Get3DImageSizeInBytes(uint32 InWidth, uint32 InHeight, uint32 InDepth) const;
+	CORE_API uint64 Get3DTextureMipSizeInBytes(uint32 InTextureWidth, uint32 InTextureHeight, uint32 InTextureDepth, uint32 InMipIndex) const;
+	CORE_API uint64 Get3DTextureSizeInBytes(uint32 InTextureWidth, uint32 InTextureHeight, uint32 InTextureDepth, uint32 InMipCount) const;
+
+	/**
+	 * 주어진 크기를 수용하는 데 필요한 압축 블록의 수를 가져옵니다.
+	 */
+	CORE_API uint64 GetBlockCountForWidth(uint32 InWidth) const;
+	CORE_API uint64 GetBlockCountForHeight(uint32 InHeight) const;
+};
+
+
+extern CORE_API FPixelFormatInfo GPixelFormats[PF_MAX];		// EPixelFormat의 멤버를 FPixelFormatInfo로 매핑하여 포맷을 설명합니다.

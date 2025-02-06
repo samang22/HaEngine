@@ -1,5 +1,10 @@
 #pragma once
 #include "CoreTypes.h"
+#include "RHIDefinitions.h"
+#include "RHIResources.h"
+#include "PixelFormat.h"
+#include "RHI.h"
+#include "RHICommandList.h"
 
 /**
  * 렌더링 스레드가 소유하는 렌더링 리소스입니다.

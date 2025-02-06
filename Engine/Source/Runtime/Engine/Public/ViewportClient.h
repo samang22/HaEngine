@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "RHIFwd.h"
 #include "ViewportClient.generated.h"
 
 class UWorld;
@@ -17,4 +18,7 @@ public:
 protected:
     HWND hViewportHandle = NULL;
     UWorld* World = nullptr;
+
+    FViewportRHIRef Viewport;
+    FVector2D ViewportSize;
 };
