@@ -2,7 +2,7 @@
 #include "CoreMinimal.h"
 #include "RHIFeatureLevel.h"
 #include "RHIDefinitions.h"
-#include "RHIUtilites.h"
+#include "RHIUtilities.h"
 #include "RHIContext.h"
 #include "RHIFwd.h"
 #include "PixelFormat.h"

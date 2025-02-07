@@ -99,3 +99,157 @@ enum ERHIResourceType : uint8
 
 	RRT_Num
 };
+
+/** 텍스처의 차원을 설명합니다. */
+enum class ETextureDimension : uint8
+{
+	Texture2D,
+	Texture2DArray,
+	Texture3D,
+	TextureCube,
+	TextureCubeArray
+};
+
+/** 텍스처 생성에 사용되는 플래그 */
+enum class ETextureCreateFlags : uint64
+{
+	None = 0,
+
+	// 텍스처를 렌더 타겟으로 사용할 수 있습니다.
+	RenderTargetable = 1ull << 0,
+	// 텍스처를 리졸브 타겟으로 사용할 수 있습니다.
+	ResolveTargetable = 1ull << 1,
+	// 텍스처를 깊이-스텐실 타겟으로 사용할 수 있습니다.
+	DepthStencilTargetable = 1ull << 2,
+	// 텍스처를 셰이더 리소스로 사용할 수 있습니다.
+	ShaderResource = 1ull << 3,
+	// 텍스처가 sRGB 감마 공간에서 인코딩됩니다.
+	SRGB = 1ull << 4,
+	// 텍스처 데이터를 CPU가 쓸 수 있습니다.
+	CPUWritable = 1ull << 5,
+	// 텍스처가 타일링되지 않은 형식으로 생성됩니다.
+	NoTiling = 1ull << 6,
+	// 텍스처가 비디오 디코딩에 사용됩니다.
+	VideoDecode = 1ull << 7,
+	// 텍스처는 매 프레임 업데이트될 수 있습니다.
+	Dynamic = 1ull << 8,
+	// 텍스처가 읽기 가능한 렌더 패스 첨부 파일로 사용됩니다.
+	InputAttachmentRead = 1ull << 9,
+	// 텍스처가 포베이션 첨부 파일을 나타냅니다.
+	Foveation = 1ull << 10,
+	// 가능하면 3D 내부 표면 타일링 모드를 선호합니다.
+	Tiling3D = 1ull << 11,
+	// 이 텍스처는 GPU나 CPU 백업이 없습니다. 모바일과 같은 타일 기반 딜레이드 렌더링(TBDR) GPU의 타일 메모리에만 존재합니다.
+	Memoryless = 1ull << 12,
+	// 나중에 mip 생성이 가능한 플래그로 텍스처를 생성합니다. D3D11에만 적용됩니다.
+	GenerateMipCapable = 1ull << 13,
+	// 텍스처가 FastVRAM에 부분적으로 할당될 수 있습니다.
+	FastVRAMPartialAlloc = 1ull << 14,
+	// 관련된 셰이더 리소스 보기를 생성하지 않습니다. D3D11 및 D3D12에만 적용됩니다.
+	DisableSRVCreation = 1ull << 15,
+	// 이 텍스처에 Delta Color Compression (DCC)을 사용할 수 없습니다.
+	DisableDCC = 1ull << 16,
+	// UnorderedAccessView (DX11 전용)
+	// 경고: 이 플래그로 할당된 렌더 타겟을 사용하는 드로우 호출 간에 추가 동기화가 발생합니다. 신중하게 사용하십시오.
+	UAV = 1ull << 17,
+	// 화면에 표시될 렌더 타겟 텍스처 (백 버퍼)
+	Presentable = 1ull << 18,
+	// 텍스처 데이터는 CPU에서 접근 가능합니다.
+	CPUReadback = 1ull << 19,
+	// 텍스처가 오프라인으로 처리되었습니다 (현재 플랫폼에 대한 텍스처 변환 프로세스를 통해).
+	OfflineProcessed = 1ull << 20,
+	// 사용할 수 있는 경우 텍스처는 Fast VRAM에 배치해야 합니다 (힌트 전용).
+	FastVRAM = 1ull << 21,
+	// 기본적으로 텍스처가 목록에 표시되지 않음 - 혼란을 줄이기 위해. 전체 옵션을 사용할 때 무시할 수 있습니다.
+	HideInVisualizeTexture = 1ull << 22,
+	// 텍스처는 물리적 메모리 할당 없이 가상 메모리에서 생성되어야 합니다.
+	// RHIVirtualTextureSetFirstMipInMemory를 호출하여 물리적 메모리를 할당하고, 
+	// RHIVirtualTextureSetFirstMipVisible을 호출하여 GPU에 처음으로 볼 수 있는 mip을 맵핑해야 합니다.
+	Virtual = 1ull << 23,
+	// 텍스처의 각 배열 슬라이스에 대해 RenderTargetView를 생성합니다.
+	// 경고: 리소스가 생성될 때 이 옵션이 지정된 경우, 다른 슬라이스로 라우팅하기 위해 SV_RenderTargetArrayIndex를 사용할 수 없습니다!
+	TargetArraySlicesIndependently = 1ull << 24,
+	// DX9 또는 다른 장치와 공유할 수 있는 텍스처
+	Shared = 1ull << 25,
+	// RenderTarget은 전체 텍스처의 빠른 지우기 기능을 사용하지 않습니다.
+	NoFastClear = 1ull << 26,
+	// 텍스처는 깊이 스텐실 리졸브 타겟입니다.
+	DepthStencilResolveTarget = 1ull << 27,
+	// 스트리밍 풀 예산에 포함되어야 하는 스트리밍 가능한 2D 텍스처를 나타냅니다.
+	Streamable = 1ull << 28,
+	// 렌더 타겟은 빠른 지우기를 완료하지 않습니다. 캐시 및 메타 데이터를 플러시하지만 지우기는 건너뜁니다 (메타 데이터를 망칠 가능성을 피함).
+	NoFastClearFinalize = 1ull << 29,
+	// 텍스처는 원자적 작업을 지원해야 합니다.
+	Atomic64Compatible = 1ull << 30,
+	// 타일링 모드로 인해 128^3 볼륨 텍스처가 4배로 부풀어 오르는 경우를 해결합니다.
+	ReduceMemoryWithTilingMode = 1ull << 31,
+	// 텍스처는 원자적 작업을 지원해야 합니다.
+	AtomicCompatible = 1ull << 33,
+	// 텍스처는 외부 접근을 위해 할당되어야 합니다. Vulkan 전용
+	External = 1ull << 34,
+	// 다중 GPU 시나리오에서 GPU 간 자동 전송을 허용하지 않습니다. 예를 들어, 수동으로 전송하는 경우.
+	MultiGPUGraphIgnore = 1ull << 35,
+	// 실험적: 텍스처를 내부적으로 물리적 메모리 백업 없이 예약된(예: 타일링/희소/가상) 리소스로 생성할 수 있도록 합니다.
+	ReservedResource = 1ull << 37,
+	// 실험적: ReservedResource 플래그와 함께 사용하여 생성 시 메모리를 즉시 할당하고 커밋합니다. 단일 큰 할당 대신 여러 작은 물리적 메모리 할당을 사용할 수 있습니다.
+	ImmediateCommit = 1ull << 38,
+
+	// 총 텍스처 할당 크기를 추적할 때 스트리밍 메모리에 이 텍스처를 포함하지 마십시오.
+	ForceIntoNonStreamingMemoryTracking = 1ull << 39,
+
+	// 이 플래그가 표시된 텍스처는 생성 후 즉시 회수하여 GPU를 페이지 폴트로 고의적으로 충돌시키기 위한 것입니다.
+	Invalid = 1ull << 40,
+};
+ENUM_CLASS_FLAGS(ETextureCreateFlags);
+
+// Compatibility defines
+#define TexCreate_None                           ETextureCreateFlags::None
+#define TexCreate_RenderTargetable               ETextureCreateFlags::RenderTargetable
+#define TexCreate_ResolveTargetable              ETextureCreateFlags::ResolveTargetable
+#define TexCreate_DepthStencilTargetable         ETextureCreateFlags::DepthStencilTargetable
+#define TexCreate_ShaderResource                 ETextureCreateFlags::ShaderResource
+#define TexCreate_SRGB                           ETextureCreateFlags::SRGB
+#define TexCreate_CPUWritable                    ETextureCreateFlags::CPUWritable
+#define TexCreate_NoTiling                       ETextureCreateFlags::NoTiling
+#define TexCreate_VideoDecode                    ETextureCreateFlags::VideoDecode
+#define TexCreate_Dynamic                        ETextureCreateFlags::Dynamic
+#define TexCreate_InputAttachmentRead            ETextureCreateFlags::InputAttachmentRead
+#define TexCreate_Foveation                      ETextureCreateFlags::Foveation
+#define TexCreate_3DTiling                       ETextureCreateFlags::Tiling3D
+#define TexCreate_Memoryless                     ETextureCreateFlags::Memoryless
+#define TexCreate_GenerateMipCapable             ETextureCreateFlags::GenerateMipCapable
+#define TexCreate_FastVRAMPartialAlloc           ETextureCreateFlags::FastVRAMPartialAlloc
+#define TexCreate_DisableSRVCreation             ETextureCreateFlags::DisableSRVCreation
+#define TexCreate_DisableDCC                     ETextureCreateFlags::DisableDCC
+#define TexCreate_UAV                            ETextureCreateFlags::UAV
+#define TexCreate_Presentable                    ETextureCreateFlags::Presentable
+#define TexCreate_CPUReadback                    ETextureCreateFlags::CPUReadback
+#define TexCreate_OfflineProcessed               ETextureCreateFlags::OfflineProcessed
+#define TexCreate_FastVRAM                       ETextureCreateFlags::FastVRAM
+#define TexCreate_HideInVisualizeTexture         ETextureCreateFlags::HideInVisualizeTexture
+#define TexCreate_Virtual                        ETextureCreateFlags::Virtual
+#define TexCreate_TargetArraySlicesIndependently ETextureCreateFlags::TargetArraySlicesIndependently
+#define TexCreate_Shared                         ETextureCreateFlags::Shared
+#define TexCreate_NoFastClear                    ETextureCreateFlags::NoFastClear
+#define TexCreate_DepthStencilResolveTarget      ETextureCreateFlags::DepthStencilResolveTarget
+#define TexCreate_Streamable                     ETextureCreateFlags::Streamable
+#define TexCreate_NoFastClearFinalize            ETextureCreateFlags::NoFastClearFinalize
+#define TexCreate_ReduceMemoryWithTilingMode     ETextureCreateFlags::ReduceMemoryWithTilingMode
+#define TexCreate_Transient                      ETextureCreateFlags::Transient
+#define TexCreate_AtomicCompatible               ETextureCreateFlags::AtomicCompatible
+#define TexCreate_External                       ETextureCreateFlags::External
+#define TexCreate_MultiGPUGraphIgnore            ETextureCreateFlags::MultiGPUGraphIgnore
+#define TexCreate_ReservedResource               ETextureCreateFlags::ReservedResource
+#define TexCreate_ImmediateCommit                ETextureCreateFlags::ImmediateCommit
+#define TexCreate_Invalid                        ETextureCreateFlags::Invalid
+
+enum class ERHIZBuffer
+{
+	// 이 값을 변경하기 전에 모든 수학적 및 셰이더 가정이 올바른지 확인하십시오! 또한 C++ 가정을 static_assert(ERHIZBuffer::IsInvertedZBuffer(), ...);로 래핑하십시오.
+	// 셰이더에서는 Definitions.usf의 HAS_INVERTED_Z_BUFFER를 업데이트해야 합니다.
+	FarPlane = 0,
+	NearPlane = 1,
+
+	// API가 Inverted Z 버퍼를 사용하는지 여부를 알기 위한 'bool' 값
+	IsInverted = (int32)((int32)ERHIZBuffer::FarPlane < (int32)ERHIZBuffer::NearPlane),
+};

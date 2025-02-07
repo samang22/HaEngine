@@ -123,4 +123,20 @@ public:
         return (A < B) ? A : B;
     }
 
+    /** Clamps X to be between Min and Max, inclusive */
+    template< class T >
+    [[nodiscard]] static constexpr FORCEINLINE T Clamp(const T X, const T MinValue, const T MaxValue)
+    {
+        return Max(Min(X, MaxValue), MinValue);
+    }
+    /** Allow mixing float/double arguments, promoting to highest precision type. */
+    //MIX_FLOATS_3_ARGS(Clamp);
+
+    /** Clamps X to be between Min and Max, inclusive. Explicitly defined here for floats/doubles because static analysis gets confused between template and int versions. */
+    [[nodiscard]] static constexpr FORCEINLINE float Clamp(const float X, const float Min, const float Max) { return Clamp<float>(X, Min, Max); }
+    [[nodiscard]] static constexpr FORCEINLINE double Clamp(const double X, const double Min, const double Max) { return Clamp<double>(X, Min, Max); }
+
+    /** Clamps X to be between Min and Max, inclusive. Overload to support mixed int64/int32 types. */
+    [[nodiscard]] static constexpr FORCEINLINE int64 Clamp(const int64 X, const int32 Min, const int32 Max) { return Clamp<int64>(X, Min, Max); }
+
 };

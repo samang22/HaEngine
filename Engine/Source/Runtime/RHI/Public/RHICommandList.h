@@ -3,6 +3,10 @@
 #include "CoreTypes.h"
 #include "DynamicRHI.h"
 #include "RHIContext.h"
+#include "RHIAccess.h"
+
+/** Get the best default resource state for the given texture creation flags */
+extern RHI_API ERHIAccess RHIGetDefaultResourceState(ETextureCreateFlags InUsage, bool bInHasInitialData);
 
 class FRHICommandList
 {
