@@ -465,7 +465,7 @@ struct FRHITextureCreateDesc : public FRHITextureDesc
 	// Constructor for when you already have an FRHITextureDesc
 	FRHITextureCreateDesc(
 		FRHITextureDesc const& InDesc
-		, ERHIAccess InInitialState
+		, ERHIAccess                  InInitialState
 		, TCHAR const* InDebugName
 		, FResourceBulkDataInterface* InBulkData = nullptr
 	)
@@ -520,6 +520,7 @@ struct FRHITextureCreateDesc : public FRHITextureDesc
 	FName OwnerName = NAME_None;	// The owner name used for Insight asset metadata tracing
 };
 
+
 /** The base type of RHI resources. */
 class FRHIResource
 {
@@ -529,9 +530,9 @@ public:
 
 	inline uint32 AddRef() const
 	{
-		int32 NewNum = AtomicFlags.AddRef(std::memory_order_acquire);
-		_ASSERT(NewNum > 0);
-		return uint32(NewNum);
+		int32 NewValue = AtomicFlags.AddRef(std::memory_order_acquire);
+		_ASSERT(NewValue > 0);
+		return uint32(NewValue);
 	}
 
 private:
@@ -541,22 +542,22 @@ private:
 public:
 	inline uint32 Release() const
 	{
-		int32 NewNum = AtomicFlags.Release(std::memory_order_release);
-		_ASSERT(NewNum >= 0);
+		int32 NewValue = AtomicFlags.Release(std::memory_order_release);
+		_ASSERT(NewValue >= 0);
 
-		if (NewNum == 0)
+		if (NewValue == 0)
 		{
 			Destroy();
 		}
-		_ASSERT(NewNum >= 0);
-		return uint32(NewNum);
+		_ASSERT(NewValue >= 0);
+		return uint32(NewValue);
 	}
 
 	inline uint32 GetRefCount() const
 	{
-		int32 CurrentNum = AtomicFlags.GetNumRefs(std::memory_order_relaxed);
-		_ASSERT(CurrentNum >= 0);
-		return uint32(CurrentNum);
+		int32 CurrentValue = AtomicFlags.GetNumRefs(std::memory_order_relaxed);
+		_ASSERT(CurrentValue >= 0);
+		return uint32(CurrentValue);
 	}
 
 	bool IsValid() const
@@ -663,8 +664,8 @@ private:
 	mutable FAtomicFlags AtomicFlags;
 
 	const ERHIResourceType ResourceType;
-	uint8 bCommitted : 1;
-	uint8 bAllowExtendLifetime : 1;
+	uint8 bCommitted : 1 = 0;
+	uint8 bAllowExtendLifetime : 1 = 0;
 
 	RHI_API static FRHIResource* CurrentlyDeleting;
 
@@ -675,4 +676,255 @@ class FRHIViewport : public FRHIResource
 {
 public:
 	FRHIViewport() : FRHIResource(RRT_Viewport) {}
+};
+
+
+class FRHIViewableResource : public FRHIResource
+{
+public:
+	// TODO (RemoveUnknowns) remove once FRHIBufferCreateDesc contains initial access.
+	void SetTrackedAccess_Unsafe(ERHIAccess Access)
+	{
+		TrackedAccess = Access;
+	}
+
+	FName GetName() const
+	{
+		return Name;
+	}
+
+#if ENABLE_RHI_VALIDATION
+	virtual RHIValidation::FResource* GetValidationTrackerResource() = 0;
+#endif
+
+protected:
+	FRHIViewableResource(ERHIResourceType InResourceType, ERHIAccess InAccess)
+		: FRHIResource(InResourceType)
+		, TrackedAccess(InAccess)
+	{
+	}
+
+	void TakeOwnership(FRHIViewableResource& Other)
+	{
+		TrackedAccess = Other.TrackedAccess;
+	}
+
+	void ReleaseOwnership()
+	{
+		TrackedAccess = ERHIAccess::Unknown;
+	}
+
+	FName Name;
+
+private:
+	ERHIAccess TrackedAccess;
+
+	friend class FRHIComputeCommandList;
+	friend class IRHIComputeContext;
+};
+
+class FRHITexture : public FRHIViewableResource
+{
+protected:
+	/** Initialization constructor. Should only be called by platform RHI implementations. */
+	RHI_API FRHITexture(const FRHITextureCreateDesc& InDesc);
+
+public:
+	/**
+	 * 텍스처를 생성하는 데 사용된 텍스처 설명을 가져옵니다.
+	 * 여전히 가상 함수로 남아 있는 이유는 FRHITextureReference가 이 함수를 재정의할 수 있기 때문입니다.
+	 * FRHITextureReference가 더 이상 사용되지 않을 때 가상 키워드를 제거합니다.
+	 *
+	 * @return 텍스처를 생성하는 데 사용된 TextureDesc
+	 */
+	virtual const FRHITextureDesc& GetDesc() const { return TextureDesc; }
+
+	///
+	/// 각 RHI별로 구현된 가상 함수
+	/// 
+
+	virtual class FRHITextureReference* GetTextureReference() { return NULL; }
+	//virtual FRHIDescriptorHandle GetDefaultBindlessHandle() const { return FRHIDescriptorHandle(); }
+
+	/**
+	 * 플랫폼별 네이티브 리소스 포인터에 접근을 반환합니다.
+	 * 이는 플러그인에 기저 리소스에 대한 접근을 제공하기 위해 설계되었으며 매우 신중하게 또는 전혀 사용하지 않아야 합니다.
+	 *
+	 * @return 네이티브 리소스에 대한 포인터 또는 초기화되지 않았거나 이 리소스 타입에서 지원되지 않는 경우 NULL
+	 */
+	virtual void* GetNativeResource() const
+	{
+		// 파생 클래스에서 이 함수를 재정의하여 네이티브 텍스처 리소스에 대한 접근을 노출합니다.
+		return nullptr;
+	}
+
+	/**
+	 * 플랫폼별 네이티브 셰이더 리소스 뷰 포인터에 대한 접근을 반환합니다.
+	 * 이는 플러그인에 기저 리소스에 대한 접근을 제공하기 위해 설계되었으며 매우 신중하게 또는 전혀 사용하지 않아야 합니다.
+	 *
+	 * @return 네이티브 리소스에 대한 포인터 또는 초기화되지 않았거나 이 리소스 타입에서 지원되지 않는 경우 NULL
+	 */
+	virtual void* GetNativeShaderResourceView() const
+	{
+		// 파생 클래스에서 이 함수를 재정의하여 네이티브 텍스처 리소스에 대한 접근을 노출합니다.
+		return nullptr;
+	}
+
+	/**
+	 * 플랫폼별 RHI 텍스처 기본 클래스에 대한 접근을 반환합니다.
+	 * 이는 다중 상속 상황에서 RHI에 기본 클래스에 대한 빠른 접근을 제공하기 위해 설계되었습니다.
+	 *
+	 * @return 플랫폼별 RHI 텍스처 기본 클래스에 대한 포인터 또는 초기화되지 않았거나 이 RHI에서 지원되지 않는 경우 NULL
+	 */
+	virtual void* GetTextureBaseRHI()
+	{
+		// 파생 클래스에서 이 함수를 재정의하여 네이티브 텍스처 리소스에 대한 접근을 노출합니다.
+		return nullptr;
+	}
+
+	virtual void GetWriteMaskProperties(void*& OutData, uint32& OutSize)
+	{
+		OutData = nullptr;
+		OutSize = 0;
+	}
+
+	///
+	/// 헬퍼 getter 함수 - 가상 아님
+	/// 
+
+	/**
+	 * 텍스처의 x, y 및 z 차원을 반환합니다.
+	 * Z 구성 요소는 항상 2D/큐브 리소스의 경우 1이고, 볼륨 텍스처의 깊이 및 배열 텍스처의 배열 크기를 나타냅니다.
+	 */
+	FVector3D GetSizeXYZ() const
+	{
+		const FRHITextureDesc& Desc = GetDesc();
+		switch (Desc.Dimension)
+		{
+		case ETextureDimension::Texture2D:        return FVector3D(Desc.Extent.x, Desc.Extent.y, 1);
+		case ETextureDimension::Texture2DArray:   return FVector3D(Desc.Extent.x, Desc.Extent.y, Desc.ArraySize);
+		case ETextureDimension::Texture3D:        return FVector3D(Desc.Extent.x, Desc.Extent.y, Desc.Depth);
+		case ETextureDimension::TextureCube:      return FVector3D(Desc.Extent.x, Desc.Extent.y, 1);
+		case ETextureDimension::TextureCubeArray: return FVector3D(Desc.Extent.x, Desc.Extent.y, Desc.ArraySize);
+		}
+		return FVector3D(0, 0, 0);
+	}
+
+	/**
+	 * 지정된 mip의 차원(즉, 각 차원에서 실제 텍셀 수)을 반환합니다. ArraySize는 무시됩니다.
+	 * Z 구성 요소는 항상 2D/큐브 리소스의 경우 1이고, 볼륨 텍스처의 깊이를 나타냅니다.
+	 * GetSizeXYZ()와 달리 2D 배열의 경우 Z에 ArraySize를 반환합니다.
+	 */
+	FVector3D GetMipDimensions(uint8 MipIndex) const
+	{
+		const FRHITextureDesc& Desc = GetDesc();
+		return FVector3D(
+			FMath::Max<int32>((int32)Desc.Extent.x >> MipIndex, 1),
+			FMath::Max<int32>((int32)Desc.Extent.y >> MipIndex, 1),
+			FMath::Max<int32>(Desc.Depth >> MipIndex, 1)
+		);
+	}
+
+	/** @return 텍스처가 다중 샘플링되었는지 여부 */
+	bool IsMultisampled() const { return GetDesc().NumSamples > 1; }
+
+	/** @return 텍스처에 클리어 컬러가 정의되어 있는지 여부 */
+	bool HasClearValue() const
+	{
+		return GetDesc().ClearValue.ColorBinding != EClearBinding::ENoneBound;
+	}
+
+	/** @return 설정된 경우 클리어 컬러 값 */
+	FLinearColor GetClearColor() const
+	{
+		return GetDesc().ClearValue.GetClearColor();
+	}
+
+	/** @return 설정된 경우 깊이 및 스텐실 클리어 값 */
+	void GetDepthStencilClearValue(float& OutDepth, uint32& OutStencil) const
+	{
+		return GetDesc().ClearValue.GetDepthStencil(OutDepth, OutStencil);
+	}
+
+	/** @return 설정된 경우 깊이 클리어 값 */
+	float GetDepthClearValue() const
+	{
+		float Depth;
+		uint32 Stencil;
+		GetDesc().ClearValue.GetDepthStencil(Depth, Stencil);
+		return Depth;
+	}
+
+	/** @return 설정된 경우 스텐실 클리어 값 */
+	uint32 GetStencilClearValue() const
+	{
+		float Depth;
+		uint32 Stencil;
+		GetDesc().ClearValue.GetDepthStencil(Depth, Stencil);
+		return Stencil;
+	}
+
+	///
+	/// RenderTime 및 Name 함수 - 가상 아님
+	/// 
+
+	/** 이 텍스처가 리소스 테이블에 마지막으로 캐시된 시간을 설정합니다. */
+	/*inline void SetLastRenderTime(float InLastRenderTime)
+	{
+		LastRenderTime.SetLastRenderTime(InLastRenderTime);
+	}
+
+	double GetLastRenderTime() const
+	{
+		return LastRenderTime.GetLastRenderTime();
+	}*/
+
+	RHI_API void SetName(const FName& InName);
+
+	///
+	/// 사용 중단된 함수들
+	/// 
+
+	//UE_DEPRECATED(5.1, "FRHITexture2D는 더 이상 사용되지 않습니다. FRHITexture를 직접 사용하십시오.")
+	inline FRHITexture* GetTexture2D() { return TextureDesc.Dimension == ETextureDimension::Texture2D ? this : nullptr; }
+	//UE_DEPRECATED(5.1, "FRHITexture2DArray는 더 이상 사용되지 않습니다. FRHITexture를 직접 사용하십시오.")
+	//inline FRHITexture2DArray* GetTexture2DArray() { return TextureDesc.Dimension == ETextureDimension::Texture2DArray ? this : nullptr; }
+	////UE_DEPRECATED(5.1, "FRHITexture3D는 더 이상 사용되지 않습니다. FRHITexture를 직접 사용하십시오.")
+	//inline FRHITexture3D* GetTexture3D() { return TextureDesc.Dimension == ETextureDimension::Texture3D ? this : nullptr; }
+	////UE_DEPRECATED(5.1, "FRHITextureCube는 더 이상 사용되지 않습니다. FRHITexture를 직접 사용하십시오.")
+	//inline FRHITextureCube* GetTextureCube() { return TextureDesc.IsTextureCube() ? this : nullptr; }
+
+	//UE_DEPRECATED(5.1, "GetSizeX()는 더 이상 사용되지 않습니다. GetDesc().Extent.X를 사용하십시오.")
+	uint32 GetSizeX() const { return GetDesc().Extent.x; }
+
+	//UE_DEPRECATED(5.1, "GetSizeY()는 더 이상 사용되지 않습니다. GetDesc().Extent.Y를 사용하십시오.")
+	uint32 GetSizeY() const { return GetDesc().Extent.y; }
+
+	//UE_DEPRECATED(5.1, "GetSizeXY()는 더 이상 사용되지 않습니다. GetDesc().Extent.X 또는 GetDesc().Extent.Y를 사용하십시오.")
+	FVector3D GetSizeXY() const { return FVector3D(GetDesc().Extent.x, GetDesc().Extent.y, 0.f); }
+
+	//UE_DEPRECATED(5.1, "GetSizeZ()는 더 이상 사용되지 않습니다. TextureArrays의 경우 GetDesc().ArraySize를, 3D 텍스처의 경우 GetDesc().Depth를 사용하십시오.")
+	uint32 GetSizeZ() const { return GetSizeXYZ().z; }
+
+	//UE_DEPRECATED(5.1, "GetNumMips()는 더 이상 사용되지 않습니다
+		//UE_DEPRECATED(5.1, "GetNumMips()는 더 이상 사용되지 않습니다. GetDesc().NumMips를 사용하십시오.")
+	uint32 GetNumMips() const { return GetDesc().NumMips; }
+
+	//UE_DEPRECATED(5.1, "GetFormat()는 더 이상 사용되지 않습니다. GetDesc().Format을 사용하십시오.")
+	EPixelFormat GetFormat() const { return GetDesc().Format; }
+
+	//UE_DEPRECATED(5.1, "GetFlags()는 더 이상 사용되지 않습니다. GetDesc().Flags를 사용하십시오.")
+	ETextureCreateFlags GetFlags() const { return GetDesc().Flags; }
+
+	//UE_DEPRECATED(5.1, "GetNumSamples()는 더 이상 사용되지 않습니다. GetDesc().NumSamples를 사용하십시오.")
+	uint32 GetNumSamples() const { return GetDesc().NumSamples; }
+
+	//UE_DEPRECATED(5.1, "GetClearBinding()는 더 이상 사용되지 않습니다. GetDesc().ClearValue를 사용하십시오.")
+	const FClearValueBinding GetClearBinding() const { return GetDesc().ClearValue; }
+
+	//UE_DEPRECATED(5.1, "GetSize()는 더 이상 사용되지 않습니다. GetDesc().Extent.X를 사용하십시오.")
+	uint32 GetSize() const { _ASSERT(GetDesc().IsTextureCube()); return GetDesc().Extent.x; }
+
+private:
+	FRHITextureDesc TextureDesc;
 };

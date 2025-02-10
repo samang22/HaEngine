@@ -1,7 +1,7 @@
 #include "UObject/NameTypes.h"
 #include "UObject/UObjectGlobals.h"
 #include "CoreTypes.h"
-#include "Logging/Logger.h"
+//#include "Logging/Logger.h"
 
 unordered_map<uint64, FString>& GetNamePool()
 {
@@ -43,7 +43,7 @@ void FName::ToString(FString& Out) const
 {
 	if (HashCode == 0)
 	{
-		E_LOG(Error, TEXT("HashCode == 0"));
+		//E_LOG(Error, TEXT("HashCode == 0"));
 		return;
 	}
 

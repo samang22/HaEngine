@@ -1,12 +1,14 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "RenderResource.h"
+#include "D3D11Resources.h"
 
 class FD3D11Viewport : public FRHIViewport
 {
 public:
 	D3D11RHI_API FD3D11Viewport(class FD3D11DynamicRHI* InD3DRHI, HWND InWindowHandle, uint32 InSizeX, uint32 InSizeY, bool bInIsFullscreen, EPixelFormat InPreferredPixelFormat);
 	D3D11RHI_API ~FD3D11Viewport();
+
+	static D3D11RHI_API FD3D11Texture* GetSwapChainSurface(FD3D11DynamicRHI* D3DRHI, EPixelFormat PixelFormat, uint32 SizeX, uint32 SizeY, IDXGISwapChain* SwapChain);
 
 	static DXGI_FORMAT GetRenderTargetFormat(EPixelFormat PixelFormat)
 	{
@@ -28,9 +30,13 @@ protected:
 	HWND WindowHandle = NULL;
 	uint32 SizeX = 0;
 	uint32 SizeY = 0;
+	uint32 BackBufferCount;
 	bool bIsFullscreen = false;
 	bool bAllowTearing = false;
 	EPixelFormat PixelFormat;
 
 	static D3D11RHI_API uint32 GSwapChainFlags;
+
+	TRefCountPtr<IDXGISwapChain> SwapChain;
+	TRefCountPtr<FD3D11Texture> BackBuffer;
 };

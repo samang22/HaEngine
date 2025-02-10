@@ -13,3 +13,15 @@ RHI_API void FRHIResource::Destroy() const
 {
 	delete this;
 }
+
+FRHITexture::FRHITexture(const FRHITextureCreateDesc& InDesc)
+	: FRHIViewableResource(RRT_Texture, InDesc.InitialState)
+	, TextureDesc(InDesc)
+{
+	SetName(InDesc.DebugName);
+}
+
+RHI_API void FRHITexture::SetName(const FName& InName)
+{
+	Name = InName;
+}

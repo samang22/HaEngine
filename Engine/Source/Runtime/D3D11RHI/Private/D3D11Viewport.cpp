@@ -11,10 +11,3 @@ FViewportRHIRef FD3D11DynamicRHI::RHICreateViewport(void* WindowHandle, uint32 S
     return new FD3D11Viewport(this, (HWND)WindowHandle, SizeX, SizeY, bIsFullscreen, PreferredPixelFormat);
 }
 
-FD3D11Viewport::FD3D11Viewport(FD3D11DynamicRHI* InD3DRHI, HWND InWindowHandle, uint32 InSizeX, uint32 InSizeY, bool bInIsFullscreen, EPixelFormat InPreferredPixelFormat)
-{
-}
-
-FD3D11Viewport::~FD3D11Viewport()
-{
-}
