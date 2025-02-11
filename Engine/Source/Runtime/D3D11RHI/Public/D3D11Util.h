@@ -2,6 +2,9 @@
 #include "CoreMinimal.h"
 
 class ID3D11Device;
+class ID3D11DeviceContext;
+class ID3D11RenderTargetView;
+class ID3D11DepthStencilView;
 
 /*=============================================================================
 	D3D11Util.h: D3D RHI utility definitions.
@@ -43,3 +46,29 @@ extern D3D11RHI_API void VerifyD3D11Result(HRESULT Result, const ANSICHAR* Code,
 
 /** 제공된 오류 코드에 대한 문자열을 반환하며, 디바이스가 제공된 경우 디바이스 제거 정보도 포함할 수 있습니다. */
 FString GetD3D11ErrorString(HRESULT ErrorCode, ID3D11Device* Device);
+
+/**
+ * 디바이스 컨텍스트에 현재 바인딩된 렌더 타겟을 검색하는 클래스.
+ */
+class FD3D11BoundRenderTargets
+{
+public:
+    /** 초기화 생성자: 디바이스 컨텍스트가 필요합니다. */
+    explicit FD3D11BoundRenderTargets(ID3D11DeviceContext* InDeviceContext);
+
+    /** 소멸자. */
+    ~FD3D11BoundRenderTargets();
+
+    /** 접근자. */
+    FORCEINLINE int32 GetNumActiveTargets() const { return NumActiveTargets; }
+    FORCEINLINE ID3D11RenderTargetView* GetRenderTargetView(int32 TargetIndex) { return RenderTargetViews[TargetIndex]; }
+    FORCEINLINE ID3D11DepthStencilView* GetDepthStencilView() { return DepthStencilView; }
+
+private:
+    /** 활성 렌더 타겟 뷰. */
+    ID3D11RenderTargetView* RenderTargetViews[MaxSimultaneousRenderTargets];
+    /** 활성 깊이 스텐실 뷰. */
+    ID3D11DepthStencilView* DepthStencilView;
+    /** 활성 렌더 타겟의 수. */
+    int32 NumActiveTargets;
+};

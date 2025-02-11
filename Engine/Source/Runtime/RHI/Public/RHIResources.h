@@ -1341,3 +1341,435 @@ public:
 			DepthStencilAccess == Other.DepthStencilAccess;
 	}
 };
+
+class FRHISetRenderTargetsInfo
+{
+public:
+	// Color Render Targets Info
+	FRHIRenderTargetView ColorRenderTarget[MaxSimultaneousRenderTargets];
+	int32 NumColorRenderTargets;
+	bool bClearColor;
+
+	//MSAA를 사용한 렌더링에서, 여러 샘플을 하나의 색상 값으로 결합(resolve)하기 위한 렌더 타겟	
+	FRHIRenderTargetView ColorResolveRenderTarget[MaxSimultaneousRenderTargets];
+	bool bHasResolveAttachments;
+
+	// Depth/Stencil Render Target Info
+	FRHIDepthRenderTargetView DepthStencilRenderTarget;
+	bool bClearDepth;
+	bool bClearStencil;
+
+	//FRHITexture* ShadingRateTexture;
+	//EVRSRateCombiner ShadingRateTextureCombiner;
+
+	uint8 MultiViewCount;
+
+	FRHISetRenderTargetsInfo() :
+		NumColorRenderTargets(0),
+		bClearColor(false),
+		bHasResolveAttachments(false),
+		bClearDepth(false),
+		//ShadingRateTexture(nullptr),
+		MultiViewCount(0)
+	{
+	}
+
+	FRHISetRenderTargetsInfo(int32 InNumColorRenderTargets, const FRHIRenderTargetView* InColorRenderTargets, const FRHIDepthRenderTargetView& InDepthStencilRenderTarget) :
+		NumColorRenderTargets(InNumColorRenderTargets),
+		bClearColor(InNumColorRenderTargets > 0 && InColorRenderTargets[0].LoadAction == ERenderTargetLoadAction::EClear),
+		bHasResolveAttachments(false),
+		DepthStencilRenderTarget(InDepthStencilRenderTarget),
+		bClearDepth(InDepthStencilRenderTarget.Texture&& InDepthStencilRenderTarget.DepthLoadAction == ERenderTargetLoadAction::EClear)
+		//ShadingRateTexture(nullptr),
+		//ShadingRateTextureCombiner(VRSRB_Passthrough)
+	{
+		_ASSERT(InNumColorRenderTargets <= 0 || InColorRenderTargets);
+		for (int32 Index = 0; Index < InNumColorRenderTargets; ++Index)
+		{
+			ColorRenderTarget[Index] = InColorRenderTargets[Index];
+		}
+	}
+	// @todo metal mrt: This can go away after all the cleanup is done
+	void SetClearDepthStencil(bool bInClearDepth, bool bInClearStencil = false)
+	{
+		if (bInClearDepth)
+		{
+			DepthStencilRenderTarget.DepthLoadAction = ERenderTargetLoadAction::EClear;
+		}
+		if (bInClearStencil)
+		{
+			DepthStencilRenderTarget.StencilLoadAction = ERenderTargetLoadAction::EClear;
+		}
+		bClearDepth = bInClearDepth;
+		bClearStencil = bInClearStencil;
+	}
+};
+
+
+enum class ERenderTargetActions : uint8
+{
+	LoadOpMask = 2,
+
+#define RTACTION_MAKE_MASK(Load, Store) (((uint8)ERenderTargetLoadAction::Load << (uint8)LoadOpMask) | (uint8)ERenderTargetStoreAction::Store)
+
+	DontLoad_DontStore = RTACTION_MAKE_MASK(ENoAction, ENoAction),
+
+	DontLoad_Store = RTACTION_MAKE_MASK(ENoAction, EStore),
+	Clear_Store = RTACTION_MAKE_MASK(EClear, EStore),
+	Load_Store = RTACTION_MAKE_MASK(ELoad, EStore),
+
+	Clear_DontStore = RTACTION_MAKE_MASK(EClear, ENoAction),
+	Load_DontStore = RTACTION_MAKE_MASK(ELoad, ENoAction),
+	Clear_Resolve = RTACTION_MAKE_MASK(EClear, EMultisampleResolve),
+	Load_Resolve = RTACTION_MAKE_MASK(ELoad, EMultisampleResolve),
+
+#undef RTACTION_MAKE_MASK
+};
+
+inline ERenderTargetActions MakeRenderTargetActions(ERenderTargetLoadAction Load, ERenderTargetStoreAction Store)
+{
+	return (ERenderTargetActions)(((uint8)Load << (uint8)ERenderTargetActions::LoadOpMask) | (uint8)Store);
+}
+
+inline ERenderTargetLoadAction GetLoadAction(ERenderTargetActions Action)
+{
+	return (ERenderTargetLoadAction)((uint8)Action >> (uint8)ERenderTargetActions::LoadOpMask);
+}
+
+inline ERenderTargetStoreAction GetStoreAction(ERenderTargetActions Action)
+{
+	return (ERenderTargetStoreAction)((uint8)Action & ((1 << (uint8)ERenderTargetActions::LoadOpMask) - 1));
+}
+
+enum class EDepthStencilTargetActions : uint8
+{
+	DepthMask = 4,
+
+#define RTACTION_MAKE_MASK(Depth, Stencil) (((uint8)ERenderTargetActions::Depth << (uint8)DepthMask) | (uint8)ERenderTargetActions::Stencil)
+
+	DontLoad_DontStore = RTACTION_MAKE_MASK(DontLoad_DontStore, DontLoad_DontStore),
+	DontLoad_StoreDepthStencil = RTACTION_MAKE_MASK(DontLoad_Store, DontLoad_Store),
+	DontLoad_StoreStencilNotDepth = RTACTION_MAKE_MASK(DontLoad_DontStore, DontLoad_Store),
+	ClearDepthStencil_StoreDepthStencil = RTACTION_MAKE_MASK(Clear_Store, Clear_Store),
+	LoadDepthStencil_StoreDepthStencil = RTACTION_MAKE_MASK(Load_Store, Load_Store),
+	LoadDepthNotStencil_StoreDepthNotStencil = RTACTION_MAKE_MASK(Load_Store, DontLoad_DontStore),
+	LoadDepthNotStencil_DontStore = RTACTION_MAKE_MASK(Load_DontStore, DontLoad_DontStore),
+	LoadDepthStencil_StoreStencilNotDepth = RTACTION_MAKE_MASK(Load_DontStore, Load_Store),
+
+	ClearDepthStencil_DontStoreDepthStencil = RTACTION_MAKE_MASK(Clear_DontStore, Clear_DontStore),
+	LoadDepthStencil_DontStoreDepthStencil = RTACTION_MAKE_MASK(Load_DontStore, Load_DontStore),
+	ClearDepthStencil_StoreDepthNotStencil = RTACTION_MAKE_MASK(Clear_Store, Clear_DontStore),
+	ClearDepthStencil_StoreStencilNotDepth = RTACTION_MAKE_MASK(Clear_DontStore, Clear_Store),
+	ClearDepthStencil_ResolveDepthNotStencil = RTACTION_MAKE_MASK(Clear_Resolve, Clear_DontStore),
+	ClearDepthStencil_ResolveStencilNotDepth = RTACTION_MAKE_MASK(Clear_DontStore, Clear_Resolve),
+	LoadDepthClearStencil_StoreDepthStencil = RTACTION_MAKE_MASK(Load_Store, Clear_Store),
+
+	ClearStencilDontLoadDepth_StoreStencilNotDepth = RTACTION_MAKE_MASK(DontLoad_DontStore, Clear_Store),
+
+#undef RTACTION_MAKE_MASK
+};
+
+inline constexpr EDepthStencilTargetActions MakeDepthStencilTargetActions(const ERenderTargetActions Depth, const ERenderTargetActions Stencil)
+{
+	return (EDepthStencilTargetActions)(((uint8)Depth << (uint8)EDepthStencilTargetActions::DepthMask) | (uint8)Stencil);
+}
+
+inline ERenderTargetActions GetDepthActions(EDepthStencilTargetActions Action)
+{
+	return (ERenderTargetActions)((uint8)Action >> (uint8)EDepthStencilTargetActions::DepthMask);
+}
+
+inline ERenderTargetActions GetStencilActions(EDepthStencilTargetActions Action)
+{
+	return (ERenderTargetActions)((uint8)Action & ((1 << (uint8)EDepthStencilTargetActions::DepthMask) - 1));
+}
+
+struct FRHIRenderPassInfo
+{
+	struct FColorEntry
+	{
+		FRHITexture* RenderTarget = nullptr;
+		FRHITexture* ResolveTarget = nullptr;
+		int32                ArraySlice = -1;
+		uint8                MipIndex = 0;
+		ERenderTargetActions Action = ERenderTargetActions::DontLoad_DontStore;
+	};
+	TStaticArray<FColorEntry, MaxSimultaneousRenderTargets> ColorRenderTargets;
+
+	struct FDepthStencilEntry
+	{
+		FRHITexture* DepthStencilTarget = nullptr;
+		FRHITexture* ResolveTarget = nullptr;
+		EDepthStencilTargetActions Action = EDepthStencilTargetActions::DontLoad_DontStore;
+		FExclusiveDepthStencil ExclusiveDepthStencil;
+	};
+	FDepthStencilEntry DepthStencilRenderTarget;
+
+	// 멀티샘플 해상도 또는 래스터 UAV(즉, 고정 기능 타겟 아님) 작업의 영역을 제어합니다.
+	//FResolveRect ResolveRect;
+
+	// Some RHIs can use a texture to control the sampling and/or shading resolution of different areas 
+	//FTextureRHIRef ShadingRateTexture = nullptr;
+	//EVRSRateCombiner ShadingRateTextureCombiner = VRSRB_Passthrough;
+
+	// Some RHIs require a hint that occlusion queries will be used in this render pass
+	uint32 NumOcclusionQueries = 0;
+	bool bOcclusionQueries = false;
+
+	// if this renderpass should be multiview, and if so how many views are required
+	uint8 MultiViewCount = 0;
+
+	// Hint for some RHI's that renderpass will have specific sub-passes 
+	//ESubpassHint SubpassHint = ESubpassHint::None;
+
+	FRHIRenderPassInfo() = default;
+	FRHIRenderPassInfo(const FRHIRenderPassInfo&) = default;
+	FRHIRenderPassInfo& operator=(const FRHIRenderPassInfo&) = default;
+
+	// Color, no depth, optional resolve, optional mip, optional array slice
+	explicit FRHIRenderPassInfo(FRHITexture* ColorRT, ERenderTargetActions ColorAction, FRHITexture* ResolveRT = nullptr, uint8 InMipIndex = 0, int32 InArraySlice = -1)
+	{
+		_ASSERT(!(ResolveRT && ResolveRT->IsMultisampled()));
+		_ASSERT(ColorRT);
+		ColorRenderTargets[0].RenderTarget = ColorRT;
+		ColorRenderTargets[0].ResolveTarget = ResolveRT;
+		ColorRenderTargets[0].ArraySlice = InArraySlice;
+		ColorRenderTargets[0].MipIndex = InMipIndex;
+		ColorRenderTargets[0].Action = ColorAction;
+	}
+
+	// Color MRTs, no depth
+	explicit FRHIRenderPassInfo(int32 NumColorRTs, FRHITexture* ColorRTs[], ERenderTargetActions ColorAction)
+	{
+		_ASSERT(NumColorRTs > 0);
+		for (int32 Index = 0; Index < NumColorRTs; ++Index)
+		{
+			_ASSERT(ColorRTs[Index]);
+			ColorRenderTargets[Index].RenderTarget = ColorRTs[Index];
+			ColorRenderTargets[Index].ArraySlice = -1;
+			ColorRenderTargets[Index].Action = ColorAction;
+		}
+		DepthStencilRenderTarget.DepthStencilTarget = nullptr;
+		DepthStencilRenderTarget.Action = EDepthStencilTargetActions::DontLoad_DontStore;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = FExclusiveDepthStencil::DepthNop_StencilNop;
+		DepthStencilRenderTarget.ResolveTarget = nullptr;
+	}
+
+	// Color MRTs, no depth
+	explicit FRHIRenderPassInfo(int32 NumColorRTs, FRHITexture* ColorRTs[], ERenderTargetActions ColorAction, FRHITexture* ResolveTargets[])
+	{
+		_ASSERT(NumColorRTs > 0);
+		for (int32 Index = 0; Index < NumColorRTs; ++Index)
+		{
+			_ASSERT(ColorRTs[Index]);
+			ColorRenderTargets[Index].RenderTarget = ColorRTs[Index];
+			ColorRenderTargets[Index].ResolveTarget = ResolveTargets[Index];
+			ColorRenderTargets[Index].ArraySlice = -1;
+			ColorRenderTargets[Index].MipIndex = 0;
+			ColorRenderTargets[Index].Action = ColorAction;
+		}
+		DepthStencilRenderTarget.DepthStencilTarget = nullptr;
+		DepthStencilRenderTarget.Action = EDepthStencilTargetActions::DontLoad_DontStore;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = FExclusiveDepthStencil::DepthNop_StencilNop;
+		DepthStencilRenderTarget.ResolveTarget = nullptr;
+	}
+
+	// Color MRTs and depth
+	explicit FRHIRenderPassInfo(int32 NumColorRTs, FRHITexture* ColorRTs[], ERenderTargetActions ColorAction, FRHITexture* DepthRT, EDepthStencilTargetActions DepthActions, FExclusiveDepthStencil InEDS = FExclusiveDepthStencil::DepthWrite_StencilWrite)
+	{
+		_ASSERT(NumColorRTs > 0);
+		for (int32 Index = 0; Index < NumColorRTs; ++Index)
+		{
+			_ASSERT(ColorRTs[Index]);
+			ColorRenderTargets[Index].RenderTarget = ColorRTs[Index];
+			ColorRenderTargets[Index].ResolveTarget = nullptr;
+			ColorRenderTargets[Index].ArraySlice = -1;
+			ColorRenderTargets[Index].MipIndex = 0;
+			ColorRenderTargets[Index].Action = ColorAction;
+		}
+		_ASSERT(DepthRT);
+		DepthStencilRenderTarget.DepthStencilTarget = DepthRT;
+		DepthStencilRenderTarget.ResolveTarget = nullptr;
+		DepthStencilRenderTarget.Action = DepthActions;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = InEDS;
+	}
+
+	// Color MRTs and depth
+	explicit FRHIRenderPassInfo(int32 NumColorRTs, FRHITexture* ColorRTs[], ERenderTargetActions ColorAction, FRHITexture* ResolveRTs[], FRHITexture* DepthRT, EDepthStencilTargetActions DepthActions, FRHITexture* ResolveDepthRT, FExclusiveDepthStencil InEDS = FExclusiveDepthStencil::DepthWrite_StencilWrite)
+	{
+		_ASSERT(NumColorRTs > 0);
+		for (int32 Index = 0; Index < NumColorRTs; ++Index)
+		{
+			_ASSERT(!ResolveRTs[Index] || ResolveRTs[Index]->IsMultisampled());
+			_ASSERT(ColorRTs[Index]);
+			ColorRenderTargets[Index].RenderTarget = ColorRTs[Index];
+			ColorRenderTargets[Index].ResolveTarget = ResolveRTs[Index];
+			ColorRenderTargets[Index].ArraySlice = -1;
+			ColorRenderTargets[Index].MipIndex = 0;
+			ColorRenderTargets[Index].Action = ColorAction;
+		}
+		_ASSERT(!ResolveDepthRT || ResolveDepthRT->IsMultisampled());
+		_ASSERT(DepthRT);
+		DepthStencilRenderTarget.DepthStencilTarget = DepthRT;
+		DepthStencilRenderTarget.ResolveTarget = ResolveDepthRT;
+		DepthStencilRenderTarget.Action = DepthActions;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = InEDS;
+	}
+
+	// Depth, no color
+	explicit FRHIRenderPassInfo(FRHITexture* DepthRT, EDepthStencilTargetActions DepthActions, FRHITexture* ResolveDepthRT = nullptr, FExclusiveDepthStencil InEDS = FExclusiveDepthStencil::DepthWrite_StencilWrite)
+	{
+		_ASSERT(!ResolveDepthRT || ResolveDepthRT->IsMultisampled());
+		_ASSERT(DepthRT);
+		DepthStencilRenderTarget.DepthStencilTarget = DepthRT;
+		DepthStencilRenderTarget.ResolveTarget = ResolveDepthRT;
+		DepthStencilRenderTarget.Action = DepthActions;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = InEDS;
+	}
+
+	// Depth, no color, occlusion queries
+	explicit FRHIRenderPassInfo(FRHITexture* DepthRT, uint32 InNumOcclusionQueries, EDepthStencilTargetActions DepthActions, FRHITexture* ResolveDepthRT = nullptr, FExclusiveDepthStencil InEDS = FExclusiveDepthStencil::DepthWrite_StencilWrite)
+		: NumOcclusionQueries(InNumOcclusionQueries)
+	{
+		_ASSERT(!ResolveDepthRT || ResolveDepthRT->IsMultisampled());
+		_ASSERT(DepthRT);
+		DepthStencilRenderTarget.DepthStencilTarget = DepthRT;
+		DepthStencilRenderTarget.ResolveTarget = ResolveDepthRT;
+		DepthStencilRenderTarget.Action = DepthActions;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = InEDS;
+	}
+
+	// Color and depth
+	explicit FRHIRenderPassInfo(FRHITexture* ColorRT, ERenderTargetActions ColorAction, FRHITexture* DepthRT, EDepthStencilTargetActions DepthActions, FExclusiveDepthStencil InEDS = FExclusiveDepthStencil::DepthWrite_StencilWrite)
+	{
+		_ASSERT(ColorRT);
+		ColorRenderTargets[0].RenderTarget = ColorRT;
+		ColorRenderTargets[0].ResolveTarget = nullptr;
+		ColorRenderTargets[0].ArraySlice = -1;
+		ColorRenderTargets[0].MipIndex = 0;
+		ColorRenderTargets[0].Action = ColorAction;
+		_ASSERT(DepthRT);
+		DepthStencilRenderTarget.DepthStencilTarget = DepthRT;
+		DepthStencilRenderTarget.ResolveTarget = nullptr;
+		DepthStencilRenderTarget.Action = DepthActions;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = InEDS;
+		ZeroMemory(&ColorRenderTargets[1], sizeof(FColorEntry) * (MaxSimultaneousRenderTargets - 1));
+	}
+
+	// Color and depth with resolve
+	explicit FRHIRenderPassInfo(FRHITexture* ColorRT, ERenderTargetActions ColorAction, FRHITexture* ResolveColorRT,
+		FRHITexture* DepthRT, EDepthStencilTargetActions DepthActions, FRHITexture* ResolveDepthRT, FExclusiveDepthStencil InEDS = FExclusiveDepthStencil::DepthWrite_StencilWrite)
+	{
+		_ASSERT(!ResolveColorRT || ResolveColorRT->IsMultisampled());
+		_ASSERT(!ResolveDepthRT || ResolveDepthRT->IsMultisampled());
+		_ASSERT(ColorRT);
+		ColorRenderTargets[0].RenderTarget = ColorRT;
+		ColorRenderTargets[0].ResolveTarget = ResolveColorRT;
+		ColorRenderTargets[0].ArraySlice = -1;
+		ColorRenderTargets[0].MipIndex = 0;
+		ColorRenderTargets[0].Action = ColorAction;
+		_ASSERT(DepthRT);
+		DepthStencilRenderTarget.DepthStencilTarget = DepthRT;
+		DepthStencilRenderTarget.ResolveTarget = ResolveDepthRT;
+		DepthStencilRenderTarget.Action = DepthActions;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = InEDS;
+		ZeroMemory(&ColorRenderTargets[1], sizeof(FColorEntry) * (MaxSimultaneousRenderTargets - 1));
+	}
+
+	// Color and depth with resolve and optional sample density
+	/*explicit FRHIRenderPassInfo(FRHITexture* ColorRT, ERenderTargetActions ColorAction, FRHITexture* ResolveColorRT,
+		FRHITexture* DepthRT, EDepthStencilTargetActions DepthActions, FRHITexture* ResolveDepthRT,
+		FRHITexture* InShadingRateTexture, EVRSRateCombiner InShadingRateTextureCombiner,
+		FExclusiveDepthStencil InEDS = FExclusiveDepthStencil::DepthWrite_StencilWrite)
+	{
+		check(!ResolveColorRT || ResolveColorRT->IsMultisampled());
+		check(!ResolveDepthRT || ResolveDepthRT->IsMultisampled());
+		check(ColorRT);
+		ColorRenderTargets[0].RenderTarget = ColorRT;
+		ColorRenderTargets[0].ResolveTarget = ResolveColorRT;
+		ColorRenderTargets[0].ArraySlice = -1;
+		ColorRenderTargets[0].MipIndex = 0;
+		ColorRenderTargets[0].Action = ColorAction;
+		check(DepthRT);
+		DepthStencilRenderTarget.DepthStencilTarget = DepthRT;
+		DepthStencilRenderTarget.ResolveTarget = ResolveDepthRT;
+		DepthStencilRenderTarget.Action = DepthActions;
+		DepthStencilRenderTarget.ExclusiveDepthStencil = InEDS;
+		ShadingRateTexture = InShadingRateTexture;
+		ShadingRateTextureCombiner = InShadingRateTextureCombiner;
+		FMemory::Memzero(&ColorRenderTargets[1], sizeof(FColorEntry) * (MaxSimultaneousRenderTargets - 1));
+	}*/
+
+	inline int32 GetNumColorRenderTargets() const
+	{
+		int32 ColorIndex = 0;
+		for (; ColorIndex < MaxSimultaneousRenderTargets; ++ColorIndex)
+		{
+			const FColorEntry& Entry = ColorRenderTargets[ColorIndex];
+			if (!Entry.RenderTarget)
+			{
+				break;
+			}
+		}
+
+		return ColorIndex;
+	}
+
+	/*FGraphicsPipelineRenderTargetsInfo ExtractRenderTargetsInfo() const
+	{
+		FGraphicsPipelineRenderTargetsInfo RenderTargetsInfo;
+
+		RenderTargetsInfo.NumSamples = 1;
+		int32 RenderTargetIndex = 0;
+
+		for (; RenderTargetIndex < MaxSimultaneousRenderTargets; ++RenderTargetIndex)
+		{
+			FRHITexture* RenderTarget = ColorRenderTargets[RenderTargetIndex].RenderTarget;
+			if (!RenderTarget)
+			{
+				break;
+			}
+
+			RenderTargetsInfo.RenderTargetFormats[RenderTargetIndex] = (uint8)RenderTarget->GetFormat();
+			RenderTargetsInfo.RenderTargetFlags[RenderTargetIndex] = RenderTarget->GetFlags();
+			RenderTargetsInfo.NumSamples |= RenderTarget->GetNumSamples();
+		}
+
+		RenderTargetsInfo.RenderTargetsEnabled = RenderTargetIndex;
+		for (; RenderTargetIndex < MaxSimultaneousRenderTargets; ++RenderTargetIndex)
+		{
+			RenderTargetsInfo.RenderTargetFormats[RenderTargetIndex] = PF_Unknown;
+		}
+
+		if (DepthStencilRenderTarget.DepthStencilTarget)
+		{
+			RenderTargetsInfo.DepthStencilTargetFormat = DepthStencilRenderTarget.DepthStencilTarget->GetFormat();
+			RenderTargetsInfo.DepthStencilTargetFlag = DepthStencilRenderTarget.DepthStencilTarget->GetFlags();
+			RenderTargetsInfo.NumSamples |= DepthStencilRenderTarget.DepthStencilTarget->GetNumSamples();
+		}
+		else
+		{
+			RenderTargetsInfo.DepthStencilTargetFormat = PF_Unknown;
+		}
+
+		const ERenderTargetActions DepthActions = GetDepthActions(DepthStencilRenderTarget.Action);
+		const ERenderTargetActions StencilActions = GetStencilActions(DepthStencilRenderTarget.Action);
+		RenderTargetsInfo.DepthTargetLoadAction = GetLoadAction(DepthActions);
+		RenderTargetsInfo.DepthTargetStoreAction = GetStoreAction(DepthActions);
+		RenderTargetsInfo.StencilTargetLoadAction = GetLoadAction(StencilActions);
+		RenderTargetsInfo.StencilTargetStoreAction = GetStoreAction(StencilActions);
+		RenderTargetsInfo.DepthStencilAccess = DepthStencilRenderTarget.ExclusiveDepthStencil;
+
+		RenderTargetsInfo.MultiViewCount = MultiViewCount;
+		RenderTargetsInfo.bHasFragmentDensityAttachment = ShadingRateTexture != nullptr;
+
+		return RenderTargetsInfo;
+	}*/
+
+	//#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	//    RHI_API void Validate() const;
+	//#else
+	//    void Validate() const {}
+	//#endif
+	RHI_API void ConvertToRenderTargetsInfo(FRHISetRenderTargetsInfo& OutRTInfo) const;
+};

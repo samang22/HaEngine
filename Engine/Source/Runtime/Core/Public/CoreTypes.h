@@ -39,6 +39,8 @@ using FString = std::wstring;
 using FStringView = std::wstring_view;
 template<class T>
 using TArray = std::vector<T>;
+template<class T, size_t _Size>
+using TStaticArray = std::array<T, _Size>;
 template<class T>
 using TSet = std::set<T>;
 template<class T>

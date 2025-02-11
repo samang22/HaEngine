@@ -23,8 +23,14 @@ void FD3D11DynamicRHI::RHIBeginDrawingViewport(FRHIViewport* ViewportRHI, FRHITe
 		RenderTarget = Viewport->GetBackBuffer();
 	}
 
-	FRHIRenderTargetView View(RenderTarget, ERenderTargetLoadAction::ELoad);
-	SetRenderTargets(1, &View, nullptr);
+	//FRHIRenderTargetView View(RenderTarget, ERenderTargetLoadAction::ELoad);
+	//SetRenderTargets(1, &View, nullptr);
+
+
+	FRHISetRenderTargetsInfo RTInfo;
+	FRHIRenderPassInfo RPInfo(RenderTarget, ERenderTargetActions::Clear_DontStore);
+	RPInfo.ConvertToRenderTargetsInfo(RTInfo);
+	SetRenderTargetsAndClear(RTInfo);
 
 	// 우리는 생략 가능
 	// RHISetScissorRect
@@ -37,10 +43,93 @@ void FD3D11DynamicRHI::RHIEndDrawingViewport(FRHIViewport* ViewportRHI, bool bPr
 	_ASSERT(DrawingViewport.GetReference() == Viewport);
 	DrawingViewport = NULL;
 
+	// Clear references the device might have to resources.
+	CurrentDepthTexture = NULL;
+	CurrentDepthStencilTarget = NULL;
+	CurrentDSVAccessType = FExclusiveDepthStencil::DepthWrite_StencilWrite;
+	CurrentRenderTargets[0] = NULL;
+	for (uint32 RenderTargetIndex = 1; RenderTargetIndex < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++RenderTargetIndex)
+	{
+		CurrentRenderTargets[RenderTargetIndex] = NULL;
+	}
+
+	//ClearAllShaderResources();
+
+	//CommitRenderTargetsAndUAVs();
+	
+	//StateCache.SetVertexShader(nullptr);
+	
+	//uint16 NullStreamStrides[MaxVertexElementCount] = { 0 };
+	//StateCache.SetStreamStrides(NullStreamStrides);
+	//for (uint32 StreamIndex = 0; StreamIndex < MaxVertexElementCount; ++StreamIndex)
+	//{
+	//	StateCache.SetStreamSource(nullptr, StreamIndex, 0, 0);
+	//}
+	
+	//StateCache.SetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
+	
+	//CurrentResourceBoundAsIB = nullptr;
+	//FMemory::Memzero(CurrentResourcesBoundAsVBs, sizeof(CurrentResourcesBoundAsVBs));
+	//MaxBoundVertexBufferIndex = INDEX_NONE;
+	
+	//StateCache.SetPixelShader(nullptr);
+	//StateCache.SetGeometryShader(nullptr);
+	//// Compute Shader is set to NULL after each Dispatch call, so no need to clear it here
+
+
 	bool bNativelyPresented = true;
 	if (bPresent)
 	{
 		bNativelyPresented = Viewport->Present(bLockToVsync);
+	}
+}
+
+void FD3D11DynamicRHI::RHIClearMRTImpl(const bool* bClearColorArray, int32 NumClearColors, const FLinearColor* ClearColorArray, bool bClearDepth, float Depth, bool bClearStencil, uint32 Stencil)
+{
+	FD3D11BoundRenderTargets BoundRenderTargets(Direct3DDeviceIMContext);
+
+	// 모든 활성 렌더 타겟에 대해 충분한 클리어 색을 지정해야 합니다.
+	_ASSERT(!bClearColorArray || NumClearColors >= BoundRenderTargets.GetNumActiveTargets());
+
+	// 깊이나 스텐실을 클리어해야 하고 읽기 전용 깊이/스텐실 뷰가 바인딩되어 있는 경우, 쓰기 가능한 깊이/스텐실 뷰를 사용해야 합니다.
+	if (CurrentDepthTexture)
+	{
+		FExclusiveDepthStencil RequestedAccess;
+
+		RequestedAccess.SetDepthStencilWrite(bClearDepth, bClearStencil);
+
+		_ASSERT(RequestedAccess.IsValid(CurrentDSVAccessType));
+	}
+
+	ID3D11DepthStencilView* DepthStencilView = BoundRenderTargets.GetDepthStencilView();
+
+	if (bClearColorArray && BoundRenderTargets.GetNumActiveTargets() > 0)
+	{
+		for (int32 TargetIndex = 0; TargetIndex < BoundRenderTargets.GetNumActiveTargets(); TargetIndex++)
+		{
+			if (bClearColorArray[TargetIndex])
+			{
+				ID3D11RenderTargetView* RenderTargetView = BoundRenderTargets.GetRenderTargetView(TargetIndex);
+				if (RenderTargetView != nullptr)
+				{
+					Direct3DDeviceIMContext->ClearRenderTargetView(RenderTargetView, (float*)&ClearColorArray[TargetIndex]);
+				}
+			}
+		}
+	}
+
+	if ((bClearDepth || bClearStencil) && DepthStencilView)
+	{
+		uint32 ClearFlags = 0;
+		if (bClearDepth)
+		{
+			ClearFlags |= D3D11_CLEAR_DEPTH;
+		}
+		if (bClearStencil)
+		{
+			ClearFlags |= D3D11_CLEAR_STENCIL;
+		}
+		Direct3DDeviceIMContext->ClearDepthStencilView(DepthStencilView, ClearFlags, Depth, Stencil);
 	}
 }
 
@@ -167,6 +256,10 @@ void FD3D11DynamicRHI::SetRenderTargets(
 	//	DepthTargetTexture->GetDesc(&DTTDesc);
 	//	RHISetViewport(0.0f, 0.0f, 0.0f, (float)DTTDesc.Width, (float)DTTDesc.Height, 1.0f);
 	//}
+}
+
+void FD3D11DynamicRHI::SetRenderTargetsAndClear(const FRHISetRenderTargetsInfo& RenderTargetsInfo)
+{
 }
 
 void FD3D11DynamicRHI::ConditionalClearShaderResource(FD3D11ViewableResource* Resource, bool bCheckBoundInputAssembler)
