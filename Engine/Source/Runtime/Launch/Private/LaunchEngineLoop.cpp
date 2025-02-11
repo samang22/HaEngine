@@ -1,6 +1,7 @@
 #include "LaunchEngineLoop.h"
 #include "Engine/Engine.h"
 #include "RHI.h"                                                                            
+#include "ShaderCompiler.h"
 
 CORE_API map<FString, UClass*>& GetClassMap(); 
 
@@ -56,6 +57,12 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 	{
 		It.second->GetDefaultObject();
 	}
+
+	{
+		// Shader를 컴파일 한다
+		FShaderCompilingManager::Get();
+	}
+
 	return 0;
 }
 

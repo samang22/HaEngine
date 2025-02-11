@@ -5,12 +5,14 @@
 class FTestVS : public FShader
 {
 	DECLARE_SHADER_TYPE(FTestVS)
-
-
 };
-
 IMPLEMENT_SHADER_TYPE(FTestVS, FPaths::EngineConfigDir() + L"/VertexShader.hlsl", "VS", SF_Vertex)
 
+class FTestPS : public FShader
+{
+	DECLARE_SHADER_TYPE(FTestPS)
+};
+IMPLEMENT_SHADER_TYPE(FTestPS, FPaths::EngineConfigDir() + L"/PixelShader.hlsl", "PS", SF_Pixel)
 
 void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 {

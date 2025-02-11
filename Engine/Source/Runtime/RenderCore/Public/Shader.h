@@ -49,6 +49,7 @@ public:\
 class RENDERCORE_API FGlobalShaderMap
 {
     friend class FShaderType;
+    friend class FShaderCompilingManager;
 
 private:
     static inline map<type_index, FShaderType*> ShaderTypes;
