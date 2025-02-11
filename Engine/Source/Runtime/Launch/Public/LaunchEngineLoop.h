@@ -28,4 +28,6 @@ public:
 
     /** 메인 루프를 진행합니다. */
     void Tick();
+
+    void Exit();
 };

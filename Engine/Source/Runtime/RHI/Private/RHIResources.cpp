@@ -25,3 +25,7 @@ RHI_API void FRHITexture::SetName(const FName& InName)
 {
 	Name = InName;
 }
+
+FRHIShader::~FRHIShader()
+{
+}

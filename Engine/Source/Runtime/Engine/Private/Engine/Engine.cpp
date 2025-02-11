@@ -32,3 +32,7 @@ void UEngine::Tick(float DeltaSeconds)
 	EditorViewportClient->Draw();
 }
   
+void UEngine::PreExit()
+{
+	EditorViewportClient = nullptr;
+}

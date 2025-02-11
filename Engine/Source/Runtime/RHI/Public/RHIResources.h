@@ -1774,7 +1774,7 @@ struct FRHIRenderPassInfo
 	RHI_API void ConvertToRenderTargetsInfo(FRHISetRenderTargetsInfo& OutRTInfo) const;
 };
 
-class FRHIShader : public FRHIResource
+class RHI_API FRHIShader : public FRHIResource
 {
 public:
 	const TCHAR* GetShaderName() const { return TEXT("<unknown>"); }
@@ -1786,6 +1786,8 @@ public:
 		, Frequency(InFrequency)
 	{
 	}
+
+	virtual ~FRHIShader();
 
 	inline EShaderFrequency GetFrequency() const
 	{

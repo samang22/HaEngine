@@ -33,6 +33,11 @@ LAUNCH_API void EngineTick(void)
 	GEngineLoop.Tick();
 }
 
+LAUNCH_API void EngineExit(void)
+{
+	GEngineLoop.Exit();
+}
+
 int32 LAUNCH_API GuardedMain(const TCHAR* CmdLine)
 {
 	int32 ErrorLevel = EnginePreInit(CmdLine);

@@ -7,27 +7,7 @@ CORE_API map<FString, UClass*>& GetClassMap();
 
 FEngineLoop::~FEngineLoop()
 {
-	FConfigCacheIni::Get(true);
 	FModuleManager::Get(true);
-	FLogger::Get(true);
-
-	RHIExit();
-	GEngine = nullptr;
-
-	// Unregister Class
-	{
-		for (auto It : GetClassMap())
-		{
-			It.second->~UClass();
-			GetObjectArray().Free(typeid(UClass), It.second);
-			It.second = nullptr;
-		}
-		GetClassMap().clear();
-	}
-
-	{
-		GetObjectArray().Destroy();
-	}   
 }
 
 int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
@@ -76,4 +56,31 @@ int32 FEngineLoop::Init(HWND hViewportWnd)
 void FEngineLoop::Tick()
 {
 	GEngine->Tick(0.f);
+}
+
+void FEngineLoop::Exit()
+{
+	GEngine->PreExit();
+	RHIExit();
+
+	FConfigCacheIni::Get(true);
+
+	GEngine = nullptr;
+
+	// Unregister Class
+	{
+		for (auto It : GetClassMap())
+		{
+			It.second->~UClass();
+			GetObjectArray().Free(typeid(UClass), It.second);
+			It.second = nullptr;
+		}
+		GetClassMap().clear();
+	}
+
+	{
+		GetObjectArray().Destroy();
+	}
+
+	FLogger::Get(true);
 }

@@ -13,6 +13,7 @@ public:
     UEngine();
     void Init(HWND hViewportHandle);
     void Tick(float DeltaSeconds);
+    void PreExit();
 
 protected:
     HWND MainViewportHandle = NULL;

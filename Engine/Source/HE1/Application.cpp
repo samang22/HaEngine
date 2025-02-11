@@ -15,6 +15,7 @@ extern int32 LAUNCH_API GuardedMain(const TCHAR* CmdLine);
 #include "CoreMinimal.h"
 
 void LAUNCH_API EngineTick();
+void LAUNCH_API EngineExit();
 
 BEGIN_MESSAGE_MAP(CMFCApplication, CWinAppEx)
 	// 표준 파일을 기초로 하는 문서 명령입니다.
@@ -155,6 +156,7 @@ BOOL CMFCApplication::OnIdle(LONG lCount)
 void CMFCApplication::OnClosingMainFrame(CFrameImpl* pFrameImpl)
 {
 	CWinAppEx::OnClosingMainFrame(pFrameImpl);
+	EngineExit();
 }
 void CMFCApplication::OnAppAbout()
 {
