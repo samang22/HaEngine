@@ -12,6 +12,7 @@ class ENGINE_API UEngine : public UObject
 public:
     UEngine();
     void Init(HWND hViewportHandle);
+    void Tick(float DeltaSeconds);
 
 protected:
     HWND MainViewportHandle = NULL;

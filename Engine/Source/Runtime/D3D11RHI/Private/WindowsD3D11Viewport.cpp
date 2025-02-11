@@ -175,3 +175,71 @@ D3D11RHI_API FD3D11Texture* FD3D11Viewport::GetSwapChainSurface(FD3D11DynamicRHI
 
 	return NewTexture;
 }
+
+D3D11RHI_API bool FD3D11Viewport::Present(bool bLockToVsync)
+{
+	HRESULT Result = S_OK;
+	if (ValidState != 0 && SwapChain)
+	{
+		// Check if the viewport's swap chain has been invalidated by DXGI.
+		BOOL bSwapChainFullscreenState;
+		TRefCountPtr<IDXGIOutput> SwapChainOutput;
+		VERIFYD3D11RESULT_EX(SwapChain->GetFullscreenState(&bSwapChainFullscreenState, SwapChainOutput.GetInitReference()), D3DRHI->GetDevice());
+		// Can't compare BOOL with bool...
+		if ((!!bSwapChainFullscreenState) != bIsFullscreen)
+		{
+			ValidState = VIEWPORT_INVALID;
+		}
+	}
+
+	if (MaximumFrameLatency != 3/*RHIConsoleVariables::MaximumFrameLatency*/)
+	{
+		MaximumFrameLatency = 3;// RHIConsoleVariables::MaximumFrameLatency;
+		TRefCountPtr<IDXGIDevice1> DXGIDevice;
+		VERIFYD3D11RESULT_EX(D3DRHI->GetDevice()->QueryInterface(IID_IDXGIDevice, (void**)DXGIDevice.GetInitReference()), D3DRHI->GetDevice());
+		DXGIDevice->SetMaximumFrameLatency(MaximumFrameLatency);
+	}
+
+	if (0 != (ValidState & VIEWPORT_INVALID))
+	{
+		return false;
+	}
+
+	if (SwapChain)
+	{
+		// Check if the viewport's swap chain has been invalidated by DXGI.
+		BOOL bSwapChainFullscreenState;
+		TRefCountPtr<IDXGIOutput> SwapChainOutput;
+		SwapChain->GetFullscreenState(&bSwapChainFullscreenState, SwapChainOutput.GetInitReference());
+		// Can't compare BOOL with bool...
+		if ((!!bSwapChainFullscreenState) != bIsFullscreen)
+		{
+			ValidState = (VIEWPORT_INVALID | VIEWPORT_FULLSCREEN_LOST);
+		}
+		else
+		{
+			// Present the back buffer to the viewport window.
+			uint32 Flags = 0;
+			if ((GetSwapChainFlags() & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING) != 0 && !bLockToVsync /*!SyncInterval*/ && !bIsFullscreen)
+			{
+				Flags |= DXGI_PRESENT_ALLOW_TEARING;
+			}
+			Result = SwapChain->Present(bLockToVsync/*SyncInterval*/, Flags);
+		}
+	}
+
+	D3DRHI->GetDeviceContext()->OMSetRenderTargets(0, 0, 0);
+}
+
+D3D11RHI_API uint32 FD3D11Viewport::GetSwapChainFlags()
+{
+	uint32 SwapChainFlags = GSwapChainFlags;
+
+	// AllowTearing의 일관성을 보장하지 않으면 ResizeBuffers가 E_INVALIDARG 오류와 함께 실패합니다.
+	if (bAllowTearing != !!(SwapChainFlags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING))
+	{
+		SwapChainFlags ^= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	}
+
+	return SwapChainFlags;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }

@@ -26,4 +26,9 @@ void UEngine::Init(HWND hViewportHandle)
 	EditorViewportClient = NewObject<UEditorViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
 	EditorViewportClient->Init(hViewportHandle, GWorld);
 }
+
+void UEngine::Tick(float DeltaSeconds)
+{
+	EditorViewportClient->Draw();
+}
   

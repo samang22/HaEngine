@@ -928,3 +928,416 @@ public:
 private:
 	FRHITextureDesc TextureDesc;
 };
+
+
+class FExclusiveDepthStencil
+{
+public:
+	enum Type
+	{
+		// don't use those directly, use the combined versions below
+		// 4 bits are used for depth and 4 for stencil to make the hex value readable and non overlapping
+		DepthNop = 0x00,
+		DepthRead = 0x01,
+		DepthWrite = 0x02,
+		DepthMask = 0x0f,
+		StencilNop = 0x00,
+		StencilRead = 0x10,
+		StencilWrite = 0x20,
+		StencilMask = 0xf0,
+
+		// use those:
+		DepthNop_StencilNop = DepthNop + StencilNop,
+		DepthRead_StencilNop = DepthRead + StencilNop,
+		DepthWrite_StencilNop = DepthWrite + StencilNop,
+		DepthNop_StencilRead = DepthNop + StencilRead,
+		DepthRead_StencilRead = DepthRead + StencilRead,
+		DepthWrite_StencilRead = DepthWrite + StencilRead,
+		DepthNop_StencilWrite = DepthNop + StencilWrite,
+		DepthRead_StencilWrite = DepthRead + StencilWrite,
+		DepthWrite_StencilWrite = DepthWrite + StencilWrite,
+	};
+
+private:
+	Type Value;
+
+public:
+	// constructor
+	FExclusiveDepthStencil(Type InValue = DepthNop_StencilNop)
+		: Value(InValue)
+	{
+	}
+
+	inline bool IsUsingDepthStencil() const
+	{
+		return Value != DepthNop_StencilNop;
+	}
+	inline bool IsUsingDepth() const
+	{
+		return (ExtractDepth() != DepthNop);
+	}
+	inline bool IsUsingStencil() const
+	{
+		return (ExtractStencil() != StencilNop);
+	}
+	inline bool IsDepthWrite() const
+	{
+		return ExtractDepth() == DepthWrite;
+	}
+	inline bool IsDepthRead() const
+	{
+		return ExtractDepth() == DepthRead;
+	}
+	inline bool IsStencilWrite() const
+	{
+		return ExtractStencil() == StencilWrite;
+	}
+	inline bool IsStencilRead() const
+	{
+		return ExtractStencil() == StencilRead;
+	}
+
+	inline bool IsAnyWrite() const
+	{
+		return IsDepthWrite() || IsStencilWrite();
+	}
+
+	inline void SetDepthWrite()
+	{
+		Value = (Type)(ExtractStencil() | DepthWrite);
+	}
+	inline void SetStencilWrite()
+	{
+		Value = (Type)(ExtractDepth() | StencilWrite);
+	}
+	inline void SetDepthStencilWrite(bool bDepth, bool bStencil)
+	{
+		Value = DepthNop_StencilNop;
+
+		if (bDepth)
+		{
+			SetDepthWrite();
+		}
+		if (bStencil)
+		{
+			SetStencilWrite();
+		}
+	}
+	bool operator==(const FExclusiveDepthStencil& rhs) const
+	{
+		return Value == rhs.Value;
+	}
+
+	bool operator != (const FExclusiveDepthStencil& RHS) const
+	{
+		return Value != RHS.Value;
+	}
+
+	inline bool IsValid(FExclusiveDepthStencil& Current) const
+	{
+		Type Depth = ExtractDepth();
+
+		if (Depth != DepthNop && Depth != Current.ExtractDepth())
+		{
+			return false;
+		}
+
+		Type Stencil = ExtractStencil();
+
+		if (Stencil != StencilNop && Stencil != Current.ExtractStencil())
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	inline void GetAccess(ERHIAccess& DepthAccess, ERHIAccess& StencilAccess) const
+	{
+		DepthAccess = ERHIAccess::None;
+
+		// SRV access is allowed whilst a depth stencil target is "readable".
+		constexpr ERHIAccess DSVReadOnlyMask =
+			ERHIAccess::DSVRead;
+
+		// If write access is required, only the depth block can access the resource.
+		constexpr ERHIAccess DSVReadWriteMask =
+			ERHIAccess::DSVRead |
+			ERHIAccess::DSVWrite;
+
+		if (IsUsingDepth())
+		{
+			DepthAccess = IsDepthWrite() ? DSVReadWriteMask : DSVReadOnlyMask;
+		}
+
+		StencilAccess = ERHIAccess::None;
+
+		if (IsUsingStencil())
+		{
+			StencilAccess = IsStencilWrite() ? DSVReadWriteMask : DSVReadOnlyMask;
+		}
+	}
+
+	//template <typename TFunction>
+	//inline void EnumerateSubresources(TFunction Function) const
+	//{
+	//    if (!IsUsingDepthStencil())
+	//    {
+	//        return;
+	//    }
+
+	//    ERHIAccess DepthAccess = ERHIAccess::None;
+	//    ERHIAccess StencilAccess = ERHIAccess::None;
+	//    GetAccess(DepthAccess, StencilAccess);
+
+	//    // Same depth / stencil state; single subresource.
+	//    if (DepthAccess == StencilAccess)
+	//    {
+	//        Function(DepthAccess, FRHITransitionInfo::kAllSubresources);
+	//    }
+	//    // Separate subresources for depth / stencil.
+	//    else
+	//    {
+	//        if (DepthAccess != ERHIAccess::None)
+	//        {
+	//            Function(DepthAccess, FRHITransitionInfo::kDepthPlaneSlice);
+	//        }
+	//        if (StencilAccess != ERHIAccess::None)
+	//        {
+	//            Function(StencilAccess, FRHITransitionInfo::kStencilPlaneSlice);
+	//        }
+	//    }
+	//}
+
+	/**
+	* Returns a new FExclusiveDepthStencil to be used to transition a depth stencil resource to readable.
+	* If the depth or stencil is already in a readable state, that particular component is returned as Nop,
+	* to avoid unnecessary subresource transitions.
+	*/
+	inline FExclusiveDepthStencil GetReadableTransition() const
+	{
+		FExclusiveDepthStencil::Type NewDepthState = IsDepthWrite()
+			? FExclusiveDepthStencil::DepthRead
+			: FExclusiveDepthStencil::DepthNop;
+
+		FExclusiveDepthStencil::Type NewStencilState = IsStencilWrite()
+			? FExclusiveDepthStencil::StencilRead
+			: FExclusiveDepthStencil::StencilNop;
+
+		return (FExclusiveDepthStencil::Type)(NewDepthState | NewStencilState);
+	}
+
+	/**
+	* Returns a new FExclusiveDepthStencil to be used to transition a depth stencil resource to readable.
+	* If the depth or stencil is already in a readable state, that particular component is returned as Nop,
+	* to avoid unnecessary subresource transitions.
+	*/
+	inline FExclusiveDepthStencil GetWritableTransition() const
+	{
+		FExclusiveDepthStencil::Type NewDepthState = IsDepthRead()
+			? FExclusiveDepthStencil::DepthWrite
+			: FExclusiveDepthStencil::DepthNop;
+
+		FExclusiveDepthStencil::Type NewStencilState = IsStencilRead()
+			? FExclusiveDepthStencil::StencilWrite
+			: FExclusiveDepthStencil::StencilNop;
+
+		return (FExclusiveDepthStencil::Type)(NewDepthState | NewStencilState);
+	}
+
+	uint32 GetIndex() const
+	{
+		// Note: The array to index has views created in that specific order.
+
+		// we don't care about the Nop versions so less views are needed
+		// we combine Nop and Write
+		switch (Value)
+		{
+		case DepthWrite_StencilNop:
+		case DepthNop_StencilWrite:
+		case DepthWrite_StencilWrite:
+		case DepthNop_StencilNop:
+			return 0; // old DSAT_Writable
+
+		case DepthRead_StencilNop:
+		case DepthRead_StencilWrite:
+			return 1; // old DSAT_ReadOnlyDepth
+
+		case DepthNop_StencilRead:
+		case DepthWrite_StencilRead:
+			return 2; // old DSAT_ReadOnlyStencil
+
+		case DepthRead_StencilRead:
+			return 3; // old DSAT_ReadOnlyDepthAndStencil
+		}
+		// should never happen
+		_ASSERT(0);
+		return -1;
+	}
+	static const uint32 MaxIndex = 4;
+
+private:
+	inline Type ExtractDepth() const
+	{
+		return (Type)(Value & DepthMask);
+	}
+	inline Type ExtractStencil() const
+	{
+		return (Type)(Value & StencilMask);
+	}
+	//friend uint32 GetTypeHash(const FExclusiveDepthStencil& Ds);
+};
+
+
+class FRHIRenderTargetView
+{
+public:
+	FRHITexture* Texture = nullptr;
+	uint32 MipIndex = 0;
+
+	/** 배열 슬라이스 또는 텍스처 큐브 면. TexCreate_TargetArraySlicesIndependently로 텍스처 리소스가 생성된 경우에만 유효합니다! */
+	uint32 ArraySliceIndex = -1;
+
+	ERenderTargetLoadAction LoadAction = ERenderTargetLoadAction::ENoAction;
+	ERenderTargetStoreAction StoreAction = ERenderTargetStoreAction::ENoAction;
+
+	FRHIRenderTargetView() = default;
+	FRHIRenderTargetView(FRHIRenderTargetView&&) = default;
+	FRHIRenderTargetView(const FRHIRenderTargetView&) = default;
+	FRHIRenderTargetView& operator=(FRHIRenderTargetView&&) = default;
+	FRHIRenderTargetView& operator=(const FRHIRenderTargetView&) = default;
+
+	//common case
+	explicit FRHIRenderTargetView(FRHITexture* InTexture, ERenderTargetLoadAction InLoadAction) :
+		Texture(InTexture),
+		MipIndex(0),
+		ArraySliceIndex(-1),
+		LoadAction(InLoadAction),
+		StoreAction(ERenderTargetStoreAction::EStore)
+	{
+	}
+
+	//common case
+	explicit FRHIRenderTargetView(FRHITexture* InTexture, ERenderTargetLoadAction InLoadAction, uint32 InMipIndex, uint32 InArraySliceIndex) :
+		Texture(InTexture),
+		MipIndex(InMipIndex),
+		ArraySliceIndex(InArraySliceIndex),
+		LoadAction(InLoadAction),
+		StoreAction(ERenderTargetStoreAction::EStore)
+	{
+	}
+
+	explicit FRHIRenderTargetView(FRHITexture* InTexture, uint32 InMipIndex, uint32 InArraySliceIndex, ERenderTargetLoadAction InLoadAction, ERenderTargetStoreAction InStoreAction) :
+		Texture(InTexture),
+		MipIndex(InMipIndex),
+		ArraySliceIndex(InArraySliceIndex),
+		LoadAction(InLoadAction),
+		StoreAction(InStoreAction)
+	{
+	}
+
+	bool operator==(const FRHIRenderTargetView& Other) const
+	{
+		return
+			Texture == Other.Texture &&
+			MipIndex == Other.MipIndex &&
+			ArraySliceIndex == Other.ArraySliceIndex &&
+			LoadAction == Other.LoadAction &&
+			StoreAction == Other.StoreAction;
+	}
+};
+
+class FRHIDepthRenderTargetView
+{
+public:
+	FRHITexture* Texture;
+
+	ERenderTargetLoadAction        DepthLoadAction;
+	ERenderTargetStoreAction    DepthStoreAction;
+	ERenderTargetLoadAction        StencilLoadAction;
+
+private:
+	ERenderTargetStoreAction    StencilStoreAction;
+	FExclusiveDepthStencil        DepthStencilAccess;
+public:
+
+	// StencilStoreAction의 쓰기 접근을 방지하는 접근자
+	ERenderTargetStoreAction GetStencilStoreAction() const { return StencilStoreAction; }
+	// DepthStencilAccess의 쓰기 접근을 방지하는 접근자
+	FExclusiveDepthStencil GetDepthStencilAccess() const { return DepthStencilAccess; }
+
+	explicit FRHIDepthRenderTargetView() :
+		Texture(nullptr),
+		DepthLoadAction(ERenderTargetLoadAction::ENoAction),
+		DepthStoreAction(ERenderTargetStoreAction::ENoAction),
+		StencilLoadAction(ERenderTargetLoadAction::ENoAction),
+		StencilStoreAction(ERenderTargetStoreAction::ENoAction),
+		DepthStencilAccess(FExclusiveDepthStencil::DepthNop_StencilNop)
+	{
+		Validate();
+	}
+
+	//common case
+	explicit FRHIDepthRenderTargetView(FRHITexture* InTexture, ERenderTargetLoadAction InLoadAction, ERenderTargetStoreAction InStoreAction) :
+		Texture(InTexture),
+		DepthLoadAction(InLoadAction),
+		DepthStoreAction(InStoreAction),
+		StencilLoadAction(InLoadAction),
+		StencilStoreAction(InStoreAction),
+		DepthStencilAccess(FExclusiveDepthStencil::DepthWrite_StencilWrite)
+	{
+		Validate();
+	}
+
+	explicit FRHIDepthRenderTargetView(FRHITexture* InTexture, ERenderTargetLoadAction InLoadAction, ERenderTargetStoreAction InStoreAction, FExclusiveDepthStencil InDepthStencilAccess) :
+		Texture(InTexture),
+		DepthLoadAction(InLoadAction),
+		DepthStoreAction(InStoreAction),
+		StencilLoadAction(InLoadAction),
+		StencilStoreAction(InStoreAction),
+		DepthStencilAccess(InDepthStencilAccess)
+	{
+		Validate();
+	}
+
+	explicit FRHIDepthRenderTargetView(FRHITexture* InTexture, ERenderTargetLoadAction InDepthLoadAction, ERenderTargetStoreAction InDepthStoreAction, ERenderTargetLoadAction InStencilLoadAction, ERenderTargetStoreAction InStencilStoreAction) :
+		Texture(InTexture),
+		DepthLoadAction(InDepthLoadAction),
+		DepthStoreAction(InDepthStoreAction),
+		StencilLoadAction(InStencilLoadAction),
+		StencilStoreAction(InStencilStoreAction),
+		DepthStencilAccess(FExclusiveDepthStencil::DepthWrite_StencilWrite)
+	{
+		Validate();
+	}
+
+	explicit FRHIDepthRenderTargetView(FRHITexture* InTexture, ERenderTargetLoadAction InDepthLoadAction, ERenderTargetStoreAction InDepthStoreAction, ERenderTargetLoadAction InStencilLoadAction, ERenderTargetStoreAction InStencilStoreAction, FExclusiveDepthStencil InDepthStencilAccess) :
+		Texture(InTexture),
+		DepthLoadAction(InDepthLoadAction),
+		DepthStoreAction(InDepthStoreAction),
+		StencilLoadAction(InStencilLoadAction),
+		StencilStoreAction(InStencilStoreAction),
+		DepthStencilAccess(InDepthStencilAccess)
+	{
+		Validate();
+	}
+
+	void Validate() const
+	{
+		// StoreAction이 DontCare인 경우 VK와 Metal은 첨부 파일을 정의되지 않은 상태로 남길 수 있습니다. 
+		// 따라서 읽기 전용이 DontCare로 설정되어야 한다고 가정할 수 없습니다. 이 상태가 다시 사용되지 않을 것임을 확신할 수 없기 때문입니다.
+		// ensureMsgf(DepthStencilAccess.IsDepthWrite() || DepthStoreAction == ERenderTargetStoreAction::ENoAction, TEXT("깊이가 읽기 전용이지만 저장 작업을 수행하고 있습니다. 이는 모바일에서 낭비입니다. 깊이가 변경될 수 없다면, 다시 저장할 필요가 없습니다."));
+		/*ensureMsgf(DepthStencilAccess.IsStencilWrite() || StencilStoreAction == ERenderTargetStoreAction::ENoAction, TEXT("스텐실이 읽기 전용이지만 저장 작업을 수행하고 있습니다. 이는 모바일에서 낭비입니다. 스텐실이 변경될 수 없다면, 다시 저장할 필요가 없습니다."));*/
+	}
+
+	bool operator==(const FRHIDepthRenderTargetView& Other) const
+	{
+		return
+			Texture == Other.Texture &&
+			DepthLoadAction == Other.DepthLoadAction &&
+			DepthStoreAction == Other.DepthStoreAction &&
+			StencilLoadAction == Other.StencilLoadAction &&
+			StencilStoreAction == Other.StencilStoreAction &&
+			DepthStencilAccess == Other.DepthStencilAccess;
+	}
+};

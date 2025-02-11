@@ -67,4 +67,5 @@ int32 FEngineLoop::Init(HWND hViewportWnd)
 
 void FEngineLoop::Tick()
 {
+	GEngine->Tick(0.f);
 }

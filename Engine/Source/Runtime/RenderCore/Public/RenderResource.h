@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreTypes.h"
 #include "RHIDefinitions.h"
+#include "RHIFwd.h"
 #include "RHIResources.h"
 #include "PixelFormat.h"
 #include "RHI.h"

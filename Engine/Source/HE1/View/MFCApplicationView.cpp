@@ -46,19 +46,19 @@ void CMFCApplicationView::OnDraw(CDC* pDC)
 	if (!pDoc)
 		return;*/
 
-	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
-	CBrush redBrush(RGB(0, 255, 255));
-	CBrush* pOldBrush = pDC->SelectObject(&redBrush);
+	//// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
+	//CBrush redBrush(RGB(0, 255, 255));
+	//CBrush* pOldBrush = pDC->SelectObject(&redBrush);
 
-	// 클라이언트 영역 크기 가져오기
-	CRect rect;
-	GetClientRect(&rect);
+	//// 클라이언트 영역 크기 가져오기
+	//CRect rect;
+	//GetClientRect(&rect);
 
-	// 사각형 그리기
-	pDC->Rectangle(&rect);
+	//// 사각형 그리기
+	//pDC->Rectangle(&rect);
 
-	// 원래 브러시로 복원
-	pDC->SelectObject(pOldBrush);
+	//// 원래 브러시로 복원
+	//pDC->SelectObject(pOldBrush);
 }
 
 //void CMFCApplicationView::OnRButtonUp(UINT /* nFlags */, CPoint point)

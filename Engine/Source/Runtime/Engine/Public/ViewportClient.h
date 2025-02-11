@@ -14,6 +14,7 @@ class UViewportClient : public UObject
     GENERATED_BODY()
 public:
     virtual void Init(HWND hInViewportHandle, UWorld* InWorld);
+    virtual void Draw();
 
 protected:
     HWND hViewportHandle = NULL;

@@ -7,6 +7,8 @@
 #include "D3D11Util.h"
 #include "D3D11ThirdParty.h"
 #include "D3D11StateCache.h"
+#include "D3D11Resources.h"
+#include "D3D11Viewport.h"
 #include "RHIContext.h"
 
 typedef ID3D11DeviceContext FD3D11DeviceContext;
@@ -88,9 +90,38 @@ public:
         return DXGIFactory1;
     }
 
+    template<typename TRHIType>
+    static FORCEINLINE typename TD3D11ResourceTraits<TRHIType>::TConcreteType* ResourceCast(TRHIType* Resource)
+    {
+        return static_cast<typename TD3D11ResourceTraits<TRHIType>::TConcreteType*>(Resource);
+    }
+
+    static inline FD3D11Texture* ResourceCast(FRHITexture* Texture)
+    {
+        if (!Texture)
+        {
+            return nullptr;
+        }
+
+        FD3D11Texture* Result = static_cast<FD3D11Texture*>(Texture->GetTextureBaseRHI());
+        _ASSERT(Result);
+
+        return Result;
+    }
+
 public:
     virtual FViewportRHIRef RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat) override;
     virtual class IRHICommandContext* RHIGetDefaultContext() final override;
+
+    virtual void RHIBeginDrawingViewport(FRHIViewport* Viewport, FRHITexture* RenderTargetRHI) final override;
+    virtual void RHIEndDrawingViewport(FRHIViewport* Viewport, bool bPresent, bool bLockToVsync) final override;
+
+public:
+    void SetRenderTargets(uint32 NumSimultaneousRenderTargets, const FRHIRenderTargetView* NewRenderTargets, const FRHIDepthRenderTargetView* NewDepthStencilTarget);
+    void ConditionalClearShaderResource(FD3D11ViewableResource* Resource, bool bCheckBoundInputAssembler);
+
+    void CommitRenderTargets(bool bClearUAVS);
+
 
 public:
     /** Initialization constructor. */
@@ -120,6 +151,25 @@ protected:
     TRefCountPtr<FD3D11DeviceContext> Direct3DDeviceIMContext;
 
     HANDLE ExceptionHandlerHandle = INVALID_HANDLE_VALUE;
+
+    /** 현재 그려지고 있는 뷰포트. */
+    TRefCountPtr<FD3D11Viewport> DrawingViewport;
+
+    TRefCountPtr<ID3D11DepthStencilView> CurrentDepthStencilTarget;
+    TRefCountPtr<FD3D11Texture> CurrentDepthTexture;
+    //FD3D11ViewableResource* CurrentResourcesBoundAsSRVs[SF_NumStandardFrequencies][D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT];
+    //FD3D11ViewableResource* CurrentResourcesBoundAsVBs[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+    //FD3D11ViewableResource* CurrentResourceBoundAsIB;
+    //int32 MaxBoundShaderResourcesIndex[SF_NumStandardFrequencies];
+    //int32 MaxBoundVertexBufferIndex;
+    uint32 NumSimultaneousRenderTargets;
+    uint32 CurrentRTVOverlapMask;
+    uint32 CurrentUAVMask;
+
+    /** 현재 깊이 스텐실 접근 유형을 추적합니다. */
+    FExclusiveDepthStencil CurrentDSVAccessType;
+
+    TRefCountPtr<ID3D11RenderTargetView> CurrentRenderTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
 
 protected:
     FD3D11Adapter Adapter;

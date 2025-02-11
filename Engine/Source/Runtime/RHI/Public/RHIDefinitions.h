@@ -253,3 +253,50 @@ enum class ERHIZBuffer
 	// API가 Inverted Z 버퍼를 사용하는지 여부를 알기 위한 'bool' 값
 	IsInverted = (int32)((int32)ERHIZBuffer::FarPlane < (int32)ERHIZBuffer::NearPlane),
 };
+
+/**
+ * 렌더 타겟이 설정될 때 수행할 작업.
+ */
+enum class ERenderTargetLoadAction : uint8
+{
+	// 렌더 타겟의 변경되지 않은 내용은 정의되지 않습니다. 기존 내용은 보존되지 않습니다.
+	ENoAction,
+
+	// 기존 내용이 보존됩니다.
+	ELoad,
+
+	// 렌더 타겟이 리소스에 지정된 빠른 클리어 값으로 지워집니다.
+	EClear,
+
+	Num,
+	NumBits = 2,
+};
+static_assert((uint32)ERenderTargetLoadAction::Num <= (1 << (uint32)ERenderTargetLoadAction::NumBits), "ERenderTargetLoadAction::Num는 ERenderTargetLoadAction::NumBits에 맞지 않습니다");
+
+
+/**
+ * 렌더 타겟이 해제되거나 패스가 끝날 때 수행할 작업.
+ */
+enum class ERenderTargetStoreAction : uint8
+{
+	// 패스 동안 생성된 렌더 타겟의 내용이 메모리에 저장되지 않습니다.
+	ENoAction,
+
+	// 패스 동안 생성된 렌더 타겟의 내용이 메모리에 저장됩니다.
+	EStore,
+
+	// 패스 동안 생성된 렌더 타겟의 내용이 박스 필터를 사용하여 해결된 후 메모리에 저장됩니다.
+	EMultisampleResolve,
+
+	Num,
+	NumBits = 2,
+};
+static_assert((uint32)ERenderTargetStoreAction::Num <= (1 << (uint32)ERenderTargetStoreAction::NumBits), "ERenderTargetStoreAction::Num는 ERenderTargetStoreAction::NumBits에 맞지 않습니다");
+
+/** 동시에 쓰기 가능한 렌더 타겟의 수. */
+enum
+{
+	MaxSimultaneousRenderTargets = 8,
+	MaxSimultaneousRenderTargets_NumBits = 3,
+};
+static_assert(MaxSimultaneousRenderTargets <= (1 << MaxSimultaneousRenderTargets_NumBits), "MaxSimultaneousRenderTargets는 MaxSimultaneousRenderTargets_NumBits에 맞지 않습니다");
