@@ -3,6 +3,7 @@
 #include "RHICommandList.h"
 
 FD3D11DynamicRHI* GD3D11RHI = nullptr;
+bool GIsDebugLayerEnabled = false;
 
 /**
  * CreateDXGIFactory1이 D3D11 DLL에서 지연 로드되는 가져오기이기 때문에, 사용자가 VistaSP2/DX10을 사용하지 않는 경우
@@ -71,7 +72,7 @@ static bool SafeTestD3D11CreateDevice(IDXGIAdapter* Adapter, D3D_FEATURE_LEVEL M
     ID3D11DeviceContext* D3DDeviceContext = nullptr;
     uint32 DeviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
     // Use a debug device if specified on the command line.
-    if (false/*WITH_DEBUG*/)//(GRHIGlobals.IsDebugLayerEnabled)
+    if (GIsDebugLayerEnabled)//(GRHIGlobals.IsDebugLayerEnabled)
     {
         DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
