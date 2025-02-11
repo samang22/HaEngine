@@ -11,6 +11,10 @@
 class FShader
 {
     friend class FShaderType;
+    friend class FShaderCompilingManager;
+
+private:
+    TArray<uint8> Code;
 };
 
 /**
@@ -22,6 +26,8 @@ class FShader
 class FShaderType
 {
     using FShaderConstructFunction = function<TObjectPtr<FShader>()>;
+    friend class FShaderCompilingManager;
+    friend class FD3D11DynamicRHI;
 
 public:
     RENDERCORE_API FShaderType(const type_index ClassType, const TCHAR* InClassName, const FString InShaderFilePath,
@@ -53,4 +59,5 @@ class RENDERCORE_API FGlobalShaderMap
 
 private:
     static inline map<type_index, FShaderType*> ShaderTypes;
+    static inline map<type_index, TObjectPtr<FShader>> Shaders; // 컴파일된 Shader
 };

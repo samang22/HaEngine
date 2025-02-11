@@ -1,7 +1,83 @@
 #include "D3D11RHIPrivate.h"
 #include "RHIResources.h"
 #include "D3D11Viewport.h"
+#include "Shader.h"
 
+bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TArray<uint8>& OutResult)
+{
+	OutResult.clear();
+
+	string TargetName;
+	switch (InShaderType->Frequency)
+	{
+	case SF_Vertex:
+		TargetName = "vs";
+		break;
+	case SF_Pixel:
+		TargetName = "ps";
+		break;
+	default:
+		E_LOG(Error, TEXT("아직 지원하지 않는 Frequency 입니다"));
+		break;
+	}
+	TargetName += "_5_0";
+
+	TRefCountPtr<ID3DBlob> Blob;
+	TRefCountPtr<ID3DBlob> ErrorBlob;
+	HRESULT Hr = D3DCompileFromFile(InShaderType->ShaderFilePath.data(), nullptr, nullptr, InShaderType->FunctionName.data()
+		, TargetName.data(), 0, 0, Blob.GetInitReference(), ErrorBlob.GetInitReference());
+
+	if (FAILED(Hr))
+	{
+		E_LOG(Error, TEXT("{}"), ANSI_TO_TCHAR((char*)ErrorBlob->GetBufferPointer()));
+		return false;
+	}
+
+	// Reflection
+	{
+		TRefCountPtr<ID3D11ShaderReflection> Reflector;
+
+		Hr = D3DReflect(
+			Blob->GetBufferPointer(),   // 컴파일된 셰이더 코드 포인터
+			Blob->GetBufferSize(),      // 셰이더 코드 크기
+			IID_ID3D11ShaderReflection,  // 인터페이스 ID
+			(void**)Reflector.GetInitReference()// 리플렉터 인터페이스 포인터
+		);
+
+		if (FAILED(Hr))
+		{
+			// 오류 처리
+			_ASSERT(false);
+			return false;
+		}
+
+		D3D11_SHADER_DESC ShaderDesc;
+		Reflector->GetDesc(&ShaderDesc);
+
+		for (UINT i = 0; i < ShaderDesc.InputParameters; ++i)
+		{
+			D3D11_SIGNATURE_PARAMETER_DESC ParamDesc;
+			Reflector->GetInputParameterDesc(i, &ParamDesc);
+			// 입력 파라미터 정보 사용
+		}
+
+		for (UINT i = 0; i < ShaderDesc.ConstantBuffers; ++i)
+		{
+			ID3D11ShaderReflectionConstantBuffer* ConstantBuffer = Reflector->GetConstantBufferByIndex(i);
+			D3D11_SHADER_BUFFER_DESC bufferDesc;
+			ConstantBuffer->GetDesc(&bufferDesc);
+			// 상수 버퍼 정보 사용
+		}
+	}
+
+	const uint64 BufferSize = Blob->GetBufferSize();
+	OutResult.resize(BufferSize);
+
+	void* Address = Blob->GetBufferPointer();
+	memcpy_s(OutResult.data(), OutResult.size(), Address, BufferSize);
+
+	return true;
+}
 FViewportRHIRef FD3D11DynamicRHI::RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat)
 {
     if (PreferredPixelFormat != EPixelFormat::PF_A2B10G10R10)

@@ -1,4 +1,4 @@
-float4 VS(float4 Position : ATTRIBUTE)
+float4 VS(float4 Position : POSITION) : SV_Position
 {
     return Position;
 }

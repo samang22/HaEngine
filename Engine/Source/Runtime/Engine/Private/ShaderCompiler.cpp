@@ -1,5 +1,6 @@
 #include "ShaderCompiler.h"
 #include "Shader.h"
+#include "RHI.h"
 
 ENGINE_API FShaderCompilingManager* FShaderCompilingManager::Get(const bool bDestroy)
 {
@@ -18,6 +19,13 @@ FShaderCompilingManager::FShaderCompilingManager()
     for (auto It : FGlobalShaderMap::ShaderTypes)
     {
         FShaderType* ShaderType = It.second;
-        ShaderType;
+
+        TArray<uint8> Result;
+        if (GDynamicRHI->RHICompileShader(ShaderType, Result))
+        {
+            TObjectPtr<FShader> NewShader = ShaderType->ShaderConstructFunction();
+            NewShader->Code = std::move(Result);
+            FGlobalShaderMap::Shaders.emplace(ShaderType->TypeIndex, NewShader);
+        }
     }
 }
