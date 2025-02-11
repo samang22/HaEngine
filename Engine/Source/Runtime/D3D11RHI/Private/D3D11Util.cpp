@@ -73,6 +73,19 @@ void VerifyD3D11Result(HRESULT D3DResult, const ANSICHAR* Code, const ANSICHAR* 
 	E_LOG(Fatal, TEXT("{} failed with error {}\n at {}:{}"), ANSI_TO_TCHAR(Code), ErrorString, ANSI_TO_TCHAR(Filename), Line);
 }
 
+D3D11RHI_API void VerifyD3D11ShaderResult(FRHIShader* Shader, HRESULT D3DResult, const ANSICHAR* Code, const ANSICHAR* Filename, uint32 Line, ID3D11Device* Device)
+{
+	_ASSERT(FAILED(D3DResult));
+
+	const FString& ErrorString = GetD3D11ErrorString(D3DResult, Device);
+
+	E_LOG(Error, TEXT("{} failed trying to create shader '{}' with error {}\n at {}:{}"), ANSI_TO_TCHAR(Code), Shader->GetShaderName(), ErrorString, ANSI_TO_TCHAR(Filename), Line);
+	//TerminateOnDeviceRemoved(D3DResult, Device);
+	//TerminateOnOutOfMemory(D3DResult, false);
+
+	E_LOG(Fatal, TEXT("{} failed trying to create shader '{}' with error {}\n at {}:{}"), ANSI_TO_TCHAR(Code), Shader->GetShaderName(), ErrorString, ANSI_TO_TCHAR(Filename), Line);
+}
+
 FD3D11BoundRenderTargets::FD3D11BoundRenderTargets(ID3D11DeviceContext* InDeviceContext)
 {
 	ZeroMemory(RenderTargetViews, sizeof(RenderTargetViews));

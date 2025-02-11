@@ -1773,3 +1773,44 @@ struct FRHIRenderPassInfo
 	//#endif
 	RHI_API void ConvertToRenderTargetsInfo(FRHISetRenderTargetsInfo& OutRTInfo) const;
 };
+
+class FRHIShader : public FRHIResource
+{
+public:
+	const TCHAR* GetShaderName() const { return TEXT("<unknown>"); }
+	FString GetUniformBufferName(uint32 Index) const { return TEXT("<unknown>"); }
+
+	FRHIShader() = delete;
+	FRHIShader(ERHIResourceType InResourceType, EShaderFrequency InFrequency)
+		: FRHIResource(InResourceType)
+		, Frequency(InFrequency)
+	{
+	}
+
+	inline EShaderFrequency GetFrequency() const
+	{
+		return Frequency;
+	}
+
+private:
+	EShaderFrequency Frequency;
+};
+
+class FRHIGraphicsShader : public FRHIShader
+{
+public:
+	explicit FRHIGraphicsShader(ERHIResourceType InResourceType, EShaderFrequency InFrequency)
+		: FRHIShader(InResourceType, InFrequency) { }
+};
+
+class FRHIVertexShader : public FRHIGraphicsShader
+{
+public:
+	FRHIVertexShader() : FRHIGraphicsShader(RRT_VertexShader, SF_Vertex) {}
+};
+
+class FRHIPixelShader : public FRHIGraphicsShader
+{
+public:
+	FRHIPixelShader() : FRHIGraphicsShader(RRT_PixelShader, SF_Pixel) {}
+};

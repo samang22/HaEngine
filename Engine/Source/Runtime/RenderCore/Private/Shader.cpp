@@ -13,3 +13,7 @@ FShaderType::~FShaderType()
 {
     FGlobalShaderMap::ShaderTypes.erase(TypeIndex);
 }
+
+FShader::~FShader()
+{
+}

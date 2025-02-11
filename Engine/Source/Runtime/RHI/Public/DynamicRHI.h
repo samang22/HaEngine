@@ -21,6 +21,9 @@ public:
 
 	virtual FViewportRHIRef RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat) = 0;
 
+	virtual FVertexShaderRHIRef RHICreateVertexShader(const TArray<uint8> Code, const type_index& Key/*Hash*/) = 0;
+	virtual FPixelShaderRHIRef RHICreatePixelShader(const TArray<uint8> Code, const type_index& Key/*Hash*/) = 0;
+
 	virtual IRHICommandContext* RHIGetDefaultContext() = 0;
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TArray<uint8>& OutResult) = 0;
 };

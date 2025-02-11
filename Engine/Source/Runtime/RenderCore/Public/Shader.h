@@ -12,8 +12,15 @@ class FShader
 {
     friend class FShaderType;
     friend class FShaderCompilingManager;
+    template<typename ShaderType>
+    friend class TShaderMapRef;
+
+public:
+    RENDERCORE_API virtual ~FShader();
+    inline EShaderFrequency GetFrequency() const { return Frequency; }
 
 private:
+    EShaderFrequency Frequency;
     TArray<uint8> Code;
 };
 
@@ -56,8 +63,71 @@ class RENDERCORE_API FGlobalShaderMap
 {
     friend class FShaderType;
     friend class FShaderCompilingManager;
+	template<typename ShaderType>
+	friend class TShaderMapRef;
 
 private:
     static inline map<type_index, FShaderType*> ShaderTypes;
     static inline map<type_index, TObjectPtr<FShader>> Shaders; // 컴파일된 Shader
+};
+
+/**
+ * 셰이더 맵에서 요청된 셰이더 타입으로 초기화된 참조.
+ */
+template<typename ShaderType>
+class TShaderMapRef
+{
+public:
+	TShaderMapRef()
+	{
+		type_index Type = typeid(ShaderType);
+		if (FGlobalShaderMap::Shaders.contains(Type))
+		{
+			auto It = FGlobalShaderMap::Shaders.find(Type);
+			ShaderContent = dynamic_cast<ShaderType*>(It->second.get());
+		}
+
+		if (!ShaderContent)
+		{
+			E_LOG(Error, TEXT("해당 Shader를 찾을 수 없습니다 : {}"), ANSI_TO_TCHAR(Type.name()));
+		}
+	}
+
+	inline FRHIShader* GetRHIShaderBase(EShaderFrequency Frequency) const
+	{
+		FRHIShader* RHIShader = nullptr;
+		if (ShaderContent)
+		{
+			_ASSERT(ShaderContent->GetFrequency() == Frequency);
+			switch (Frequency)
+			{
+			case SF_Vertex:
+				RHIShader = GDynamicRHI->RHICreateVertexShader(ShaderContent->Code, typeid(ShaderType));
+				break;
+			case SF_Pixel:
+				RHIShader = GDynamicRHI->RHICreatePixelShader(ShaderContent->Code, typeid(ShaderType));
+				break;
+			default:
+				_ASSERT(false);
+				break;
+			}
+			_ASSERT(RHIShader->GetFrequency() == Frequency);
+		}
+		return RHIShader;
+	}
+
+	/** @return the shader's vertex shader */
+	inline FRHIVertexShader* GetVertexShader() const
+	{
+		return static_cast<FRHIVertexShader*>(GetRHIShaderBase(SF_Vertex));
+	}
+
+	/** @return the shader's pixel shader */
+	inline FRHIPixelShader* GetPixelShader() const
+	{
+		return static_cast<FRHIPixelShader*>(GetRHIShaderBase(SF_Pixel));
+	}
+
+private:
+	ShaderType* ShaderContent = nullptr;
 };

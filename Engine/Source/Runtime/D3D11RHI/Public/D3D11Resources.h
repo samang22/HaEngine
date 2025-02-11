@@ -181,6 +181,34 @@ private:
 	uint8 bAlias : 1;
 };
 
+/**
+ * 특정 선언과 결합되지 않아 바인딩되지 않은 셰이더를 나타내는 버텍스 셰이더입니다.
+ */
+class FD3D11VertexShader : public FRHIVertexShader
+{
+public:
+	enum { StaticFrequency = SF_Vertex };
+
+	/**
+	 * 버텍스 셰이더 리소스.
+	 */
+	TRefCountPtr<ID3D11VertexShader> Resource;
+
+	/**
+	 * 사용자 정의 데이터가 첨부된 버텍스 셰이더의 바이트코드.
+	 */
+	TArray<uint8> Code;
+};
+
+class FD3D11PixelShader : public FRHIPixelShader
+{
+public:
+	enum { StaticFrequency = SF_Pixel };
+
+	/** The shader resource. */
+	TRefCountPtr<ID3D11PixelShader> Resource;
+};
+
 template<class T>
 struct TD3D11ResourceTraits
 {
@@ -190,11 +218,11 @@ struct TD3D11ResourceTraits
 //{
 //	typedef FD3D11VertexDeclaration TConcreteType;
 //};
-//template<>
-//struct TD3D11ResourceTraits<FRHIVertexShader>
-//{
-//	typedef FD3D11VertexShader TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHIVertexShader>
+{
+	typedef FD3D11VertexShader TConcreteType;
+};
 //template<>
 //struct TD3D11ResourceTraits<FRHIGeometryShader>
 //{

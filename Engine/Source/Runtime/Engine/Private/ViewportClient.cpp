@@ -32,5 +32,12 @@ void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 void UViewportClient::Draw()
 {
 	FRHICommandListExecutor::GetImmediateCommandList().BeginDrawingViewport(Viewport, FTextureRHIRef());
+
+	{
+		TShaderMapRef<FTestVS> VertextShader;
+		TShaderMapRef<FTestPS> PixelShader;
+		FRHIVertexShader* RHIShader = VertextShader.GetVertexShader();
+	}
+
 	FRHICommandListExecutor::GetImmediateCommandList().EndDrawingViewport(Viewport, true, false);
 }
