@@ -1,6 +1,17 @@
 #include "ViewportClient.h"
 #include "RenderResource.h"
 
+#include "Shader.h"
+class FTestVS : public FShader
+{
+	DECLARE_SHADER_TYPE(FTestVS)
+
+
+};
+
+IMPLEMENT_SHADER_TYPE(FTestVS, FPaths::EngineConfigDir() + L"/VertexShader.hlsl", "VS", SF_Vertex)
+
+
 void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 {
     hViewportHandle = hInViewportHandle;

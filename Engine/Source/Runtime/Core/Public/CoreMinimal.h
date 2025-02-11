@@ -20,6 +20,7 @@
 
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/Names.h"
+#include "Misc/Paths.h"
 
 #include "Templates/SubclassOf.h"
 #include "Templates/RefCounting.h"

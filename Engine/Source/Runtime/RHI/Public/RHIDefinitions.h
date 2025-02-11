@@ -300,3 +300,43 @@ enum
 	MaxSimultaneousRenderTargets_NumBits = 3,
 };
 static_assert(MaxSimultaneousRenderTargets <= (1 << MaxSimultaneousRenderTargets_NumBits), "MaxSimultaneousRenderTargets는 MaxSimultaneousRenderTargets_NumBits에 맞지 않습니다");
+
+enum EShaderFrequency : uint8
+{
+	SF_Vertex = 0,
+	SF_Mesh = 1,
+	SF_Amplification = 2,
+	SF_Pixel = 3,
+	SF_Geometry = 4,
+	SF_Compute = 5,
+	SF_RayGen = 6,
+	SF_RayMiss = 7,
+	SF_RayHitGroup = 8,
+	SF_RayCallable = 9,
+
+	SF_NumFrequencies = 10,
+
+	// Number of standard shader frequencies for graphics pipeline (excluding compute)
+	SF_NumGraphicsFrequencies = 5,
+
+	// Number of standard shader frequencies (including compute)
+	SF_NumStandardFrequencies = 6,
+
+	SF_NumBits = 4,
+};
+static_assert(SF_NumFrequencies <= (1 << SF_NumBits), "SF_NumFrequencies will not fit on SF_NumBits");
+
+inline bool IsValidGraphicsFrequency(EShaderFrequency InShaderFrequency)
+{
+	switch (InShaderFrequency)
+	{
+	case SF_Vertex:        return true;
+#if PLATFORM_SUPPORTS_MESH_SHADERS
+	case SF_Mesh:          return true;
+	case SF_Amplification: return true;
+#endif
+	case SF_Pixel:         return true;
+	case SF_Geometry:      return true;
+	}
+	return false;
+}
