@@ -26,8 +26,8 @@ FD3D11Viewport::FD3D11Viewport(FD3D11DynamicRHI* InD3DRHI, HWND InWindowHandle, 
 	}
 
 	// 각 뷰포트에 대해 백버퍼/스왑체인을 생성합니다.
-	TRefCountPtr<IDXGIDevice> DXGIDevice;
-	VERIFYD3D11RESULT_EX(D3DRHI->GetDevice()->QueryInterface(IID_PPV_ARGS(DXGIDevice.GetInitReference())), D3DRHI->GetDevice());
+	//TRefCountPtr<IDXGIDevice> DXGIDevice;
+	//VERIFYD3D11RESULT_EX(D3DRHI->GetDevice()->QueryInterface(IID_PPV_ARGS(DXGIDevice.GetInitReference())), D3DRHI->GetDevice());
 
 	{
 		GSwapEffect = DXGI_SWAP_EFFECT_DISCARD;

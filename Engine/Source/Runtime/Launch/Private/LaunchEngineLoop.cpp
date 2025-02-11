@@ -10,6 +10,7 @@ FEngineLoop::~FEngineLoop()
 	FModuleManager::Get(true);
 	FLogger::Get(true);
 
+	RHIExit();
 	GEngine = nullptr;
 
 	// Unregister Class

@@ -279,8 +279,6 @@ static LONG __stdcall D3D11VectoredExceptionHandler(EXCEPTION_POINTERS* InInfo)
 
 void FD3D11DynamicRHIModule::StartupModule()
 {
-    // TODO: GD3D11RHI 소멸 시키기
-    _ASSERT(false);
 }
 
 bool FD3D11DynamicRHIModule::IsSupported()
