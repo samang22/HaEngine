@@ -5,6 +5,7 @@
 #include "RHIDefinitions.h"
 #include "RHICommandList.h"
 #include "RHIAccess.h"
+#include "RHI.h"
 
 class FResourceBulkDataInterface;
 
@@ -1815,4 +1816,12 @@ class FRHIPixelShader : public FRHIGraphicsShader
 {
 public:
 	FRHIPixelShader() : FRHIGraphicsShader(RRT_PixelShader, SF_Pixel) {}
+};
+
+class FRHIVertexDeclaration : public FRHIResource
+{
+public:
+	FRHIVertexDeclaration() : FRHIResource(RRT_VertexDeclaration) {}
+	virtual bool GetInitializer(FVertexDeclarationElementList& Init) { return false; }
+	//virtual uint32 GetPrecachePSOHash() const { return 0; }
 };

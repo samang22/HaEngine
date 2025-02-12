@@ -119,6 +119,8 @@ public:
     virtual FVertexShaderRHIRef RHICreateVertexShader(const TArray<uint8> Code, const type_index& Key/*Hash*/);
     virtual FPixelShaderRHIRef RHICreatePixelShader(const TArray<uint8> Code, const type_index& Key/*Hash*/);
 
+    virtual FVertexDeclarationRHIRef RHICreateVertexDeclaration(const FVertexDeclarationElementList& Elements);
+
     virtual void RHIBeginDrawingViewport(FRHIViewport* Viewport, FRHITexture* RenderTargetRHI) final override;
     virtual void RHIEndDrawingViewport(FRHIViewport* Viewport, bool bPresent, bool bLockToVsync) final override;
     virtual void RHIClearMRTImpl(const bool* bClearColorArray, int32 NumClearColors, const FLinearColor* ColorArray, bool bClearDepth, float Depth, bool bClearStencil, uint32 Stencil);

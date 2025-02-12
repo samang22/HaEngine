@@ -19,12 +19,14 @@ public:
 	/** RHI의 실제 소멸자가 호출되기 전에 종료 및 리소스 파괴를 처리하여 RHI의 모든 리소스가 종료를 위해 여전히 사용 가능하도록 합니다. */
 	virtual void Shutdown() = 0;
 
+	virtual IRHICommandContext* RHIGetDefaultContext() = 0;
 	virtual FViewportRHIRef RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat) = 0;
 
 	virtual FVertexShaderRHIRef RHICreateVertexShader(const TArray<uint8> Code, const type_index& Key/*Hash*/) = 0;
 	virtual FPixelShaderRHIRef RHICreatePixelShader(const TArray<uint8> Code, const type_index& Key/*Hash*/) = 0;
 
-	virtual IRHICommandContext* RHIGetDefaultContext() = 0;
+	virtual FVertexDeclarationRHIRef RHICreateVertexDeclaration(const FVertexDeclarationElementList& Elements) = 0;
+
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TArray<uint8>& OutResult) = 0;
 };
 

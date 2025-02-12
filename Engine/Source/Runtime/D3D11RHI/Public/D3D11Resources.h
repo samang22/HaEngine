@@ -209,15 +209,39 @@ public:
 	TRefCountPtr<ID3D11PixelShader> Resource;
 };
 
+/**
+ * 편의 typedef: 사전 할당된 D3D11 입력 요소 설명 배열.
+ */
+typedef TArray<D3D11_INPUT_ELEMENT_DESC> FD3D11VertexElements;
+
+/**
+ * 특정 셰이더와 결합되지 않은 상태의 버텍스 선언을 나타냅니다.
+ */
+class FD3D11VertexDeclaration : public FRHIVertexDeclaration
+{
+public:
+	/** 버텍스 선언의 요소들. */
+	FD3D11VertexElements VertexElements;
+
+	uint16 StreamStrides[MaxVertexElementCount];
+
+	/** 초기화 생성자. */
+	explicit FD3D11VertexDeclaration(const FD3D11VertexElements& InElements, const uint16* InStrides)
+		: VertexElements(InElements)
+	{
+		memcpy(StreamStrides, InStrides, sizeof(StreamStrides));
+	}
+};
+
 template<class T>
 struct TD3D11ResourceTraits
 {
 };
-//template<>
-//struct TD3D11ResourceTraits<FRHIVertexDeclaration>
-//{
-//	typedef FD3D11VertexDeclaration TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHIVertexDeclaration>
+{
+	typedef FD3D11VertexDeclaration TConcreteType;
+};
 template<>
 struct TD3D11ResourceTraits<FRHIVertexShader>
 {

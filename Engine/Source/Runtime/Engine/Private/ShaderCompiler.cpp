@@ -25,6 +25,7 @@ FShaderCompilingManager::FShaderCompilingManager()
         {
             TObjectPtr<FShader> NewShader = ShaderType->ShaderConstructFunction();
             NewShader->Code = std::move(Result);
+            NewShader->Frequency = ShaderType->Frequency;
             FGlobalShaderMap::Shaders.emplace(ShaderType->TypeIndex, NewShader);
         }
     }

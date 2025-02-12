@@ -340,3 +340,42 @@ inline bool IsValidGraphicsFrequency(EShaderFrequency InShaderFrequency)
 	}
 	return false;
 }
+
+enum EVertexElementType : uint8
+{
+	VET_None,
+	VET_Float1,
+	VET_Float2,
+	VET_Float3,
+	VET_Float4,
+	VET_PackedNormal,  // FPackedNormal
+	VET_UByte4,
+	VET_UByte4N,
+	VET_Color,
+	VET_Short2,
+	VET_Short4,
+	VET_Short2N,       // 16비트 워드, (value/32767.0,value/32767.0,0,0,1)로 정규화
+	VET_Half2,         // 1비트 부호, 5비트 지수, 10비트 가수의 16비트 부동 소수점
+	VET_Half4,
+	VET_Short4N,       // 4개의 16비트 워드, 정규화됨
+	VET_UShort2,
+	VET_UShort4,
+	VET_UShort2N,      // 16비트 워드, (value/65535.0,value/65535.0,0,0,1)로 정규화
+	VET_UShort4N,      // 4개의 16비트 워드, 부호 없는 정규화
+	VET_URGB10A2N,     // 10비트 r, g, b, 2비트 a, (value/1023.0f, value/1023.0f, value/1023.0f, value/3.0f)로 정규화
+	VET_UInt,
+	VET_MAX,
+
+	VET_NumBits = 5,
+};
+static_assert(VET_MAX <= (1 << VET_NumBits), "VET_MAX는 VET_NumBits에 맞지 않습니다");
+
+/**
+ * 버텍스 선언에서 사용할 수 있는 최대 버텍스 요소 수.
+ */
+enum
+{
+	MaxVertexElementCount = 17,
+	MaxVertexElementCount_NumBits = 5,
+};
+static_assert(MaxVertexElementCount <= (1 << MaxVertexElementCount_NumBits), "MaxVertexElementCount는 MaxVertexElementCount_NumBits에 맞지 않습니다");
