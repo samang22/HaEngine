@@ -14,6 +14,25 @@ class FTestPS : public FShader
 };
 IMPLEMENT_SHADER_TYPE(FTestPS, FPaths::EngineConfigDir() + L"/PixelShader.hlsl", "PS", SF_Pixel)
 
+class FTestVertexDeclaration : public FRenderResource
+{
+public:
+	FVertexDeclarationRHIRef VertexDeclarationRHI;
+
+	virtual void InitRHI(FRHICommandList& RHICmdList) override
+	{
+		FVertexDeclarationElementList Elements;
+		Elements.push_back(FVertexElement(0, 0, VET_Float3, 0, sizeof(FVector3D)));
+		VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
+	}
+
+	virtual void ReleaseRHI() override
+	{
+		VertexDeclarationRHI.SafeRelease();
+	}
+};
+TGlobalResource<FTestVertexDeclaration> GTestVertexDeclaration;
+
 void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 {
     hViewportHandle = hInViewportHandle;

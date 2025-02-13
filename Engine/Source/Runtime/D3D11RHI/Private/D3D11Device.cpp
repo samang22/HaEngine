@@ -1,4 +1,5 @@
 #include "D3D11RHIPrivate.h"
+#include "RenderResource.h"
 
 IMPLEMENT_MODULE(FD3D11DynamicRHIModule, D3D11RHI);
 
@@ -114,6 +115,11 @@ void FD3D11DynamicRHI::CleanupD3DDevice()
     E_LOG(Log, TEXT("CleanupD3DDevice"));
     _ASSERT(Direct3DDevice);
     _ASSERT(Direct3DDeviceIMContext);
+
+    // Ask all initialized FRenderResources to release their RHI resources.
+    FRenderResource::ReleaseRHIForAllResources();
+
+
     StateCache.SetContext(nullptr);
 
     Direct3DDeviceIMContext->ClearState();
