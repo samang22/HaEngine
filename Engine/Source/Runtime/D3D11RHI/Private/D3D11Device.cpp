@@ -105,6 +105,41 @@ FD3D11DynamicRHI::FD3D11DynamicRHI(IDXGIFactory1* InDXGIFactory1, D3D_FEATURE_LE
     GPixelFormats[PF_P010].Supported = true;
 }
 
+extern bool GIsDebugLayerEnabled;
+extern D3D11RHI_API map<type_index, TRefCountPtr<FRHIShader>> RHIShaders;
+
+void FD3D11DynamicRHI::CleanupD3DDevice()
+{
+    RHIShaders.clear();
+    E_LOG(Log, TEXT("CleanupD3DDevice"));
+    _ASSERT(Direct3DDevice);
+    _ASSERT(Direct3DDeviceIMContext);
+    StateCache.SetContext(nullptr);
+
+    Direct3DDeviceIMContext->ClearState();
+    Direct3DDeviceIMContext->Flush();
+    Direct3DDeviceIMContext = nullptr;
+
+    if (GIsDebugLayerEnabled)
+    {
+        // Perform a detailed live object report (with resource types)
+        ID3D11Debug* D3D11Debug;
+        Direct3DDevice->QueryInterface(__uuidof(ID3D11Debug), (void**)(&D3D11Debug));
+        if (D3D11Debug)
+        {
+            D3D11Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+        }
+    }
+
+    if (ExceptionHandlerHandle != INVALID_HANDLE_VALUE)
+    {
+        RemoveVectoredExceptionHandler(ExceptionHandlerHandle);
+    }
+
+    Direct3DDevice = nullptr;
+}
+
 void FD3D11DynamicRHI::Shutdown()
 {
+    CleanupD3DDevice();
 }

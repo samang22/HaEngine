@@ -51,3 +51,4 @@ void FD3D11ViewableResource::UpdateLinkedViews()
 {
     _ASSERT(false);
 }
+

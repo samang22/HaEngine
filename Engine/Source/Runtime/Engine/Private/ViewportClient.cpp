@@ -36,12 +36,18 @@ void UViewportClient::Draw()
 	{
 		TShaderMapRef<FTestVS> VertextShader;
 		TShaderMapRef<FTestPS> PixelShader;
-		FRHIVertexShader* RHIVertexShader = VertextShader.GetVertexShader();
-		FRHIPixelShader* RHIPixelShader = PixelShader.GetPixelShader();
 
 		FVertexDeclarationElementList Elements;
 		Elements.push_back(FVertexElement(0, 0, VET_Float3, 0, sizeof(FVector3D)));
-		GDynamicRHI->RHICreateVertexDeclaration(Elements);
+		FVertexDeclarationRHIRef VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
+
+		FRHICommandListExecutor::GetImmediateCommandList().SetBoundShaderState(
+			GDynamicRHI->RHICreateBoundShaderState(
+				VertexDeclarationRHI,
+				VertextShader.GetVertexShader(),
+				PixelShader.GetPixelShader()
+			).GetReference()
+		);
 	}
 
 	FRHICommandListExecutor::GetImmediateCommandList().EndDrawingViewport(Viewport, true, false);

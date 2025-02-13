@@ -16,3 +16,8 @@ RHI_API void FRHICommandList::EndDrawingViewport(FRHIViewport* Viewport, bool bP
 {
 	GetContext().RHIEndDrawingViewport(Viewport, bPresent, bLockToVsync);
  }
+
+RHI_API void FRHICommandList::SetBoundShaderState(FRHIBoundShaderState* BoundShaderState)
+{
+	GetContext().RHISetBoundShaderState(BoundShaderState);
+}

@@ -26,6 +26,7 @@ public:
 	virtual FPixelShaderRHIRef RHICreatePixelShader(const TArray<uint8> Code, const type_index& Key/*Hash*/) = 0;
 
 	virtual FVertexDeclarationRHIRef RHICreateVertexDeclaration(const FVertexDeclarationElementList& Elements) = 0;
+	virtual FBoundShaderStateRHIRef RHICreateBoundShaderState(FRHIVertexDeclaration* VertexDeclaration, FRHIVertexShader* VertexShader, FRHIPixelShader* PixelShader/*, FRHIGeometryShader* GeometryShader*/) = 0;
 
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TArray<uint8>& OutResult) = 0;
 };

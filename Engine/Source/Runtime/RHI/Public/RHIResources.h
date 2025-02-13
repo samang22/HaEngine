@@ -1824,4 +1824,12 @@ public:
 	FRHIVertexDeclaration() : FRHIResource(RRT_VertexDeclaration) {}
 	virtual bool GetInitializer(FVertexDeclarationElementList& Init) { return false; }
 	//virtual uint32 GetPrecachePSOHash() const { return 0; }
+
+	uint32 Hash = 0;
+};
+
+class FRHIBoundShaderState : public FRHIResource
+{
+public:
+	FRHIBoundShaderState() : FRHIResource(RRT_BoundShaderState) {}
 };

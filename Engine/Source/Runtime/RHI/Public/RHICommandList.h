@@ -23,6 +23,7 @@ public:
 	RHI_API void BeginDrawingViewport(FRHIViewport* Viewport, FRHITexture* RenderTargetRHI);
 	RHI_API void EndDrawingViewport(FRHIViewport* Viewport, bool bPresent, bool bLockToVsync);
 
+	RHI_API void SetBoundShaderState(FRHIBoundShaderState* BoundShaderState);
 private:
 	// 그래픽 명령이 기록되는 활성 컨텍스트.
 	IRHICommandContext* GraphicsContext = nullptr;

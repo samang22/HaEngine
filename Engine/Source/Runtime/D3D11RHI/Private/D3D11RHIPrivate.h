@@ -120,6 +120,8 @@ public:
     virtual FPixelShaderRHIRef RHICreatePixelShader(const TArray<uint8> Code, const type_index& Key/*Hash*/);
 
     virtual FVertexDeclarationRHIRef RHICreateVertexDeclaration(const FVertexDeclarationElementList& Elements);
+    virtual FBoundShaderStateRHIRef RHICreateBoundShaderState(FRHIVertexDeclaration* VertexDeclaration, FRHIVertexShader* VertexShader, FRHIPixelShader* PixelShader/*, FRHIGeometryShader* GeometryShader*/) final override;
+    virtual void RHISetBoundShaderState(FRHIBoundShaderState* BoundShaderState) final override;
 
     virtual void RHIBeginDrawingViewport(FRHIViewport* Viewport, FRHITexture* RenderTargetRHI) final override;
     virtual void RHIEndDrawingViewport(FRHIViewport* Viewport, bool bPresent, bool bLockToVsync) final override;
@@ -139,6 +141,13 @@ public:
 
     /** 아직 초기화되지 않은 경우, D3D 장치를 초기화합니다. */
     virtual void InitD3DDevice();
+
+    /**
+     * Cleanup the D3D device.
+    * This function must be called from the main game thread.
+    */
+    virtual void CleanupD3DDevice();
+
 
     // FDynamicRHI interface.
     virtual void Init() override;

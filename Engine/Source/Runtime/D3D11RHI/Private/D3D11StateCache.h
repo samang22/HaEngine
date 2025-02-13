@@ -26,6 +26,49 @@ public:
 	 */
 	virtual void ClearState();
 
+    inline void SetStreamStrides(const uint16* InStreamStrides)
+    {
+        memcpy(StreamStrides, InStreamStrides, sizeof(StreamStrides));
+    }
+
+    inline void SetInputLayout(ID3D11InputLayout* InputLayout)
+    {
+        if (CurrentInputLayout != InputLayout)
+        {
+            CurrentInputLayout = InputLayout;
+            Direct3DDeviceIMContext->IASetInputLayout(InputLayout);
+        }
+    }
+
+    inline void SetVertexShader(ID3D11VertexShader* Shader)
+    {
+        if (CurrentVertexShader != Shader)
+        {
+            CurrentVertexShader = Shader;
+            Direct3DDeviceIMContext->VSSetShader(Shader, nullptr, 0);
+        }
+    }
+
+
+    inline void SetPixelShader(ID3D11PixelShader* Shader)
+    {
+        if (CurrentPixelShader != Shader)
+        {
+            CurrentPixelShader = Shader;
+            Direct3DDeviceIMContext->PSSetShader(Shader, nullptr, 0);
+        }
+    }
 protected:
 	ID3D11DeviceContext* Direct3DDeviceIMContext;
+
+    // Input Layout State
+    ID3D11InputLayout* CurrentInputLayout;
+
+    // Shader Cache
+    ID3D11VertexShader* CurrentVertexShader;
+    //ID3D11GeometryShader* CurrentGeometryShader;
+    ID3D11PixelShader* CurrentPixelShader;
+    //ID3D11ComputeShader* CurrentComputeShader;
+
+    uint16 StreamStrides[MaxVertexElementCount];
 };

@@ -107,22 +107,9 @@ public:
     }
 };
 
-///** 두 개의 버텍스 선언 키를 비교. */
-//bool operator==(const FD3D11VertexDeclarationKey& A, const FD3D11VertexDeclarationKey& B)
-//{
-//    return A.VertexElements == B.VertexElements
-//        && !memcpy((void*)A.StreamStrides, (void*)B.StreamStrides, sizeof(A.StreamStrides));
-//}
-
-/** D3D11 버텍스 요소 설명 배열을 해시 계산. */
-//uint32 GetTypeHash(const FD3D11VertexDeclarationKey& Key)
-//{
-//    return Key.Hash;
-//}
 namespace std {
     template<> struct hash<FD3D11VertexDeclarationKey> {
         std::size_t operator()(const FD3D11VertexDeclarationKey& s) const {
-
             return s.Hash;
         }
     };
@@ -145,6 +132,7 @@ FVertexDeclarationRHIRef FD3D11DynamicRHI::RHICreateVertexDeclaration(const FVer
         auto Result = GVertexDeclarationCache.emplace(Key, new FD3D11VertexDeclaration(Key.VertexElements, Key.StreamStrides));
 
         VertexDeclarationRefPtr = Result.first->second;
+        VertexDeclarationRefPtr->Hash = Key.Hash;
     }
     else
     {

@@ -233,6 +233,28 @@ public:
 	}
 };
 
+/**
+ * 지오메트리를 렌더링하기 위한 결합된 셰이더 상태 및 버텍스 정의.
+ * 각 고유 인스턴스는 버텍스 선언, 버텍스 셰이더 및 픽셀 셰이더로 구성됩니다.
+ */
+class FD3D11BoundShaderState : public FRHIBoundShaderState
+{
+public:
+	uint16 StreamStrides[MaxVertexElementCount] = {};
+	TRefCountPtr<ID3D11InputLayout> InputLayout;
+	TRefCountPtr<ID3D11VertexShader> VertexShader;
+	TRefCountPtr<ID3D11PixelShader> PixelShader;
+
+	/** Initialization constructor. */
+	FD3D11BoundShaderState(
+		FRHIVertexDeclaration* InVertexDeclarationRHI,
+		FRHIVertexShader* InVertexShaderRHI,
+		FRHIPixelShader* InPixelShaderRHI,
+		//FRHIGeometryShader* InGeometryShaderRHI,
+		ID3D11Device* Direct3DDevice
+	);
+};
+
 template<class T>
 struct TD3D11ResourceTraits
 {
@@ -252,21 +274,21 @@ struct TD3D11ResourceTraits<FRHIVertexShader>
 //{
 //	typedef FD3D11GeometryShader TConcreteType;
 //};
-//template<>
-//struct TD3D11ResourceTraits<FRHIPixelShader>
-//{
-//	typedef FD3D11PixelShader TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHIPixelShader>
+{
+	typedef FD3D11PixelShader TConcreteType;
+};
 //template<>
 //struct TD3D11ResourceTraits<FRHIComputeShader>
 //{
 //	typedef FD3D11ComputeShader TConcreteType;
 //};
-//template<>
-//struct TD3D11ResourceTraits<FRHIBoundShaderState>
-//{
-//	typedef FD3D11BoundShaderState TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHIBoundShaderState>
+{
+	typedef FD3D11BoundShaderState TConcreteType;
+};
 //template<>
 //struct TD3D11ResourceTraits<FRHIRenderQuery>
 //{
