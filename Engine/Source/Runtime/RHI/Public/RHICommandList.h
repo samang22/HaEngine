@@ -40,15 +40,14 @@ public:
 
     FORCEINLINE FBufferRHIRef CreateBuffer(uint32 Size, EBufferUsageFlags Usage, uint32 Stride, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo)
     {
-        //FRHIBufferDesc BufferDesc = CreateInfo.bWithoutNativeResource
-        //    ? FRHIBufferDesc::Null()
-        //    : FRHIBufferDesc(Size, Stride, Usage);
+        FRHIBufferDesc BufferDesc = CreateInfo.bWithoutNativeResource
+            ? FRHIBufferDesc::Null()
+            : FRHIBufferDesc(Size, Stride, Usage);
 
-        ////FRHICommandListScopedPipelineGuard ScopedPipeline(*this);
-        //FBufferRHIRef Buffer = GDynamicRHI->RHICreateBuffer(*this, BufferDesc, ResourceState, CreateInfo);
-        //Buffer->SetTrackedAccess_Unsafe(ResourceState);
-        //return Buffer;
-        return nullptr;
+        //FRHICommandListScopedPipelineGuard ScopedPipeline(*this);
+        FBufferRHIRef Buffer = GDynamicRHI->RHICreateBuffer(*this, BufferDesc, ResourceState, CreateInfo);
+        Buffer->SetTrackedAccess_Unsafe(ResourceState);
+        return Buffer;
     }
 
     FORCEINLINE FBufferRHIRef CreateVertexBuffer(uint32 Size, EBufferUsageFlags Usage, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo)
@@ -65,6 +64,11 @@ public:
 
 
 	RHI_API void SetBoundShaderState(FRHIBoundShaderState* BoundShaderState);
+
+    FORCEINLINE void SetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset)
+    {
+        GetContext().RHISetStreamSource(StreamIndex, VertexBuffer, Offset);
+    }
 private:
 	// 그래픽 명령이 기록되는 활성 컨텍스트.
 	IRHICommandContext* GraphicsContext = nullptr;

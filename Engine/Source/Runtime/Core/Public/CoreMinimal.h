@@ -5,6 +5,7 @@
 #include "CoreGlobals.h"
 
 #include "Containers/ResourceArray.h"
+#include "Containers/DynamicRHIResourceArray.h"
 
 #include "UObject/EnginePtr.h"
 #include "UObject/Object.h"

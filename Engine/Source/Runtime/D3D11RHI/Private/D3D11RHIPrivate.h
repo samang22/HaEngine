@@ -125,6 +125,8 @@ public:
 
     virtual FBufferRHIRef RHICreateBuffer(FRHICommandList& RHICmdList, FRHIBufferDesc const& Desc, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo) final override;
 
+    virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) final override;
+
     virtual void RHIBeginDrawingViewport(FRHIViewport* Viewport, FRHITexture* RenderTargetRHI) final override;
     virtual void RHIEndDrawingViewport(FRHIViewport* Viewport, bool bPresent, bool bLockToVsync) final override;
     virtual void RHIClearMRTImpl(const bool* bClearColorArray, int32 NumClearColors, const FLinearColor* ColorArray, bool bClearDepth, float Depth, bool bClearStencil, uint32 Stencil);
@@ -158,6 +160,10 @@ public:
 public:
     void ClearState();
 
+private:
+    void TrackResourceBoundAsVB(FD3D11ViewableResource* Resource, int32 StreamIndex);
+    void TrackResourceBoundAsIB(FD3D11ViewableResource* Resource);
+
 protected:
     /** The global D3D interface. */
     TRefCountPtr<IDXGIFactory1> DXGIFactory1;
@@ -178,11 +184,11 @@ protected:
 
     TRefCountPtr<ID3D11DepthStencilView> CurrentDepthStencilTarget;
     TRefCountPtr<FD3D11Texture> CurrentDepthTexture;
-    //FD3D11ViewableResource* CurrentResourcesBoundAsSRVs[SF_NumStandardFrequencies][D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT];
-    //FD3D11ViewableResource* CurrentResourcesBoundAsVBs[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-    //FD3D11ViewableResource* CurrentResourceBoundAsIB;
+    FD3D11ViewableResource* CurrentResourcesBoundAsSRVs[SF_NumStandardFrequencies][D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT];
+    FD3D11ViewableResource* CurrentResourcesBoundAsVBs[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+    FD3D11ViewableResource* CurrentResourceBoundAsIB;
     //int32 MaxBoundShaderResourcesIndex[SF_NumStandardFrequencies];
-    //int32 MaxBoundVertexBufferIndex;
+    int32 MaxBoundVertexBufferIndex;
     uint32 NumSimultaneousRenderTargets;
     uint32 CurrentRTVOverlapMask;
     uint32 CurrentUAVMask;

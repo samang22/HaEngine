@@ -56,20 +56,27 @@ void UViewportClient::Draw()
 		TShaderMapRef<FTestVS> VertextShader;
 		TShaderMapRef<FTestPS> PixelShader;
 
-		FVertexDeclarationElementList Elements;
-		Elements.push_back(FVertexElement(0, 0, VET_Float3, 0, sizeof(FVector3D)));
-		FVertexDeclarationRHIRef VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
+		TResourceArray<FVector3D> PositionData;
+		PositionData.emplace_back(0.0f, 0.5f, 0.0f);
+		PositionData.emplace_back(0.5f, -0.5f, 0.0f);
+		PositionData.emplace_back(-0.5f, -0.5f, 0.0f);
 
-		FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"));
-		GetCommandList();
+		FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"), &PositionData);
+		FBufferRHIRef VertexBufferRHI = GetCommandList().CreateVertexBuffer(PositionData.GetResourceDataSize(), BUF_Static, CreateInfo);
+		if (!VertexBufferRHI)
+		{
+			E_LOG(Warning, TEXT("VertexBufferRHI creation failed"));
+			return;
+		}
 
 		GetCommandList().SetBoundShaderState(
 			GDynamicRHI->RHICreateBoundShaderState(
-				VertexDeclarationRHI,
+				GTestVertexDeclaration.VertexDeclarationRHI,
 				VertextShader.GetVertexShader(),
 				PixelShader.GetPixelShader()
 			).GetReference()
 		);
+		GetCommandList().SetStreamSource(0, VertexBufferRHI, 0);
 	}
 
 	FRHICommandListExecutor::GetImmediateCommandList().EndDrawingViewport(Viewport, true, false);

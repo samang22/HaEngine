@@ -493,3 +493,35 @@ ENUM_CLASS_FLAGS(EBufferUsageFlags);
 #define BUF_NullResource           EBufferUsageFlags::NullResource
 #define BUF_UniformBuffer          EBufferUsageFlags::UniformBuffer
 #define BUF_ReservedResource       EBufferUsageFlags::ReservedResource
+
+enum EPrimitiveType
+{
+	// 삼각형 N을 3개의 버텍스 끝점(3*N+0, 3*N+1, 3*N+2)으로 정의하는 토폴로지입니다.
+	PT_TriangleList,
+
+	// 삼각형 N을 3개의 버텍스 끝점(N+0, N+1, N+2)으로 정의하는 토폴로지입니다.
+	PT_TriangleStrip,
+
+	// 라인을 2개의 버텍스 끝점(2*N+0, 2*N+1)으로 정의하는 토폴로지입니다.
+	PT_LineList,
+
+	// 사각형 N을 4개의 버텍스 끝점(4*N+0, 4*N+1, 4*N+2, 4*N+3)으로 정의하는 토폴로지입니다.
+	// GRHISupportsQuadTopology가 true인 경우에만 지원됩니다.
+	PT_QuadList,
+
+	// 포인트 N을 단일 버텍스(N)으로 정의하는 토폴로지입니다.
+	PT_PointList,
+
+	// 화면 정렬 직사각형 N을 3개의 버텍스 모서리(3*N + 0은 좌상단 모서리, 3*N + 1은 우상단 모서리, 3*N + 2는 좌하단 모서리)로 정의하는 토폴로지입니다.
+	// GRHISupportsRectTopology가 true인 경우에만 지원됩니다.
+	PT_RectList,
+
+	PT_Num,
+	PT_NumBits = 3
+};
+
+// EPrimitiveType이 바이트 내에 들어가는지 확인하는 정적 어설션입니다.
+static_assert(PT_Num <= (1 << 8), "EPrimitiveType doesn't fit in a byte");
+
+// PT_NumBits가 너무 작은지 확인하는 정적 어설션입니다.
+static_assert(PT_Num <= (1 << PT_NumBits), "PT_NumBits is too small");

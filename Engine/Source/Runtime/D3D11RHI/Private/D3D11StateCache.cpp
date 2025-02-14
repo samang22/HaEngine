@@ -39,7 +39,6 @@ void FD3D11StateCache::ClearState()
     //DepthBoundsMax = 1.0f;
 
     ZeroMemory(StreamStrides, sizeof(StreamStrides));
-    CurrentInputLayout = nullptr;
 
     // Shader Cache
     CurrentVertexShader = nullptr;
@@ -48,21 +47,21 @@ void FD3D11StateCache::ClearState()
     //CurrentComputeShader = nullptr;
 
     // Blend State Cache
-    /*CurrentBlendFactor[0] = 1.0f;
-    CurrentBlendFactor[1] = 1.0f;
-    CurrentBlendFactor[2] = 1.0f;
-    CurrentBlendFactor[3] = 1.0f;
+    //CurrentBlendFactor[0] = 1.0f;
+    //CurrentBlendFactor[1] = 1.0f;
+    //CurrentBlendFactor[2] = 1.0f;
+    //CurrentBlendFactor[3] = 1.0f;
 
-    FMemory::Memset(&CurrentViewport[0], 0, sizeof(D3D11_VIEWPORT) * D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
-    CurrentNumberOfViewports = 0;
+    //FMemory::Memset(&CurrentViewport[0], 0, sizeof(D3D11_VIEWPORT) * D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
+    //CurrentNumberOfViewports = 0;
 
-    CurrentBlendSampleMask = 0xffffffff;
-    CurrentBlendState = nullptr;
+    //CurrentBlendSampleMask = 0xffffffff;
+    //CurrentBlendState = nullptr;
 
     CurrentInputLayout = nullptr;
 
-    FMemory::Memzero(CurrentVertexBuffers, sizeof(CurrentVertexBuffers));
-    FMemory::Memzero(CurrentSamplerStates, sizeof(CurrentSamplerStates));
+    ZeroMemory(CurrentVertexBuffers, sizeof(CurrentVertexBuffers));
+    /*FMemory::Memzero(CurrentSamplerStates, sizeof(CurrentSamplerStates));
 
     CurrentIndexBuffer = nullptr;
     CurrentIndexFormat = DXGI_FORMAT_UNKNOWN;

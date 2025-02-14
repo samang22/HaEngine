@@ -58,6 +58,32 @@ public:
             Direct3DDeviceIMContext->PSSetShader(Shader, nullptr, 0);
         }
     }
+
+    inline void InternalSetStreamSource(ID3D11Buffer* VertexBuffer, uint32 StreamIndex, uint32 Stride, uint32 Offset)
+    {
+        _ASSERT(StreamIndex < ARRAYSIZE(CurrentVertexBuffers));
+        FD3D11VertexBufferState& Slot = CurrentVertexBuffers[StreamIndex];
+        if ((Slot.VertexBuffer != VertexBuffer || Slot.Offset != Offset || Slot.Stride != Stride) /*|| GD3D11SkipStateCaching*/)
+        {
+            Slot.VertexBuffer = VertexBuffer;
+            Slot.Offset = Offset;
+            Slot.Stride = Stride;
+            Direct3DDeviceIMContext->IASetVertexBuffers(StreamIndex, 1, &VertexBuffer, &Stride, &Offset);
+        }
+    }
+
+
+    inline void SetStreamSource(ID3D11Buffer* VertexBuffer, uint32 StreamIndex, uint32 Stride, uint32 Offset)
+    {
+        _ASSERT(Stride == StreamStrides[StreamIndex]);
+        InternalSetStreamSource(VertexBuffer, StreamIndex, Stride, Offset);
+    }
+
+    inline void SetStreamSource(ID3D11Buffer* VertexBuffer, uint32 StreamIndex, uint32 Offset)
+    {
+        InternalSetStreamSource(VertexBuffer, StreamIndex, StreamStrides[StreamIndex], Offset);
+    }
+
 protected:
 	ID3D11DeviceContext* Direct3DDeviceIMContext;
 
@@ -69,6 +95,14 @@ protected:
     //ID3D11GeometryShader* CurrentGeometryShader;
     ID3D11PixelShader* CurrentPixelShader;
     //ID3D11ComputeShader* CurrentComputeShader;
+
+    // Vertex Buffer State
+    struct FD3D11VertexBufferState
+    {
+        ID3D11Buffer* VertexBuffer;
+        uint32 Stride;
+        uint32 Offset;
+    } CurrentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
 
     uint16 StreamStrides[MaxVertexElementCount];
 };

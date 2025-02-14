@@ -167,3 +167,12 @@ FBufferRHIRef FD3D11DynamicRHI::RHICreateBuffer(FRHICommandList& RHICmdList, FRH
 
     return NewBuffer;
 }
+
+void FD3D11DynamicRHI::RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBufferRHI, uint32 Offset)
+{
+    FD3D11Buffer* VertexBuffer = ResourceCast(VertexBufferRHI);
+
+    ID3D11Buffer* D3DBuffer = VertexBuffer ? VertexBuffer->Resource.GetReference() : nullptr;
+    TrackResourceBoundAsVB(VertexBuffer, StreamIndex);
+    StateCache.SetStreamSource(D3DBuffer, StreamIndex, Offset);
+}
