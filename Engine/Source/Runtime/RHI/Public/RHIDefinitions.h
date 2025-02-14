@@ -379,3 +379,117 @@ enum
 	MaxVertexElementCount_NumBits = 5,
 };
 static_assert(MaxVertexElementCount <= (1 << MaxVertexElementCount_NumBits), "MaxVertexElementCount는 MaxVertexElementCount_NumBits에 맞지 않습니다");
+
+/**
+ * 버텍스 및 인덱스 버퍼를 위한 리소스 사용 플래그.
+ */
+enum class EBufferUsageFlags : uint32
+{
+	None = 0,
+
+	/** 버퍼는 한 번만 작성됩니다. */
+	Static = 1 << 0,
+
+	/** 버퍼는 가끔 작성되며, GPU는 읽기 전용이고 CPU는 쓰기 전용입니다. 데이터의 수명은 다음 업데이트 때까지 또는 버퍼가 파괴될 때까지입니다. */
+	Dynamic = 1 << 1,
+
+	/** 버퍼의 데이터 수명은 한 프레임입니다. 각 프레임마다 작성되어야 하며, 그렇지 않으면 매 프레임마다 새로 만들어져야 합니다. */
+	Volatile = 1 << 2,
+
+	/** 버퍼에 대한 비순차적 접근 뷰를 생성할 수 있도록 합니다. */
+	UnorderedAccess = 1 << 3,
+
+	/** 바이트 주소 버퍼를 생성합니다. 이는 기본적으로 uint32 타입을 사용하는 구조화된 버퍼입니다. */
+	ByteAddressBuffer = 1 << 4,
+
+	/** GPU가 복사의 소스로 사용할 버퍼입니다. */
+	SourceCopy = 1 << 5,
+
+	/** 스트림 출력 대상으로 바인딩될 수 있는 버퍼를 생성합니다. */
+	//StreamOutput            UE_DEPRECATED(5.3, "StreamOut은 지원되지 않습니다") = 1 << 6,
+
+	/** DispatchIndirect 또는 DrawIndirect에서 사용하는 인자를 포함하는 버퍼를 생성합니다. */
+	DrawIndirect = 1 << 7,
+
+	/**
+	 * 셰이더 리소스로 바인딩될 수 있는 버퍼를 생성합니다.
+	 * 이는 보통 셰이더 리소스로 사용되지 않는 버퍼 타입(예: 버텍스 버퍼)에만 필요합니다.
+	 */
+	ShaderResource = 1 << 8,
+
+	/** 이 버퍼가 직접 CPU에서 접근할 수 있도록 요청합니다. */
+	KeepCPUAccessible = 1 << 9,
+
+	/** 버퍼는 빠른 VRAM에 있어야 합니다(힌트만 제공). BUF_Transient가 필요합니다. */
+	FastVRAM = 1 << 10,
+
+	/** 외부 RHI 또는 프로세스와 공유할 수 있는 버퍼를 생성합니다. */
+	Shared = 1 << 12,
+
+	/**
+	 * 버퍼는 불투명한 레이 트레이싱 가속 구조 데이터를 포함합니다.
+	 * 이 플래그가 설정된 리소스는 셰이더 단계에 직접 바인딩될 수 없으며, 레이 트레이싱 API에서만 사용할 수 있습니다.
+	 * 이 플래그는 Static 및 ReservedResource를 제외한 모든 다른 버퍼 플래그와 상호 배타적입니다.
+	*/
+	AccelerationStructure = 1 << 13,
+
+	VertexBuffer = 1 << 14,
+	IndexBuffer = 1 << 15,
+	StructuredBuffer = 1 << 16,
+
+	/** 버퍼 메모리는 드라이버 별칭을 통해 공유되지 않고 여러 GPU에 독립적으로 할당됩니다. */
+	MultiGPUAllocate = 1 << 17,
+
+	/**
+	 * 멀티-GPU 시나리오에서 렌더 그래프가 GPU 간 전송을 신경 쓰지 않도록 합니다.
+	 * 스트리밍 요청 버퍼와 같이 CPU로 읽어들이거나, 각 프레임마다 CPU에서 작성된 경우 등 다른 GPU가 데이터를 실제로 신경 쓰지 않는 경우에 유용합니다.
+	*/
+	MultiGPUGraphIgnore = 1 << 18,
+
+	/** 레이 트레이싱 가속 구조를 구축하기 위한 스크래치 버퍼로 사용할 수 있는 버퍼입니다.
+	 * 이는 비순차적 접근을 암시합니다. 버퍼 정렬만 변경하며 다른 플래그와 결합할 수 있습니다.
+	**/
+	RayTracingScratch = (1 << 19) | UnorderedAccess,
+
+	/** 버퍼는 스트리밍을 위한 자리표시자이며, 기본 GPU 리소스를 포함하지 않습니다. */
+	NullResource = 1 << 20,
+
+	/** 플랫폼이 Uniform Buffer Objects를 지원하는 경우 유니폼 버퍼로 사용할 수 있는 버퍼입니다. */
+	UniformBuffer = 1 << 21,
+
+	/**
+	* 실험적: 버퍼를 물리적 메모리 백업 없이 내부적으로 예약된(타일링/스파스/가상) 리소스로 생성할 수 있습니다.
+	* 동적 및 다른 플래그와 함께 사용될 수 없습니다.
+	*/
+	ReservedResource = 1 << 22,
+
+	// 도우미 비트 마스크
+	AnyDynamic = (Dynamic | Volatile),
+};
+ENUM_CLASS_FLAGS(EBufferUsageFlags);
+
+#define BUF_None                   EBufferUsageFlags::None
+#define BUF_Static                 EBufferUsageFlags::Static
+#define BUF_Dynamic                EBufferUsageFlags::Dynamic
+#define BUF_Volatile               EBufferUsageFlags::Volatile
+#define BUF_UnorderedAccess        EBufferUsageFlags::UnorderedAccess
+#define BUF_ByteAddressBuffer      EBufferUsageFlags::ByteAddressBuffer
+#define BUF_SourceCopy             EBufferUsageFlags::SourceCopy
+//#define BUF_StreamOutput           EBufferUsageFlags::StreamOutput
+#define BUF_DrawIndirect           EBufferUsageFlags::DrawIndirect
+#define BUF_ShaderResource         EBufferUsageFlags::ShaderResource
+#define BUF_KeepCPUAccessible      EBufferUsageFlags::KeepCPUAccessible
+#define BUF_FastVRAM               EBufferUsageFlags::FastVRAM
+//#define BUF_Transient              EBufferUsageFlags::Transient
+#define BUF_Shared                 EBufferUsageFlags::Shared
+#define BUF_AccelerationStructure  EBufferUsageFlags::AccelerationStructure
+#define BUF_RayTracingScratch      EBufferUsageFlags::RayTracingScratch
+#define BUF_VertexBuffer           EBufferUsageFlags::VertexBuffer
+#define BUF_IndexBuffer            EBufferUsageFlags::IndexBuffer
+#define BUF_StructuredBuffer       EBufferUsageFlags::StructuredBuffer
+#define BUF_AnyDynamic             EBufferUsageFlags::AnyDynamic
+#define BUF_MultiGPUAllocate       EBufferUsageFlags::MultiGPUAllocate
+#define BUF_MultiGPUGraphIgnore    EBufferUsageFlags::MultiGPUGraphIgnore
+#define BUF_NullResource           EBufferUsageFlags::NullResource
+#define BUF_UniformBuffer          EBufferUsageFlags::UniformBuffer
+#define BUF_ReservedResource       EBufferUsageFlags::ReservedResource

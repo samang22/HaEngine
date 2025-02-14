@@ -139,16 +139,16 @@ public:
 		return DepthStencilViews[AccessType.GetIndex()];
 	}
 
-#if RHI_ENABLE_RESOURCE_INFO
-	virtual bool GetResourceInfo(FRHIResourceInfo& OutResourceInfo) const override
-	{
-		OutResourceInfo = FRHIResourceInfo{};
-		OutResourceInfo.Name = GetName();
-		OutResourceInfo.Type = GetType();
-		OutResourceInfo.VRamAllocation.AllocationSize = GetMemorySize();
-		return true;
-	}
-#endif
+//#if RHI_ENABLE_RESOURCE_INFO
+//	virtual bool GetResourceInfo(FRHIResourceInfo& OutResourceInfo) const override
+//	{
+//		OutResourceInfo = FRHIResourceInfo{};
+//		OutResourceInfo.Name = GetName();
+//		OutResourceInfo.Type = GetType();
+//		OutResourceInfo.VRamAllocation.AllocationSize = GetMemorySize();
+//		return true;
+//	}
+//#endif
 
 	/**
 	* Locks one of the texture's mip-maps.
@@ -255,6 +255,54 @@ public:
 	);
 };
 
+/** 버퍼 리소스 클래스. */
+class FD3D11Buffer : public FRHIBuffer, public FD3D11ViewableResource
+{
+public:
+
+	TRefCountPtr<ID3D11Buffer> Resource;
+
+	FD3D11Buffer(ID3D11Buffer* InResource, FRHIBufferDesc const& InDesc)
+		: FRHIBuffer(InDesc)
+		, Resource(InResource)
+	{
+	}
+
+	// FRHIResource 오버라이드
+//#if RHI_ENABLE_RESOURCE_INFO
+//    bool GetResourceInfo(FRHIResourceInfo& OutResourceInfo) const override
+//    {
+//        OutResourceInfo = FRHIResourceInfo{};
+//        OutResourceInfo.Name = GetName();
+//        OutResourceInfo.Type = GetType();
+//        OutResourceInfo.VRamAllocation.AllocationSize = GetSize();
+//        return true;
+//    }
+//#endif
+
+	virtual ~FD3D11Buffer() {}
+
+	//void TakeOwnership(FD3D11Buffer& Other);
+	//void ReleaseOwnership();
+
+	// IRefCountedObject 인터페이스
+	virtual uint32 AddRef() const
+	{
+		return FRHIResource::AddRef();
+	}
+	virtual uint32 Release() const
+	{
+		return FRHIResource::Release();
+	}
+	virtual uint32 GetRefCount() const
+	{
+		return FRHIResource::GetRefCount();
+	}
+};
+
+
+
+
 template<class T>
 struct TD3D11ResourceTraits
 {
@@ -299,11 +347,11 @@ struct TD3D11ResourceTraits<FRHIBoundShaderState>
 //{
 //	typedef FD3D11UniformBuffer TConcreteType;
 //};
-//template<>
-//struct TD3D11ResourceTraits<FRHIBuffer>
-//{
-//	typedef FD3D11Buffer TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHIBuffer>
+{
+	typedef FD3D11Buffer TConcreteType;
+};
 //template<>
 //struct TD3D11ResourceTraits<FRHIStagingBuffer>
 //{

@@ -4,8 +4,14 @@
 #include "RHIDefinitions.h"
 #include "RHIUtilities.h"
 #include "RHIContext.h"
+//#include "RHICommandList.h"
 #include "RHIFwd.h"
+#include "RHIAccess.h"
 #include "PixelFormat.h"
+
+class FRHICommandList;
+struct FRHIBufferDesc;
+struct FRHIResourceCreateInfo;
 
 /** 동적으로 바인딩된 RHI가 구현하는 인터페이스입니다. */
 class FDynamicRHI
@@ -27,6 +33,8 @@ public:
 
 	virtual FVertexDeclarationRHIRef RHICreateVertexDeclaration(const FVertexDeclarationElementList& Elements) = 0;
 	virtual FBoundShaderStateRHIRef RHICreateBoundShaderState(FRHIVertexDeclaration* VertexDeclaration, FRHIVertexShader* VertexShader, FRHIPixelShader* PixelShader/*, FRHIGeometryShader* GeometryShader*/) = 0;
+
+	virtual FBufferRHIRef RHICreateBuffer(FRHICommandList& RHICmdList, FRHIBufferDesc const& Desc, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo) = 0;
 
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TArray<uint8>& OutResult) = 0;
 };

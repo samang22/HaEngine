@@ -60,7 +60,10 @@ void UViewportClient::Draw()
 		Elements.push_back(FVertexElement(0, 0, VET_Float3, 0, sizeof(FVector3D)));
 		FVertexDeclarationRHIRef VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
 
-		FRHICommandListExecutor::GetImmediateCommandList().SetBoundShaderState(
+		FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"));
+		GetCommandList();
+
+		GetCommandList().SetBoundShaderState(
 			GDynamicRHI->RHICreateBoundShaderState(
 				VertexDeclarationRHI,
 				VertextShader.GetVertexShader(),

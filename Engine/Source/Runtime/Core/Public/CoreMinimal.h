@@ -4,6 +4,8 @@
 
 #include "CoreGlobals.h"
 
+#include "Containers/ResourceArray.h"
+
 #include "UObject/EnginePtr.h"
 #include "UObject/Object.h"
 #include "UObject/Class.h"

@@ -3,11 +3,13 @@
 #include "Math/SimpleMath.h"
 #include "Templates/RefCounting.h"
 #include "RHIDefinitions.h"
-#include "RHICommandList.h"
 #include "RHIAccess.h"
 #include "RHI.h"
+#include "PixelFormat.h"
+
 
 class FResourceBulkDataInterface;
+extern RHI_API ERHIAccess RHIGetDefaultResourceState(ETextureCreateFlags InUsage, bool bInHasInitialData);
 
 enum class EClearBinding
 {
@@ -683,7 +685,7 @@ public:
 class FRHIViewableResource : public FRHIResource
 {
 public:
-	// TODO (RemoveUnknowns) remove once FRHIBufferCreateDesc contains initial access.
+	// TODO (RemoveUnknowns) FRHIBufferCreateDesc에 초기 접근이 포함되면 제거합니다.	
 	void SetTrackedAccess_Unsafe(ERHIAccess Access)
 	{
 		TrackedAccess = Access;
@@ -1832,4 +1834,152 @@ class FRHIBoundShaderState : public FRHIResource
 {
 public:
 	FRHIBoundShaderState() : FRHIResource(RRT_BoundShaderState) {}
+};
+
+class FResourceBulkDataInterface;
+class FResourceArrayInterface;
+
+struct FRHIResourceCreateInfo
+{
+	FRHIResourceCreateInfo(const TCHAR* InDebugName)
+		: BulkData(nullptr)
+		, ResourceArray(nullptr)
+		, ClearValueBinding(FLinearColor::Transparent)
+		//, GPUMask(FRHIGPUMask::All())
+		, bWithoutNativeResource(false)
+		, DebugName(InDebugName)
+		, ExtData(0)
+	{
+		_ASSERT(InDebugName);
+	}
+
+	// 텍스처 생성을 위한 호출
+	FRHIResourceCreateInfo(const TCHAR* InDebugName, FResourceBulkDataInterface* InBulkData)
+		: FRHIResourceCreateInfo(InDebugName)
+	{
+		BulkData = InBulkData;
+	}
+
+	// 버퍼 생성을 위한 호출
+	FRHIResourceCreateInfo(const TCHAR* InDebugName, FResourceArrayInterface* InResourceArray)
+		: FRHIResourceCreateInfo(InDebugName)
+	{
+		ResourceArray = InResourceArray;
+	}
+
+	FRHIResourceCreateInfo(const TCHAR* InDebugName, const FClearValueBinding& InClearValueBinding)
+		: FRHIResourceCreateInfo(InDebugName)
+	{
+		ClearValueBinding = InClearValueBinding;
+	}
+
+	FRHIResourceCreateInfo(uint32 InExtData)
+		: FRHIResourceCreateInfo(TEXT(""))
+	{
+		ExtData = InExtData;
+	}
+
+	//FName GetTraceClassName() const { const static FLazyName FRHIBufferName(TEXT("FRHIBuffer")); return (ClassName == NAME_None) ? FRHIBufferName : ClassName; }
+
+	// 텍스처 생성을 위한 호출
+	FResourceBulkDataInterface* BulkData;
+
+	// 버퍼 생성을 위한 호출
+	FResourceArrayInterface* ResourceArray;
+
+	// 렌더 타겟에 클리어 색상을 바인딩하기 위한 값
+	FClearValueBinding ClearValueBinding;
+
+	// 리소스를 생성할 GPU 집합
+	//FRHIGPUMask GPUMask;
+
+	// 기본 리소스가 없는 RHI 객체 생성 여부
+	bool bWithoutNativeResource;
+	const TCHAR* DebugName;
+
+	// 오프라인 쿠커 등에서 제공할 수 있는 선택적 데이터 - 범용
+	uint32 ExtData;
+
+	FName ClassName = NAME_None;    // Insight 자산 메타데이터 추적에 사용되는 FRHIBuffer의 소유자 클래스
+	FName OwnerName = NAME_None;    // Insight 자산 메타데이터 추적에 사용되는 소유자 이름
+};
+
+struct FRHIBufferDesc
+{
+	uint32 Size{};
+	uint32 Stride{};
+	EBufferUsageFlags Usage{};
+
+	FRHIBufferDesc() = default;
+	FRHIBufferDesc(uint32 InSize, uint32 InStride, EBufferUsageFlags InUsage)
+		: Size(InSize)
+		, Stride(InStride)
+		, Usage(InUsage)
+	{
+	}
+
+	static FRHIBufferDesc Null()
+	{
+		return FRHIBufferDesc(0, 0, BUF_NullResource);
+	}
+
+	bool IsNull() const
+	{
+		if (EnumHasAnyFlags(Usage, BUF_NullResource))
+		{
+			// 널 리소스 디스크립터는 다른 필드가 0으로 설정되어야 하며, 추가 플래그가 없어야 합니다.
+			_ASSERT(Size == 0 && Stride == 0 && Usage == BUF_NullResource);
+			return true;
+		}
+
+		return false;
+	}
+};
+
+class FRHIBuffer : public FRHIViewableResource
+{
+public:
+	/** Initialization constructor. */
+	FRHIBuffer(FRHIBufferDesc const& InDesc)
+		: FRHIViewableResource(RRT_Buffer, ERHIAccess::Unknown) /* TODO (RemoveUnknowns): 리팩토링 후 디스크립터에서 InitialAccess를 사용합니다. */
+		, Desc(InDesc)
+	{
+	}
+
+	FRHIBufferDesc const& GetDesc() const { return Desc; }
+
+	/** @return 버퍼의 바이트 수를 반환합니다. */
+	uint32 GetSize() const { return Desc.Size; }
+
+	/** @return 버퍼의 바이트 단위 스트라이드를 반환합니다. */
+	uint32 GetStride() const { return Desc.Stride; }
+
+	/** @return 버퍼를 생성할 때 사용된 사용 플래그를 반환합니다. */
+	EBufferUsageFlags GetUsage() const { return Desc.Usage; }
+
+	void SetName(const FName& InName) { Name = InName; }
+
+	virtual uint32 GetParentGPUIndex() const { return 0; }
+
+protected:
+	// Used by RHI implementations that may adjust internal usage flags during object construction.
+	void SetUsage(EBufferUsageFlags InUsage)
+	{
+		Desc.Usage = InUsage;
+	}
+
+	void TakeOwnership(FRHIBuffer& Other)
+	{
+		FRHIViewableResource::TakeOwnership(Other);
+		Desc = Other.Desc;
+	}
+
+	void ReleaseOwnership()
+	{
+		FRHIViewableResource::ReleaseOwnership();
+		Desc = FRHIBufferDesc::Null();
+	}
+
+private:
+	FRHIBufferDesc Desc;
 };

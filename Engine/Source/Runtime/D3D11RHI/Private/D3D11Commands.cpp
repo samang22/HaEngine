@@ -48,3 +48,122 @@ void FD3D11DynamicRHI::RHISetBoundShaderState(FRHIBoundShaderState* BoundShaderS
     //    ClearAllShaderResources();
     //}
 }
+
+FBufferRHIRef FD3D11DynamicRHI::RHICreateBuffer(FRHICommandList& RHICmdList, FRHIBufferDesc const& BufferDesc, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo)
+{
+    if (BufferDesc.IsNull())
+    {
+        return new FD3D11Buffer(nullptr, BufferDesc);
+    }
+
+    // CreateBuffer가 명확하지 않게 실패하기 전에 크기가 0이 아닌지 명시적으로 확인합니다.
+    _ASSERT(BufferDesc.Size > 0, TEXT("크기 0으로 버퍼 '%s'를 생성하려고 시도했습니다."), CreateInfo.DebugName ? CreateInfo.DebugName : TEXT("(null)"));
+
+    // 버퍼를 설명합니다.
+    D3D11_BUFFER_DESC Desc{};
+    Desc.ByteWidth = BufferDesc.Size;
+
+    if (EnumHasAnyFlags(BufferDesc.Usage, BUF_AnyDynamic))
+    {
+        Desc.Usage = D3D11_USAGE_DYNAMIC;
+        Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    }
+
+    if (EnumHasAnyFlags(BufferDesc.Usage, BUF_VertexBuffer))
+    {
+        Desc.BindFlags |= D3D11_BIND_VERTEX_BUFFER;
+    }
+
+    if (EnumHasAnyFlags(BufferDesc.Usage, BUF_IndexBuffer))
+    {
+        Desc.BindFlags |= D3D11_BIND_INDEX_BUFFER;
+    }
+
+    if (EnumHasAnyFlags(BufferDesc.Usage, BUF_ByteAddressBuffer))
+    {
+        Desc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+    }
+    else if (EnumHasAnyFlags(BufferDesc.Usage, BUF_StructuredBuffer))
+    {
+        Desc.StructureByteStride = BufferDesc.Stride;
+        Desc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    }
+
+    if (EnumHasAnyFlags(BufferDesc.Usage, BUF_ShaderResource))
+    {
+        Desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+    }
+
+    if (EnumHasAnyFlags(BufferDesc.Usage, BUF_UnorderedAccess))
+    {
+        Desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+    }
+
+    if (EnumHasAnyFlags(BufferDesc.Usage, BUF_DrawIndirect))
+    {
+        Desc.MiscFlags |= D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
+    }
+
+    if (EnumHasAnyFlags(BufferDesc.Usage, BUF_Shared))
+    {
+        /*if (GCVarUseSharedKeyedMutex->GetInt() != 0)
+        {
+            Desc.MiscFlags |= D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+        }
+        else*/
+        {
+            Desc.MiscFlags |= D3D11_RESOURCE_MISC_SHARED;
+        }
+    }
+
+    // If a resource array was provided for the resource, create the resource pre-populated
+    D3D11_SUBRESOURCE_DATA InitData;
+    D3D11_SUBRESOURCE_DATA* pInitData = NULL;
+    if (CreateInfo.ResourceArray)
+    {
+        _ASSERT(BufferDesc.Size == CreateInfo.ResourceArray->GetResourceDataSize());
+        InitData.pSysMem = CreateInfo.ResourceArray->GetResourceData();
+        InitData.SysMemPitch = BufferDesc.Size;
+        InitData.SysMemSlicePitch = 0;
+        pInitData = &InitData;
+    }
+
+    TRefCountPtr<ID3D11Buffer> BufferResource;
+    {
+        HRESULT hr = Direct3DDevice->CreateBuffer(&Desc, pInitData, BufferResource.GetInitReference());
+        if (FAILED(hr))
+        {
+            /*E_LOG(Error, TEXT("Failed to create buffer '{}' with ByteWidth={}, Usage={}, BindFlags=0x{:x}, CPUAccessFlags=0x{:x}, MiscFlags=0x{:x}, StructureByteStride={}, InitData=0x{:x}"),
+                CreateInfo.DebugName ? CreateInfo.DebugName : TEXT(""), Desc.ByteWidth, Desc.Usage, Desc.BindFlags, Desc.CPUAccessFlags, Desc.MiscFlags, Desc.StructureByteStride, pInitData);*/
+            VerifyD3D11Result(hr, "CreateBuffer", __FILE__, __LINE__, Direct3DDevice);
+            _ASSERT(false);
+        }
+    }
+
+    FString DebugName = CreateInfo.DebugName;
+    if (CreateInfo.DebugName)
+    {
+        BufferResource->SetPrivateData(WKPDID_D3DDebugObjectName, wcslen(CreateInfo.DebugName) + 1, TCHAR_TO_ANSI(DebugName).data());
+    }
+
+    if (CreateInfo.DebugName)
+    {
+        BufferResource->SetPrivateData(WKPDID_D3DDebugObjectName, wcslen(CreateInfo.DebugName) + 1, TCHAR_TO_ANSI(DebugName).data());
+    }
+
+    if (CreateInfo.ResourceArray)
+    {
+        // 리소스 배열의 내용을 폐기합니다.
+        CreateInfo.ResourceArray->Discard();
+    }
+
+    FD3D11Buffer* NewBuffer = new FD3D11Buffer(BufferResource, BufferDesc);
+    if (CreateInfo.DebugName)
+    {
+        NewBuffer->SetName(CreateInfo.DebugName);
+    }
+
+    //D3D11BufferStats::UpdateBufferStats(*NewBuffer, true);
+
+    return NewBuffer;
+}

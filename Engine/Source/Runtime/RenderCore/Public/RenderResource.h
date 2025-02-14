@@ -107,9 +107,9 @@ public:
         //        // 이는 렌더링 스레드에서 호출되거나, 렌더링 스레드가 종료된 상태에서 종료 시 호출되어야 합니다.
         //        // 그러나 오류 후 종료 시, 렌더링 스레드가 여전히 실행 중일 때 호출될 수도 있습니다.
         //        // 그런 경우 두 번째 오류를 방지하기 위해 assert를 사용하지 않습니다.
-        //#if 0
-        //        check(IsInRenderingThread());
-        //#endif
+//#if 0
+//        check(IsInRenderingThread());
+//#endif
 
                 // 리소스를 정리합니다.
         ((ResourceType*)this)->ReleaseResource();

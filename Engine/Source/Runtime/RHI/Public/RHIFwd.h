@@ -8,6 +8,7 @@ class FRHIVertexShader;
 class FRHIViewport;
 class FRHIVertexDeclaration;
 class FRHIBoundShaderState;
+class FRHIBuffer;
 
 using FTextureRHIRef = TRefCountPtr<FRHITexture>;
 using FViewportRHIRef = TRefCountPtr<FRHIViewport>;
@@ -16,6 +17,7 @@ using FPixelShaderRHIRef = TRefCountPtr<FRHIPixelShader>;
 using FViewportRHIRef = TRefCountPtr<FRHIViewport>;
 using FVertexDeclarationRHIRef = TRefCountPtr<FRHIVertexDeclaration>;
 using FBoundShaderStateRHIRef = TRefCountPtr<FRHIBoundShaderState>;
+using FBufferRHIRef = TRefCountPtr<FRHIBuffer>;
 
 struct FVertexElement;
 typedef TArray<FVertexElement> FVertexDeclarationElementList;
