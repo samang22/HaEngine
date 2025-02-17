@@ -4,6 +4,7 @@
 #include "Engine.generated.h"
 
 class UEditorViewportClient;
+class UViewportClient;
 
 UCLASS()
 class ENGINE_API UEngine : public UObject
@@ -15,12 +16,15 @@ public:
     void Tick(float DeltaSeconds);
     void PreExit();
 
+    void WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+
 protected:
     HWND MainViewportHandle = NULL;
     shared_ptr<UWorld> World;
     shared_ptr<UWorld> EditorWorld;
 
     TObjectPtr<UEditorViewportClient> EditorViewportClient;
+    TEnginePtr<UViewportClient> CurrentViewportClient;
 };
 
 extern ENGINE_API UWorld* GWorld;

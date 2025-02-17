@@ -91,3 +91,8 @@ void UViewportClient::Draw()
 
 	FRHICommandListExecutor::GetImmediateCommandList().EndDrawingViewport(Viewport, true, false);
 }
+
+void UViewportClient::RequestResize(const uint32 NewSizeX, const uint32 NewSizeY)
+{
+	Viewport->Resize(NewSizeX, NewSizeY);
+}

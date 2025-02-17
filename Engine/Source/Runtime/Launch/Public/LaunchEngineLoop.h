@@ -30,4 +30,6 @@ public:
     void Tick();
 
     void Exit();
+
+    void WndProc(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 };

@@ -116,10 +116,10 @@ void CMFCApplicationView::OnInitialUpdate()
 	}
 }
 
-//void LAUNCH_API EngineWndProc(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+void LAUNCH_API EngineWndProc(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 BOOL CMFCApplicationView::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
-	//EngineWndProc(message, wParam, lParam, pResult);
+	EngineWndProc(message, wParam, lParam, pResult);
 
 	return CView::OnWndMsg(message, wParam, lParam, pResult);
 }

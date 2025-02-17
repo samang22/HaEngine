@@ -31,6 +31,8 @@ public:
 		}
 	}
 
+	virtual void Resize(const uint32 NewSizeX, const uint32 NewSizeY);
+
 	/** 스왑 체인을 표시합니다.
 	* 엔진에 의해 Present가 수행된 경우 true를 반환합니다.
 	*/

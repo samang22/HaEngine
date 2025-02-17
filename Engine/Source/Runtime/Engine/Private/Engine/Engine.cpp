@@ -25,6 +25,7 @@ void UEngine::Init(HWND hViewportHandle)
 
 	EditorViewportClient = NewObject<UEditorViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
 	EditorViewportClient->Init(hViewportHandle, GWorld);
+    CurrentViewportClient = Cast<UViewportClient>(EditorViewportClient);
 }
 
 void UEngine::Tick(float DeltaSeconds)
@@ -35,4 +36,27 @@ void UEngine::Tick(float DeltaSeconds)
 void UEngine::PreExit()
 {
 	EditorViewportClient = nullptr;
+	CurrentViewportClient = nullptr;
+}
+
+void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+    switch (Message)
+    {
+    case WM_SIZE:
+    {
+        const bool bWasMinized = (wParam == SIZE_MINIMIZED);
+        if (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
+        {
+            const int32 NewWidth = (int)(short)(LOWORD(lParam));
+            const int32 NewHeight = (int)(short)(HIWORD(lParam));
+            if (CurrentViewportClient)
+            {
+                CurrentViewportClient->RequestResize(NewWidth, NewHeight);
+            }
+        }
+    }
+    default:
+        break;
+    }
 }

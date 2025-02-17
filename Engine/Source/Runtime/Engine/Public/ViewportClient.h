@@ -15,6 +15,7 @@ class UViewportClient : public UObject
 public:
     virtual void Init(HWND hInViewportHandle, UWorld* InWorld);
     virtual void Draw();
+    virtual void RequestResize(const uint32 NewSizeX, const uint32 NewSizeY);
 
 protected:
     HWND hViewportHandle = NULL;

@@ -38,6 +38,11 @@ LAUNCH_API void EngineExit(void)
 	GEngineLoop.Exit();
 }
 
+void LAUNCH_API EngineWndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	GEngineLoop.WndProc(Message, wParam, lParam, pResult);
+}
+
 int32 LAUNCH_API GuardedMain(const TCHAR* CmdLine)
 {
 	int32 ErrorLevel = EnginePreInit(CmdLine);

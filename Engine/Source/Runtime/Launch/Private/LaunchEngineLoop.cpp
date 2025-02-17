@@ -84,3 +84,11 @@ void FEngineLoop::Exit()
 
 	FLogger::Get(true);
 }
+
+void FEngineLoop::WndProc(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
+{
+	if (GEngine)
+	{
+		GEngine->WndProc(message, wParam, lParam, pResult);
+	}
+}

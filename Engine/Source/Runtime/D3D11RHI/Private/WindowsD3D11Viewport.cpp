@@ -176,6 +176,35 @@ D3D11RHI_API FD3D11Texture* FD3D11Viewport::GetSwapChainSurface(FD3D11DynamicRHI
 	return NewTexture;
 }
 
+void FD3D11Viewport::Resize(const uint32 NewSizeX, const uint32 NewSizeY)
+{
+	E_LOG(Log, TEXT("Request Resize : {}, {}"), NewSizeX, NewSizeY);
+	_ASSERT(NewSizeX > 0);
+	_ASSERT(NewSizeY > 0);
+	SizeX = NewSizeX;
+	SizeY = NewSizeY;
+	D3DRHI->SetRenderTargets(0, nullptr, nullptr);
+	D3DRHI->ClearState();
+	BackBuffer.SafeRelease();
+
+	DXGI_SWAP_CHAIN_DESC Desc;
+	HRESULT Hr = SwapChain->GetDesc(&Desc);
+	if (FAILED(Hr))
+	{
+		E_LOG(Error, TEXT("FD3D11Viewport::Resize - SwapChain->GetDesc {:#x}"), Hr);
+		return;
+	}
+
+	Hr = SwapChain->ResizeBuffers(Desc.BufferCount, SizeX, SizeY, Desc.BufferDesc.Format, Desc.Flags);
+	if (FAILED(Hr))
+	{
+		E_LOG(Error, TEXT("FD3D11Viewport::Resize - SwapChain->ResizeBuffer {:#x}"), Hr);
+		return;
+	}
+
+	BackBuffer = GetSwapChainSurface(D3DRHI, PixelFormat, SizeX, SizeY, SwapChain);
+}
+
 D3D11RHI_API bool FD3D11Viewport::Present(bool bLockToVsync)
 {
 	HRESULT Result = S_OK;
