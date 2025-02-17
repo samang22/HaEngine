@@ -176,3 +176,48 @@ void FD3D11DynamicRHI::RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* Vertex
     TrackResourceBoundAsVB(VertexBuffer, StreamIndex);
     StateCache.SetStreamSource(D3DBuffer, StreamIndex, Offset);
 }
+
+
+static D3D11_PRIMITIVE_TOPOLOGY GetD3D11PrimitiveType(EPrimitiveType PrimitiveType)
+{
+    switch (PrimitiveType)
+    {
+    case PT_TriangleList: return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    case PT_TriangleStrip: return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+    case PT_LineList: return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+    case PT_PointList: return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+
+    default: E_LOG(Fatal, TEXT("Unknown primitive type: {}"), (int32)PrimitiveType);
+    };
+
+    return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+}
+
+void FD3D11DynamicRHI::RHISetPrimitiveTopology(EPrimitiveType InPrimitiveType)
+{
+    PrimitiveType = InPrimitiveType;
+    //StateCache.SetPrimitiveTopology(GetD3D11PrimitiveType(InPrimitiveType));
+}
+
+
+void FD3D11DynamicRHI::RHIDrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances)
+{
+    // TODO
+    //CommitGraphicsResourceTables();
+    //CommitNonComputeShaderConstants();
+
+    uint32 VertexCount = GetVertexCountForPrimitiveCount(NumPrimitives, PrimitiveType);
+
+    //GPUProfilingData.RegisterGPUWork(NumPrimitives * NumInstances, VertexCount * NumInstances);
+    StateCache.SetPrimitiveTopology(GetD3D11PrimitiveType(PrimitiveType));
+    if (NumInstances > 1)
+    {
+        Direct3DDeviceIMContext->DrawInstanced(VertexCount, NumInstances, BaseVertexIndex, 0);
+    }
+    else
+    {
+        Direct3DDeviceIMContext->Draw(VertexCount, BaseVertexIndex);
+    }
+
+    //EnableUAVOverlap();
+}

@@ -110,6 +110,10 @@ void FD3D11DynamicRHI::RHIBeginDrawingViewport(FRHIViewport* ViewportRHI, FRHITe
 
 	// 우리는 생략 가능
 	// RHISetScissorRect
+
+	FVector3D RenderTargetSize = RenderTarget->GetSizeXY();
+	const D3D11_VIEWPORT Viewports[1] = { 0.f, 0.f, RenderTargetSize.x, RenderTargetSize.y, 0.f, 1.f };
+	Direct3DDeviceIMContext->RSSetViewports(1, Viewports);
 }
 
 void FD3D11DynamicRHI::RHIEndDrawingViewport(FRHIViewport* ViewportRHI, bool bPresent, bool bLockToVsync)

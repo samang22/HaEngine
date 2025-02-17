@@ -126,11 +126,12 @@ public:
     virtual FBufferRHIRef RHICreateBuffer(FRHICommandList& RHICmdList, FRHIBufferDesc const& Desc, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo) final override;
 
     virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) final override;
-
+    virtual void RHISetPrimitiveTopology(EPrimitiveType InPrimitiveType) final override;
     virtual void RHIBeginDrawingViewport(FRHIViewport* Viewport, FRHITexture* RenderTargetRHI) final override;
     virtual void RHIEndDrawingViewport(FRHIViewport* Viewport, bool bPresent, bool bLockToVsync) final override;
     virtual void RHIClearMRTImpl(const bool* bClearColorArray, int32 NumClearColors, const FLinearColor* ColorArray, bool bClearDepth, float Depth, bool bClearStencil, uint32 Stencil);
 
+    virtual void RHIDrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances) final override;
 public:
     void SetRenderTargets(uint32 NumSimultaneousRenderTargets, const FRHIRenderTargetView* NewRenderTargets, const FRHIDepthRenderTargetView* NewDepthStencilTarget);
     void SetRenderTargetsAndClear(const FRHISetRenderTargetsInfo& RenderTargetsInfo);
@@ -195,6 +196,9 @@ protected:
 
     /** 현재 깊이 스텐실 접근 유형을 추적합니다. */
     FExclusiveDepthStencil CurrentDSVAccessType;
+
+    // 현재 PSO 원시 유형
+    EPrimitiveType PrimitiveType;
 
     TRefCountPtr<ID3D11RenderTargetView> CurrentRenderTargets[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT];
 

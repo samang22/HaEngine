@@ -84,6 +84,16 @@ public:
         InternalSetStreamSource(VertexBuffer, StreamIndex, StreamStrides[StreamIndex], Offset);
     }
 
+    inline void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology)
+    {
+        if (CurrentPrimitiveTopology != PrimitiveTopology)
+        {
+            CurrentPrimitiveTopology = PrimitiveTopology;
+            Direct3DDeviceIMContext->IASetPrimitiveTopology(PrimitiveTopology);
+        }
+    }
+
+
 protected:
 	ID3D11DeviceContext* Direct3DDeviceIMContext;
 
@@ -103,6 +113,9 @@ protected:
         uint32 Stride;
         uint32 Offset;
     } CurrentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+
+    // Primitive Topology State
+    D3D11_PRIMITIVE_TOPOLOGY CurrentPrimitiveTopology;
 
     uint16 StreamStrides[MaxVertexElementCount];
 };

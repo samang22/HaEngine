@@ -61,15 +61,15 @@ void FD3D11StateCache::ClearState()
     CurrentInputLayout = nullptr;
 
     ZeroMemory(CurrentVertexBuffers, sizeof(CurrentVertexBuffers));
-    /*FMemory::Memzero(CurrentSamplerStates, sizeof(CurrentSamplerStates));
+    /*FMemory::Memzero(CurrentSamplerStates, sizeof (CurrentSamplerStates));
 
     CurrentIndexBuffer = nullptr;
     CurrentIndexFormat = DXGI_FORMAT_UNKNOWN;
 
-    CurrentIndexOffset = 0;
+    CurrentIndexOffset = 0; */
     CurrentPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
-    for (uint32 Frequency = 0; Frequency < SF_NumStandardFrequencies; Frequency++)
+    /*for (uint32 Frequency = 0; Frequency < SF_NumStandardFrequencies; Frequency++)
     {
         for (uint32 Index = 0; Index < D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT; Index++)
         {

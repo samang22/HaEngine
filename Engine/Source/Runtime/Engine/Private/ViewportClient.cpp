@@ -56,17 +56,20 @@ void UViewportClient::Draw()
 		TShaderMapRef<FTestVS> VertextShader;
 		TShaderMapRef<FTestPS> PixelShader;
 
-		TResourceArray<FVector3D> PositionData;
-		PositionData.emplace_back(0.0f, 0.5f, 0.0f);
-		PositionData.emplace_back(0.5f, -0.5f, 0.0f);
-		PositionData.emplace_back(-0.5f, -0.5f, 0.0f);
-
-		FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"), &PositionData);
-		FBufferRHIRef VertexBufferRHI = GetCommandList().CreateVertexBuffer(PositionData.GetResourceDataSize(), BUF_Static, CreateInfo);
-		if (!VertexBufferRHI)
+		FBufferRHIRef VertexBufferRHI;
 		{
-			E_LOG(Warning, TEXT("VertexBufferRHI creation failed"));
-			return;
+			TResourceArray<FVector3D> PositionData;
+			PositionData.emplace_back(0.0f, 0.5f, 0.0f);
+			PositionData.emplace_back(0.5f, -0.5f, 0.0f);
+			PositionData.emplace_back(-0.5f, -0.5f, 0.0f);
+
+			FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"), &PositionData);
+			VertexBufferRHI = GetCommandList().CreateVertexBuffer(PositionData.GetResourceDataSize(), BUF_Static, CreateInfo);
+			if (!VertexBufferRHI)
+			{
+				E_LOG(Warning, TEXT("VertexBufferRHI creation failed"));
+				return;
+			}
 		}
 
 		GetCommandList().SetBoundShaderState(
@@ -76,7 +79,9 @@ void UViewportClient::Draw()
 				PixelShader.GetPixelShader()
 			).GetReference()
 		);
+		GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
 		GetCommandList().SetStreamSource(0, VertexBufferRHI, 0);
+		GetCommandList().DrawPrimitive(0, 1, 1);
 	}
 
 	FRHICommandListExecutor::GetImmediateCommandList().EndDrawingViewport(Viewport, true, false);

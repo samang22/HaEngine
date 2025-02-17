@@ -69,6 +69,15 @@ public:
     {
         GetContext().RHISetStreamSource(StreamIndex, VertexBuffer, Offset);
     }
+    FORCEINLINE void SetPrimitiveTopology(EPrimitiveType InPrimitiveType)
+    {
+        GetContext().RHISetPrimitiveTopology(InPrimitiveType);
+    }
+
+    FORCEINLINE void DrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances)
+    {
+        GetContext().RHIDrawPrimitive(BaseVertexIndex, NumPrimitives, NumInstances);
+    }
 private:
 	// 그래픽 명령이 기록되는 활성 컨텍스트.
 	IRHICommandContext* GraphicsContext = nullptr;
