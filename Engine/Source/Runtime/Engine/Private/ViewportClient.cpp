@@ -33,6 +33,28 @@ public:
 };
 TGlobalResource<FTestVertexDeclaration> GTestVertexDeclaration;
 
+class FNDCTriangleVertexBuffer : public FVertexBuffer
+{
+public:
+	virtual void InitRHI(FRHICommandList& RHICmdList)
+	{
+		TResourceArray<FVector3D> PositionData;
+		PositionData.emplace_back(0.0f, 0.5f, 0.0f);
+		PositionData.emplace_back(0.5f, -0.5f, 0.0f);
+		PositionData.emplace_back(-0.5f, -0.5f, 0.0f);
+
+		FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"), &PositionData);
+		VertexBufferRHI = GetCommandList().CreateVertexBuffer(PositionData.GetResourceDataSize(), BUF_Static, CreateInfo);
+		if (!VertexBufferRHI)
+		{
+			E_LOG(Warning, TEXT("VertexBufferRHI creation failed"));
+			return;
+		}
+	}
+};
+
+TGlobalResource<FNDCTriangleVertexBuffer> GNDCTriangleVertexBuffer;
+
 void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 {
     hViewportHandle = hInViewportHandle;
@@ -55,23 +77,6 @@ void UViewportClient::Draw()
 	{
 		TShaderMapRef<FTestVS> VertextShader;
 		TShaderMapRef<FTestPS> PixelShader;
-
-		FBufferRHIRef VertexBufferRHI;
-		{
-			TResourceArray<FVector3D> PositionData;
-			PositionData.emplace_back(0.0f, 0.5f, 0.0f);
-			PositionData.emplace_back(0.5f, -0.5f, 0.0f);
-			PositionData.emplace_back(-0.5f, -0.5f, 0.0f);
-
-			FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"), &PositionData);
-			VertexBufferRHI = GetCommandList().CreateVertexBuffer(PositionData.GetResourceDataSize(), BUF_Static, CreateInfo);
-			if (!VertexBufferRHI)
-			{
-				E_LOG(Warning, TEXT("VertexBufferRHI creation failed"));
-				return;
-			}
-		}
-
 		GetCommandList().SetBoundShaderState(
 			GDynamicRHI->RHICreateBoundShaderState(
 				GTestVertexDeclaration.VertexDeclarationRHI,
@@ -80,7 +85,7 @@ void UViewportClient::Draw()
 			).GetReference()
 		);
 		GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-		GetCommandList().SetStreamSource(0, VertexBufferRHI, 0);
+		GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
 		GetCommandList().DrawPrimitive(0, 1, 1);
 	}
 

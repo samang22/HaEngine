@@ -43,3 +43,8 @@ RENDERCORE_API void FRenderResource::ReleaseResource()
     ReleaseRHI();
     GetRenderResources().erase(It);
 }
+
+RENDERCORE_API void FVertexBuffer::ReleaseRHI()
+{
+    VertexBufferRHI.SafeRelease();
+}

@@ -74,7 +74,7 @@
 
     -> 렌더링 파이프라인에 정점(DirectX), Shader 세팅, 그리고 Draw
     -> [o] 우선 shader에서 간단한 삼각형 렌더링 목적으로 기능 구현하기
-    -> []RHISetViewport 만들기 (Direct3DDeviceIMContext->RSSetViewports)
+    -> [o]RHISetViewport 만들기 (Direct3DDeviceIMContext->RSSetViewports)
     -> []Resize 대응
 
 - StaticMeshActor 만들기

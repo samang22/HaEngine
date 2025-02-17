@@ -115,3 +115,11 @@ public:
         ((ResourceType*)this)->ReleaseResource();
     }
 };
+
+class FVertexBuffer : public FRenderResource
+{
+public:
+    RENDERCORE_API virtual void ReleaseRHI() override;
+
+    FBufferRHIRef VertexBufferRHI;
+};

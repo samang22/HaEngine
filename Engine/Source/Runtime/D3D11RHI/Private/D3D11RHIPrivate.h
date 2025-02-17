@@ -113,6 +113,8 @@ public:
     virtual bool RHICompileShader(class FShaderType* InShaderType, TArray<uint8>& OutResult);
 
 public:
+    virtual void RHISetViewports(FVector3D RenderTargetSize);
+
     virtual FViewportRHIRef RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat) override;
     virtual class IRHICommandContext* RHIGetDefaultContext() final override;
   

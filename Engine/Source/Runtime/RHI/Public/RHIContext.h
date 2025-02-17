@@ -15,6 +15,7 @@ public:
 	}
 
 public:
+    virtual void RHISetViewports(FVector3D RenderTargetSize) = 0; // 간소화
     virtual void RHISetBoundShaderState(FRHIBoundShaderState* BoundShaderState) = 0;
     virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) = 0;
     virtual void RHISetPrimitiveTopology(EPrimitiveType InPrimitiveType) = 0;
