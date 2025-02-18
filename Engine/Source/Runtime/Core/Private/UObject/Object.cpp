@@ -4,6 +4,11 @@
 UClass* UObjectRegisterEngineClass = TGetPrivateStaticClassBody<UObject>(
 	TEXT("UObject"), InternalConstructor<UObject>, nullptr, nullptr);
 
+UObject* UObject::CreateDefaultSubobject(FName SubobjectFName, UClass* ReturnType, UClass* ClassToCreateByDefault, bool bIsRequired, bool bIsTransient)
+{
+	return nullptr;
+}
+
 void UObject::PostInitProperties()
 {
 }

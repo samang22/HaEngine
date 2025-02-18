@@ -5,6 +5,21 @@ class FObjectInitializer;
 class CORE_API UObject : public UObjectBase
 {
 public:
+	/** 아래 템플릿을 위한 유틸리티 함수 */
+	UObject* CreateDefaultSubobject(FName SubobjectFName, UClass* ReturnType, UClass* ClassToCreateByDefault, bool bIsRequired, bool bIsTransient);
+	/**
+	 * 이 클래스의 모든 인스턴스 내에서 인스턴스화될 컴포넌트 또는 서브오브젝트를 생성합니다.
+	 * @param   TReturnType                 반환 형식의 클래스, 모든 오버라이드는 이 형식이어야 합니다.
+	 * @param   SubobjectName               새 컴포넌트의 이름
+	 * @param   bTransient                  컴포넌트가 일시적인 속성에 할당되는 경우 true로 설정합니다. 이는 컴포넌트 자체를 일시적으로 만들지는 않지만 부모 기본값을 상속받지 않게 합니다.
+	 */
+	template<class TReturnType>
+	TReturnType* CreateDefaultSubobject(FName SubobjectName, bool bTransient = false)
+	{
+		UClass* ReturnType = TReturnType::StaticClass();
+		return static_cast<TReturnType*>(CreateDefaultSubobject(SubobjectName, ReturnType, ReturnType, /*bIsRequired =*/ true, bTransient));
+	}
+public:
 	/**
 	 * C++ 생성자 호출 후 및 속성(구성에서 로드된 속성 포함)이 초기화된 후 호출됩니다.
 	 * 이는 직렬화 또는 다른 설정이 이루어지기 전에 호출됩니다.
