@@ -55,6 +55,7 @@ void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResu
                 CurrentViewportClient->RequestResize(NewWidth, NewHeight);
             }
         }
+        break;
     }
     default:
         break;
