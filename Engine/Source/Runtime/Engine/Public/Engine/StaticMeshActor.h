@@ -21,5 +21,5 @@ public:
 
 private:
     //UPROPERTY()
-    TObjectPtr<class UStaticMeshComponent> StaticMeshComponent;
+    class UStaticMeshComponent* StaticMeshComponent;
 };

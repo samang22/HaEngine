@@ -3,6 +3,6 @@
 
 AStaticMeshActor::AStaticMeshActor()
 {
-    StaticMeshComponent;
+    StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
     RootComponent = Cast<USceneComponent>(StaticMeshComponent);
 }

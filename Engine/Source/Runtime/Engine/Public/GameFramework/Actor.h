@@ -27,6 +27,9 @@ public:
 	void PostSpawnInitialize(FTransform const& SpawnTransform, AActor* InOwner, APawn* InInstigator/*, bool bRemoteOwned, bool bNoFail, bool bDeferConstruction*/, ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::MultiplyWithRoot);
 
 public:
+	void AddOwnedComponent(TObjectPtr<UActorComponent> Component);
+
+public:
 	/** Returns this actor's root component. */
 	FORCEINLINE USceneComponent* GetRootComponent() const { return RootComponent.Get(); }
 

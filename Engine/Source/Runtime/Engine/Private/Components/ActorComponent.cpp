@@ -15,6 +15,16 @@ UActorComponent::UActorComponent()
     OwnerPrivate = GetTypedOuter<AActor>();
 }
 
+void UActorComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	if (OwnerPrivate)
+	{
+		OwnerPrivate->AddOwnedComponent(As<UActorComponent>());
+	}
+}
+
 AActor* UActorComponent::GetOwner() const
 {
     return GetActorOwnerNoninline();

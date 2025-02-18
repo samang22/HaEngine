@@ -108,6 +108,18 @@ void AActor::PostSpawnInitialize(FTransform const& UserSpawnTransform, AActor* I
 	}
 }
 
+void AActor::AddOwnedComponent(TObjectPtr<UActorComponent> Component)
+{
+	_ASSERT(Component->GetOwner() == this);
+
+	if (OwnedComponents.contains(Component))
+	{
+		_ASSERT(false);
+	}
+
+	OwnedComponents.insert(Component);
+}
+
 void AActor::SetInstigator(APawn* InInstigator)
 {
 	//Instigator = InInstigator;

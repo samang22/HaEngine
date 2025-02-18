@@ -1,6 +1,8 @@
 #include "Engine/World.h"
 #include "Engine/Level.h"
 
+#include "Engine/StaticMeshActor.h"
+
 FDelegate<UWorld*> WorldCreatedDelegate;
 FDelegate<UWorld*> WorldDestroyedDelegate;
 
@@ -32,20 +34,10 @@ void UWorld::InitalizeNewWorld()
 	PersistentLevel = NewObject<ULevel>(this, ULevel::StaticClass(), TEXT("PersistentLevel"));
 	PersistentLevel->OwningWorld = this->As<UWorld>();
 
-	AActor* Actor = SpawnActor<AActor>(nullptr, FTransform::Identity);
-	FActorSpawnParameters ActorSpawnParameters;
+	AStaticMeshActor* Actor = SpawnActor<AStaticMeshActor>(nullptr, FTransform::Identity);	
 	Actor->Value = 12345;
 	Actor->NoCopyValue = 321;
 	Actor->Value2 = 2;
-	ActorSpawnParameters.Template = Actor;
-	for (int i = 0; i < 10; ++i)
-	{
-		AActor* Actor2 = SpawnActor<AActor>(nullptr, FTransform::Identity, ActorSpawnParameters);
-		Actor2->Value2 = i;
-		//CastChecked();
-
-		E_LOG(Warning, TEXT("Actor: {}"), i);
-	}
 }
 
 AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, const FActorSpawnParameters& SpawnParameters)
@@ -62,7 +54,7 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, co
 	{
 		E_LOG(Warning, TEXT("SpawnActor failed because {} is not an actor class"), Class->GetName());
 		return NULL;
-	}
+	} 
 	else if (SpawnParameters.Template != NULL && SpawnParameters.Template->GetClass() != Class)
 	{
 		E_LOG(Warning, TEXT("SpawnActor failed because template class ({}) does not match spawn class ({})"), SpawnParameters.Template->GetClass()->GetName(), Class->GetName());

@@ -8,28 +8,99 @@
 //
 class UClass;
 class UObject;
-/**
- * 이 구조체는 StaticConstructObject_Internal() 메서드에 매개변수 값을 전달하는 데 사용됩니다. 생성자 매개변수만 유효하면 되며,
- * 다른 모든 멤버는 선택 사항입니다.
- */
-struct CORE_API FStaticConstructObjectParameters
-{
-	UClass* Class = nullptr;
-	UObject* Outer = nullptr;
-	FName Name;
-	EObjectFlags SetFlags = RF_NoFlags;
-
-	/**
-	 * 지정된 경우, 이 객체의 속성 값이 새 객체로 복사되며, 새 객체의 ObjectArchetype 값이 이 객체로 설정됩니다.
-	 * 만약 nullptr인 경우, 클래스 기본 객체(class default object)가 대신 사용됩니다.
-	 */
-	UObject* Template = nullptr;
-
-	FStaticConstructObjectParameters(UClass* InClass);
-};
-
+struct FStaticConstructObjectParameters;
+	
 class CORE_API FObjectInitializer
 {
+	friend class UObject;
+	friend struct FStaticConstructObjectParameters;
+
+public:
+	// FUObjectThreadContext::Get().TopInitializer(); 이부분 대체
+	static inline TArray<FObjectInitializer*> InitializerStack;
+
+	/**
+	* 이 클래스의 모든 인스턴스 내에서 인스턴스화될 컴포넌트 또는 서브오브젝트를 생성합니다.
+	* @param   Outer                        서브오브젝트를 생성할 외부 객체
+	* @param   SubobjectName                새 컴포넌트의 이름
+	* @param   ReturnType                   반환 형식의 클래스, 모든 오버라이드는 이 형식이어야 합니다.
+	* @param   ClassToConstructByDefault    파생 클래스가 오버라이드하지 않은 경우, 이 형식의 컴포넌트를 생성합니다.
+	* @param   bIsRequired                  컴포넌트가 필수적이며, DoNotCreateDefaultSubobject가 지정되었더라도 항상 생성될 경우 true
+	* @param   bIsTransient                 컴포넌트가 일시적인 속성에 할당되는 경우 true
+	*/
+	UObject* CreateDefaultSubobject(UObject* Outer, FName SubobjectFName, const UClass* ReturnType, /*const*/ UClass* ClassToCreateByDefault, bool bIsRequired = true, bool bIsTransient = false) const;
+
+private:
+	/**  파생 클래스에서 오버라이드를 관리하기 위한 작은 도우미 구조체 **/
+	struct FOverrides
+	{
+		///**  오버라이드를 추가하고, 그것이 적법한지 확인 **/
+		//void Add(FName InComponentName, const UClass* InComponentClass, const TArrayView<const FName>* FullPath = nullptr);
+
+		///**  잠재적으로 중첩된 오버라이드를 추가하고, 그것이 적법한지 확인 **/
+		//void Add(FStringView InComponentPath, const UClass* InComponentClass);
+
+		///**  잠재적으로 중첩된 오버라이드를 추가하고, 그것이 적법한지 확인 **/
+		//void Add(TArrayView<const FName> InComponentPath, const UClass* InComponentClass, const TArrayView<const FName>* FullPath = nullptr);
+
+		struct FOverrideDetails
+		{
+			/*const*/ UClass* Class = nullptr;
+			FOverrides* SubOverrides = nullptr;
+		};
+
+		/**  오버라이드를 검색하거나, 파생 클래스에서 이 항목을 제거한 경우 TClassToConstructByDefault::StaticClass 또는 nullptr 반환 **/
+		FOverrideDetails Get(FName InComponentName, const UClass* ReturnType, UClass* ClassToConstructByDefault, bool bOptional) const;
+
+	private:
+		static bool IsLegalOverride(const UClass* DerivedComponentClass, const UClass* BaseComponentClass);
+
+		/**  오버라이드를 검색 **/
+		int32 Find(FName InComponentName) const
+		{
+			for (int32 Index = 0; Index < Overrides.size(); Index++)
+			{
+				if (Overrides[Index].ComponentName == InComponentName)
+				{
+					return Index;
+				}
+			}
+			return INDEX_NONE;
+		}
+		/**  오버라이드 배열의 요소 **/
+		struct FOverride
+		{
+			FName ComponentName;
+			/*const */UClass* ComponentClass = nullptr;
+			unique_ptr<FOverrides> SubOverrides;
+			bool bDoNotCreate = false;
+			FOverride(FName InComponentName)
+				: ComponentName(InComponentName)
+			{
+			}
+
+			FOverride& operator=(const FOverride& Other)
+			{
+				ComponentName = Other.ComponentName;
+				ComponentClass = Other.ComponentClass;
+				SubOverrides = (Other.SubOverrides ? make_unique<FOverrides>(*Other.SubOverrides) : nullptr);
+				bDoNotCreate = Other.bDoNotCreate;
+				return *this;
+			}
+
+			FOverride(const FOverride& Other)
+			{
+				*this = Other;
+			}
+
+			FOverride(FOverride&&) = default;
+			FOverride& operator=(FOverride&&) = default;
+		};
+		/**  오버라이드 배열 **/
+		TArray<FOverride> Overrides;
+	};
+
+
 public:
 	// FObjectInitializer를 사용해서 신규로 만들어진 UObject 객체
 	shared_ptr<UObject>& SharedObj;
@@ -46,6 +117,8 @@ public:
 	UObject* ObjectArchetype = nullptr;
 	/**  If true, initialize the properties **/
 	bool bShouldInitializePropsFromArchetype = false;
+	/**  파생 클래스에서 오버라이드할 컴포넌트 클래스의 목록 **/
+	mutable FOverrides SubobjectOverrides;
 
 	UObject* GetObj() const { return Obj; }
 
@@ -69,24 +142,7 @@ public:
 	void PostConstructInit();
 };
 
-CORE_API shared_ptr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params);
-
-template<typename T>
-shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NAME_NONE, EObjectFlags Flags = RF_NoFlags, UObject* Template = nullptr)
-{
-	if (!Class)
-	{
-		Class = T::StaticClass();
-	}
-
-	FStaticConstructObjectParameters Params(Class);
-	Params.Outer = Outer;
-	Params.Name = Name;
-	Params.SetFlags = Flags;
-	Params.Template = Template;
-
-	return Cast<T>(StaticConstructObject_Internal(Params));
-}
+CORE_API TObjectPtr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params);
 
 // wstring -> UTF8
 CORE_API string to_string(const FString& InString);
@@ -207,3 +263,45 @@ public:
 	};
 	FData Data;
 };
+
+/**
+ * 이 구조체는 StaticConstructObject_Internal() 메서드에 매개변수 값을 전달하는 데 사용됩니다. 생성자 매개변수만 유효하면 되며,
+ * 다른 모든 멤버는 선택 사항입니다.
+ */
+struct CORE_API FStaticConstructObjectParameters
+{
+	UClass* Class = nullptr;
+	UObject* Outer = nullptr;
+	FName Name;
+	EObjectFlags SetFlags = RF_NoFlags;
+
+	/**
+	 * 지정된 경우, 이 객체의 속성 값이 새 객체로 복사되며, 새 객체의 ObjectArchetype 값이 이 객체로 설정됩니다.
+	 * 만약 nullptr인 경우, 클래스 기본 객체(class default object)가 대신 사용됩니다.
+	 */
+	UObject* Template = nullptr;
+private:
+	FObjectInitializer::FOverrides* SubobjectOverrides = nullptr;
+
+public:
+	FStaticConstructObjectParameters(UClass* InClass);
+
+	friend FObjectInitializer;
+};
+
+template<typename T>
+shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NAME_NONE, EObjectFlags Flags = RF_NoFlags, UObject* Template = nullptr)
+{
+	if (!Class)
+	{
+		Class = T::StaticClass();
+	}
+
+	FStaticConstructObjectParameters Params(Class);
+	Params.Outer = Outer;
+	Params.Name = Name;
+	Params.SetFlags = Flags;
+	Params.Template = Template;
+
+	return Cast<T>(StaticConstructObject_Internal(Params));
+}
