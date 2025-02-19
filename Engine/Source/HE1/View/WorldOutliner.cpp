@@ -369,7 +369,6 @@ void CWorldOutliner::OnSelectedItemChanged(HTREEITEM NewSelectedItem)
 
 void CWorldOutliner::OnActorSelectedAndMakeDetails(AActor* SelectedActor)
 {
-
 	if (LastSelectedActor == SelectedActor) { return; }
 
 	CMainFrame* MainFrame = static_cast<CMainFrame*>(AfxGetMainWnd());
@@ -426,114 +425,107 @@ void CWorldOutliner::OnActorSelectedAndMakeDetails(AActor* SelectedActor)
 
 		// Components
 		{
-			//vector<UActorComponent*> Components;
-			//SelectedActor->GetComponents<UActorComponent>(Components);
-			//for (UActorComponent* Component : Components)
-			//{
-			//	// Component Start
-			//	const FString ComponentName = Component->GetName() + TEXT(" (") + Component->GetClass()->GetName() + TEXT(")");
-			//	CMFCPropertyGridProperty* Prop_Component = nullptr;
-			//	if (bSameActor) { Prop_Component = DetailsUI.find(ComponentName)->second; }
-			//	else
-			//	{
-			//		Prop_Component = new CMFCPropertyGridProperty(ComponentName.c_str());
-			//		DetailsUI.emplace(ComponentName, Prop_Component);
-			//	}
+			vector<UActorComponent*> Components;
+			SelectedActor->GetComponents<UActorComponent>(Components);
+			for (UActorComponent* Component : Components)
+			{
+				// Component Start
+				const FString ComponentName = Component->GetName() + TEXT(" (") + Component->GetClass()->GetName() + TEXT(")");
+				CMFCPropertyGridProperty* Prop_Component = nullptr;
+				if (bSameActor) { Prop_Component = DetailsUI.find(ComponentName)->second; }
+				else
+				{
+					Prop_Component = new CMFCPropertyGridProperty(ComponentName.c_str());
+					DetailsUI.emplace(ComponentName, Prop_Component);
+				}
 
-			//	// Component Reflection Data
-			//	{
-			//		type Type = resolve(Hash(Component->GetClass()->ClassName.data()));
-			//		Type.data([&](meta::data Data)
-			//			{
-			//				Data.prop([&](meta::prop p)
-			//					{
-			//						FProperty Prop = p.value().cast<FProperty>();
-			//						const FString PropName = to_wstring(Prop.Name);
+				// Component Reflection Data
+				FillDetails(bSameActor, Prop_Component, Component);
+				//{
+				//	type Type = resolve(Hash(Component->GetClass()->ClassName.data()));
+				//	Type.data([&](meta::data Data)
+				//		{
+				//			Data.prop([&](meta::prop p)
+				//				{
+				//					FProperty Prop = p.value().cast<FProperty>();
+				//					const FString PropName = to_wstring(Prop.Name);
+				//					const FString Prop_Key = Component->GetName() + TEXT("_") + PropName + TEXT("_Prop_Key");
+				//					switch (Prop.PropertyType)
+				//					{
+				//					case T_FVector:
+				//					{
+				//						FVector* Vector = (FVector*)Data.get(handle(Type.GetNode(), Component)).data();
+				//						CMFCPropertyGridProperty* Property = nullptr;
+				//						if (bSameActor)
+				//						{
+				//							Property = DetailsUI.find(Prop_Key)->second;
+				//							CMFCPropertyGridProperty* Item = Property->GetSubItem(0);
+				//							if (!FMath::IsNearlyEqual(Property->GetSubItem(0)->GetValue().fltVal, Vector->x, 0.1f))
+				//							{
+				//								Property->GetSubItem(0)->SetValue(Vector->x);
+				//							}
+				//							if (!FMath::IsNearlyEqual(Property->GetSubItem(1)->GetValue().fltVal, Vector->y, 0.1f))
+				//							{
+				//								Property->GetSubItem(1)->SetValue(Vector->y);
+				//							}
+				//							if (!FMath::IsNearlyEqual(Property->GetSubItem(2)->GetValue().fltVal, Vector->z, 0.1f))
+				//							{
+				//								Property->GetSubItem(2)->SetValue(Vector->z);
+				//							}
+				//						}
+				//						else
+				//						{
+				//							Property = new CMFCPropertyGridProperty(PropName.c_str());
+				//							DetailsUI.emplace(Prop_Key, Property);
+				//							Property->AddSubItem(new CMFCPropertyGridProperty(_T("X"), (_variant_t)Vector->x, (PropName + _T(" X 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->x));
+				//							Property->AddSubItem(new CMFCPropertyGridProperty(_T("Y"), (_variant_t)Vector->y, (PropName + _T(" Y 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->y));
+				//							Property->AddSubItem(new CMFCPropertyGridProperty(_T("Z"), (_variant_t)Vector->z, (PropName + _T(" Z 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->z));
+				//							Prop_Component->AddSubItem(Property);
+				//						}
+				//						break;
+				//					}
+				//					case T_FRotator:
+				//					{
+				//						FRotator* Rotator = (FRotator*)Data.get(handle(Type.GetNode(), Component)).data();
+				//						CMFCPropertyGridProperty* Property = nullptr;
+				//						if (bSameActor)
+				//						{
+				//							Property = DetailsUI.find(Prop_Key)->second;
+				//							CMFCPropertyGridProperty* Item = Property->GetSubItem(0);
+				//							if (!FMath::IsNearlyEqual(Property->GetSubItem(0)->GetValue().fltVal, Rotator->Roll, 0.1f))
+				//							{
+				//								Property->GetSubItem(0)->SetValue(Rotator->Roll);
+				//							}
+				//							if (!FMath::IsNearlyEqual(Property->GetSubItem(1)->GetValue().fltVal, Rotator->Pitch, 0.1f))
+				//							{
+				//								Property->GetSubItem(1)->SetValue(Rotator->Pitch);
+				//							}
+				//							if (!FMath::IsNearlyEqual(Property->GetSubItem(2)->GetValue().fltVal, Rotator->Yaw, 0.1f))
+				//							{
+				//								Property->GetSubItem(2)->SetValue(Rotator->Yaw);
+				//							}
+				//						}
+				//						else
+				//						{
+				//							Property = new CMFCPropertyGridProperty(PropName.c_str());
+				//							DetailsUI.emplace(Prop_Key, Property);
+				//							Property->AddSubItem(new CMFCPropertyGridProperty(_T("Roll"), (_variant_t)Rotator->Roll, (PropName + _T(" Roll 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Roll));
+				//							Property->AddSubItem(new CMFCPropertyGridProperty(_T("Pitch"), (_variant_t)Rotator->Pitch, (PropName + _T(" Pitch 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Pitch));
+				//							Property->AddSubItem(new CMFCPropertyGridProperty(_T("Yaw"), (_variant_t)Rotator->Yaw, (PropName + _T(" Yaw 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Yaw));
+				//							Prop_Component->AddSubItem(Property);
+				//						}
+				//						break;
+				//					}
+				//					}
+				//				});
+				//		});
+				//}
 
-			//						const FString Prop_Key = Component->GetName() + TEXT("_") + PropName + TEXT("_Prop_Key");
-
-			//						switch (Prop.PropertyType)
-			//						{
-			//						case T_FVector:
-			//						{
-			//							FVector* Vector = (FVector*)Data.get(handle(Type.GetNode(), Component)).data();
-			//							CMFCPropertyGridProperty* Property = nullptr;
-
-			//							if (bSameActor)
-			//							{
-			//								Property = DetailsUI.find(Prop_Key)->second;
-			//								CMFCPropertyGridProperty* Item = Property->GetSubItem(0);
-
-			//								if (!FMath::IsNearlyEqual(Property->GetSubItem(0)->GetValue().fltVal, Vector->x, 0.1f))
-			//								{
-			//									Property->GetSubItem(0)->SetValue(Vector->x);
-			//								}
-			//								if (!FMath::IsNearlyEqual(Property->GetSubItem(1)->GetValue().fltVal, Vector->y, 0.1f))
-			//								{
-			//									Property->GetSubItem(1)->SetValue(Vector->y);
-			//								}
-			//								if (!FMath::IsNearlyEqual(Property->GetSubItem(2)->GetValue().fltVal, Vector->z, 0.1f))
-			//								{
-			//									Property->GetSubItem(2)->SetValue(Vector->z);
-			//								}
-			//							}
-			//							else
-			//							{
-			//								Property = new CMFCPropertyGridProperty(PropName.c_str());
-			//								DetailsUI.emplace(Prop_Key, Property);
-
-			//								Property->AddSubItem(new CMFCPropertyGridProperty(_T("X"), (_variant_t)Vector->x, (PropName + _T(" X 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->x));
-			//								Property->AddSubItem(new CMFCPropertyGridProperty(_T("Y"), (_variant_t)Vector->y, (PropName + _T(" Y 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->y));
-			//								Property->AddSubItem(new CMFCPropertyGridProperty(_T("Z"), (_variant_t)Vector->z, (PropName + _T(" Z 값을 지정합니다.")).c_str(), (DWORD_PTR)&Vector->z));
-			//								Prop_Component->AddSubItem(Property);
-			//							}
-			//							break;
-			//						}
-			//						case T_FRotator:
-			//						{
-			//							FRotator* Rotator = (FRotator*)Data.get(handle(Type.GetNode(), Component)).data();
-			//							CMFCPropertyGridProperty* Property = nullptr;
-
-			//							if (bSameActor)
-			//							{
-			//								Property = DetailsUI.find(Prop_Key)->second;
-			//								CMFCPropertyGridProperty* Item = Property->GetSubItem(0);
-
-			//								if (!FMath::IsNearlyEqual(Property->GetSubItem(0)->GetValue().fltVal, Rotator->Roll, 0.1f))
-			//								{
-			//									Property->GetSubItem(0)->SetValue(Rotator->Roll);
-			//								}
-			//								if (!FMath::IsNearlyEqual(Property->GetSubItem(1)->GetValue().fltVal, Rotator->Pitch, 0.1f))
-			//								{
-			//									Property->GetSubItem(1)->SetValue(Rotator->Pitch);
-			//								}
-			//								if (!FMath::IsNearlyEqual(Property->GetSubItem(2)->GetValue().fltVal, Rotator->Yaw, 0.1f))
-			//								{
-			//									Property->GetSubItem(2)->SetValue(Rotator->Yaw);
-			//								}
-			//							}
-			//							else
-			//							{
-			//								Property = new CMFCPropertyGridProperty(PropName.c_str());
-			//								DetailsUI.emplace(Prop_Key, Property);
-
-			//								Property->AddSubItem(new CMFCPropertyGridProperty(_T("Roll"), (_variant_t)Rotator->Roll, (PropName + _T(" Roll 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Roll));
-			//								Property->AddSubItem(new CMFCPropertyGridProperty(_T("Pitch"), (_variant_t)Rotator->Pitch, (PropName + _T(" Pitch 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Pitch));
-			//								Property->AddSubItem(new CMFCPropertyGridProperty(_T("Yaw"), (_variant_t)Rotator->Yaw, (PropName + _T(" Yaw 값을 지정합니다.")).c_str(), (DWORD_PTR)&Rotator->Yaw));
-			//								Prop_Component->AddSubItem(Property);
-			//							}
-			//							break;
-			//						}
-			//						}
-			//					});
-			//			});
-			//	}
-
-			//	if (!bSameActor)
-			//	{
-			//		Details.AddProperty(Prop_Component);
-			//	}
-			//}
+				if (!bSameActor)
+				{
+					Details.AddProperty(Prop_Component);
+				}
+			}
 		}
 	}
 }
@@ -586,11 +578,64 @@ void CWorldOutliner::FillDetails(const bool bSameActor, CMFCPropertyGridProperty
 							_ASSERT(false);
 							break;
 						case T_FVECTOR:
-							_ASSERT(false);
+						{
+							FVector* Value = (FVector*)Data.get(handle(Type.GetNode(), InObject)).data();
+							NewPropUI = new CMFCPropertyGridProperty(PropName.data());
+							PropertyAddress = (void*)Value;
+
+							CMFCPropertyGridProperty* XUI = new CMFCPropertyGridProperty(_T("X"), (_variant_t)Value->x, (PropName + _T(" X 값을 지정합니다.")).c_str(), (DWORD_PTR)&Value->x);
+							CMFCPropertyGridProperty* YUI = new CMFCPropertyGridProperty(_T("Y"), (_variant_t)Value->y, (PropName + _T(" Y 값을 지정합니다.")).c_str(), (DWORD_PTR)&Value->y);
+							CMFCPropertyGridProperty* ZUI = new CMFCPropertyGridProperty(_T("Z"), (_variant_t)Value->z, (PropName + _T(" Z 값을 지정합니다.")).c_str(), (DWORD_PTR)&Value->z);
+
+							{
+								FProperty PropertyInternal = Property;
+								PropertyInternal.PropertyType = EPropertyType::T_FLOAT;
+								PropertyInternal.PropertySize = 4;
+								{
+									auto ItX = PropertyInfos.emplace(XUI, FPropertyInfo(PropertyInternal, &Value->x));
+									XUI->SetData((DWORD_PTR)&ItX.first->second);
+									auto ItY = PropertyInfos.emplace(YUI, FPropertyInfo(PropertyInternal, &Value->y));
+									YUI->SetData((DWORD_PTR)&ItY.first->second);
+									auto ItZ = PropertyInfos.emplace(ZUI, FPropertyInfo(PropertyInternal, &Value->z));
+									ZUI->SetData((DWORD_PTR)&ItZ.first->second);
+								}
+							}
+
+							NewPropUI->AddSubItem(XUI);
+							NewPropUI->AddSubItem(YUI);
+							NewPropUI->AddSubItem(ZUI);
 							break;
+						}
+
 						case T_FROTATOR:
-							_ASSERT(false);
+						{
+							FRotator* Value = (FRotator*)Data.get(handle(Type.GetNode(), InObject)).data();
+							NewPropUI = new CMFCPropertyGridProperty(PropName.data());
+							PropertyAddress = (void*)Value;
+
+							CMFCPropertyGridProperty* RollUI = new CMFCPropertyGridProperty(_T("Roll"), (_variant_t)Value->Roll, (PropName + _T(" Roll 값을 지정합니다.")).c_str(), (DWORD_PTR)&Value->Roll);
+							CMFCPropertyGridProperty* PitchUI = new CMFCPropertyGridProperty(_T("Pitch"), (_variant_t)Value->Pitch, (PropName + _T(" Pitch 값을 지정합니다.")).c_str(), (DWORD_PTR)&Value->Pitch);
+							CMFCPropertyGridProperty* YawUI = new CMFCPropertyGridProperty(_T("Yaw"), (_variant_t)Value->Yaw, (PropName + _T(" Yaw 값을 지정합니다.")).c_str(), (DWORD_PTR)&Value->Yaw);
+
+							{
+								FProperty PropertyInternal = Property;
+								PropertyInternal.PropertyType = EPropertyType::T_FLOAT;
+								PropertyInternal.PropertySize = 4;
+								{
+									auto ItRoll = PropertyInfos.emplace(RollUI, FPropertyInfo(PropertyInternal, &Value->Roll));
+									RollUI->SetData((DWORD_PTR)&ItRoll.first->second);
+									auto ItPitch = PropertyInfos.emplace(PitchUI, FPropertyInfo(PropertyInternal, &Value->Pitch));
+									PitchUI->SetData((DWORD_PTR)&ItPitch.first->second);
+									auto ItYaw = PropertyInfos.emplace(YawUI, FPropertyInfo(PropertyInternal, &Value->Yaw));
+									YawUI->SetData((DWORD_PTR)&ItYaw.first->second);
+								}
+							}
+
+							NewPropUI->AddSubItem(RollUI);
+							NewPropUI->AddSubItem(PitchUI);
+							NewPropUI->AddSubItem(YawUI);
 							break;
+						}
 						default:
 							_ASSERT(false);
 							break;

@@ -24,6 +24,23 @@ public:
 		return ComponentToWorld;
 	}
 private:
+	/** 부모에 대한 컴포넌트의 위치 */
+	UPROPERTY(EditAnywhere)
+	FVector RelativeLocation;
+
+	/** 부모에 대한 컴포넌트의 회전 */
+	UPROPERTY(EditAnywhere)
+	FRotator RelativeRotation;
+
+	/**
+	*   부모에 대한 컴포넌트의 비균일 스케일링
+	*   스케일링은 항상 로컬 공간에서 적용됨(전단 변형 등 없음)
+	*/
+	UPROPERTY(EditAnywhere)
+	FVector RelativeScale3D;
+
+
+private:
 	/** What we are currently attached to. If valid, RelativeLocation etc. are used relative to this object */
 	//UPROPERTY(ReplicatedUsing = OnRep_AttachParent)
 	TEnginePtr<USceneComponent> AttachParent;

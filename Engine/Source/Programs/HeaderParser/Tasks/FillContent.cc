@@ -197,8 +197,7 @@ void FFillContentTask::RunTask(Value::ConstValueIterator& InDoc, string& InOutCo
 											InOutContent += (string)".bBaseType = false,";
 										}
 
-										InOutContent += ".PropertySize = sizeof(" + strDataType_Name + ")";
-
+										InOutContent += ".PropertySize = sizeof(" + string(PropertyName) + ")";
 										InOutContent += "}))\\\n";
 									}
 								}

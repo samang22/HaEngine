@@ -291,12 +291,14 @@ LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		break;
 	}
 	case T_FLOAT:
+	{
+		float CurrentValue = Prop->GetValue().fltVal;
+		float* Address = (float*)PropertyInfo->PropertyAddress;
+		*Address = CurrentValue;
 		break;
-	case T_FVECTOR:
-		break;
-	case T_FROTATOR:
-		break;
+	}
 	default:
+		_ASSERT(false);
 		break;
 	}
 
