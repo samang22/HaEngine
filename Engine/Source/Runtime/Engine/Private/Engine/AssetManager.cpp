@@ -51,7 +51,9 @@ UObject* FAssetManager::LoadAsset(const type_info& InAssetType, const FString& I
 
     if (NewFactory)
     {
-        LoadedAssets[InAssetType.hash_code()][InFilePath] = NewFactory;
+        TObjectPtr<UObject> NewAsset = NewFactory->FactoryCreateFile(InFilePath, InFilePath, nullptr);
+        LoadedAssets[InAssetType.hash_code()][InFilePath] = NewAsset;
+        return NewAsset.get();
     }
 
     return NewFactory.get();
