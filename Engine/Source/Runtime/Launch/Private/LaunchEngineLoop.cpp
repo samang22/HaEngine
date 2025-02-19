@@ -1,5 +1,6 @@
 #include "LaunchEngineLoop.h"
 #include "Engine/Engine.h"
+#include "Engine/AssetManager.h"
 #include "RHI.h"                                                                            
 #include "ShaderCompiler.h"
 
@@ -14,6 +15,7 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 {
 	FLogger::Get();
 	FModuleManager::Get();
+	FAssetManager::Get();
 	FConfigCacheIni::Get();
 
 	{
@@ -64,6 +66,7 @@ void FEngineLoop::Exit()
 	RHIExit();
 
 	FConfigCacheIni::Get(true);
+	FAssetManager::Get(true);
 
 	GEngine = nullptr;
 

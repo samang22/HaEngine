@@ -12,6 +12,7 @@ public class EngineConfig : CommonProject
     public EngineConfig() 
     {
         SourceFilesExtensions.Add(".ini");
+        SourceFilesExtensions.Add(".fbx");
         SourceFilesExtensions.Add(".hlsl"); // 임시
     }
 

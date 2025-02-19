@@ -13,6 +13,7 @@ public class FrontendEngineProject : CommonProject
         Name = "HE";
 
         SourceFilesExtensions.Add(".ini");
+        SourceFilesExtensions.Add(".fbx");
         SourceFilesExtensions.Add(".hlsl");
         StripFastBuildSourceFiles = false;
 
