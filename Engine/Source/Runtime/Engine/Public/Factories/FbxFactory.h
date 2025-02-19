@@ -10,6 +10,13 @@ namespace fbxsdk
     class FbxNode;
 }
 
+struct FMeshData
+{
+    TArray<FVector3D> Vertices;
+    TArray<uint32> Indices;
+};
+
+
 /**
  * 모든 팩토리의 기본 클래스
  * 새로운 객체를 생성하고 가져오는 객체.
@@ -28,10 +35,5 @@ public:
 protected:
     fbxsdk::FbxScene* LoadFbxScene(fbxsdk::FbxManager* InFbxManager, const char* InFileName);
 
-    struct FMeshData
-    {
-        TArray<TArray<FVector3D>> Vertices;
-        TArray<TArray<uint32>> Indices;
-    };
-    void ExtractFbx(fbxsdk::FbxNode* InNode, FMeshData& OutMeshData);
+    void ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMeshData);
 };                  

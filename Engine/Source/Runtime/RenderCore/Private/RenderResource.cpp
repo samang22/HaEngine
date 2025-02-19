@@ -48,3 +48,8 @@ RENDERCORE_API void FVertexBuffer::ReleaseRHI()
 {
     VertexBufferRHI.SafeRelease();
 }
+
+RENDERCORE_API void FIndexBuffer::ReleaseRHI()
+{
+    IndexBufferRHI.SafeRelease();
+}

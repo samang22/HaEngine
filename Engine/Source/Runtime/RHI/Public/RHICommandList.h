@@ -62,6 +62,17 @@ public:
         return CreateVertexBuffer(Size, Usage, ResourceState, CreateInfo);
     }
 
+    FORCEINLINE FBufferRHIRef CreateIndexBuffer(uint32 Size, EBufferUsageFlags Usage, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo)
+    {
+        return CreateBuffer(Size, Usage | EBufferUsageFlags::IndexBuffer, 0, ResourceState, CreateInfo);
+    }
+
+    FORCEINLINE FBufferRHIRef CreateIndexBuffer(uint32 Size, EBufferUsageFlags Usage, FRHIResourceCreateInfo& CreateInfo)
+    {
+        bool bHasInitialData = CreateInfo.BulkData != nullptr;
+        ERHIAccess ResourceState = RHIGetDefaultResourceState(Usage | EBufferUsageFlags::IndexBuffer, bHasInitialData);
+        return CreateIndexBuffer(Size, Usage, ResourceState, CreateInfo);
+    }
 
 	RHI_API void SetBoundShaderState(FRHIBoundShaderState* BoundShaderState);
 

@@ -45,7 +45,7 @@ TObjectPtr<UObject> UFbxFactory::FactoryCreateFile(const FName InName, const FSt
     TObjectPtr<UStaticMesh> NewStaticMesh;
     // Mesh 정보를 얻어온다
     {
-        FMeshData MeshData;
+        TArray<FMeshData> MeshData;
         ExtractFbx(Scene->GetRootNode(), MeshData);
         Scene->Destroy();
 
@@ -91,7 +91,7 @@ fbxsdk::FbxScene* UFbxFactory::LoadFbxScene(fbxsdk::FbxManager* InFbxManager, co
     return Scene;
 }
 
-void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, FMeshData& OutMeshData)
+void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMeshData)
 {
 	fbxsdk::FbxNodeAttribute* NodeAttribute = InNode->GetNodeAttribute();
 	if (NodeAttribute != nullptr)
@@ -157,9 +157,9 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, FMeshData& OutMeshData)
 
 			if (bSuccessed)
 			{
-				OutMeshData.Vertices.push_back(move(Vertices));
-				OutMeshData.Indices.push_back(move(Indices));
-
+				FMeshData& NewMeshData = OutMeshData.emplace_back();
+				NewMeshData.Vertices = move(Vertices);
+				NewMeshData.Indices = move(Indices);
 				// Material 생성
 				{
 					const int MaterialCount = Mesh->GetElementMaterialCount();

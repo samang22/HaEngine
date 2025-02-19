@@ -116,10 +116,37 @@ public:
     }
 };
 
+class FVertexDeclaration : public FRenderResource
+{
+public:
+    ~FVertexDeclaration() { ReleaseRHI(); }
+
+    FVertexDeclarationRHIRef VertexDeclarationRHI;
+
+    virtual void InitRHI(FRHICommandList& RHICmdList) override = 0;
+
+    virtual void ReleaseRHI() override
+    {
+        VertexDeclarationRHI.SafeRelease();
+    }
+};
+
 class FVertexBuffer : public FRenderResource
 {
 public:
+    ~FVertexBuffer() { ReleaseRHI(); }
+    RENDERCORE_API virtual void InitRHI(FRHICommandList& RHICmdList) override = 0;
     RENDERCORE_API virtual void ReleaseRHI() override;
 
     FBufferRHIRef VertexBufferRHI;
+};
+
+class FIndexBuffer : public FRenderResource
+{
+public:
+    ~FIndexBuffer() { ReleaseRHI(); }
+    RENDERCORE_API virtual void InitRHI(FRHICommandList& RHICmdList) override = 0;
+    RENDERCORE_API virtual void ReleaseRHI() override;
+
+    FBufferRHIRef IndexBufferRHI;
 };

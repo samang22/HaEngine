@@ -85,6 +85,7 @@ FBufferRHIRef FD3D11DynamicRHI::RHICreateBuffer(FRHICommandList& RHICmdList, FRH
     }
     else if (EnumHasAnyFlags(BufferDesc.Usage, BUF_StructuredBuffer))
     {
+        _ASSERT(false);
         Desc.StructureByteStride = BufferDesc.Stride;
         Desc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
     }
