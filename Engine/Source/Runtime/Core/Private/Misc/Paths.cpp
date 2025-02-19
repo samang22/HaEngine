@@ -17,3 +17,15 @@ FString FPaths::ProjectDLLDir()
 	static const FString Path = EngineDir() + TEXT("\\Project");
 	return Path;
 }
+
+FString FPaths::GetExtension(const FString& InPath, bool bIncludeDot)
+{
+    std::filesystem::path FilePath(InPath);
+    FString Extension = FilePath.extension().wstring();
+    if (!bIncludeDot)
+    {
+        Extension.erase(0, 1);
+    }
+
+    return Extension;
+}

@@ -8,4 +8,5 @@ public:
 	static FString EngineDir();
 	static FString EngineConfigDir();
 	static FString ProjectDLLDir();
+	static FString GetExtension(const FString& InPath, bool bIncludeDot = false);
 };

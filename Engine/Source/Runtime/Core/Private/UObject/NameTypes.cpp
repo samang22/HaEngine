@@ -27,6 +27,12 @@ FName::FName(FStringView InString)
 	GetNamePool()[HashCode] = String;
 }
 
+FName::FName(const FString& InString)
+{
+	HashCode = Hash(InString.data());
+	GetNamePool()[HashCode] = InString;
+}
+
 FName::FName(const WIDECHAR* InString)
 	:FName(FStringView(InString))
 {

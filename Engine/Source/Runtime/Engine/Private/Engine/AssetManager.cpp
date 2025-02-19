@@ -1,5 +1,6 @@
 #include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
+#include "Factories/Factory.h"
 
 FAssetManager* FAssetManager::Get(const bool bDestroy)
 {
@@ -27,8 +28,31 @@ UObject* FAssetManager::LoadAsset(const type_info& InAssetType, const FString& I
             return nullptr;
     }
 
-    std::filesystem::path FilePath(InFilePath);
-    const FString Extension = FilePath.extension().wstring().erase(0, 1); // remove .
+    //std::filesystem::path FilePath(InFilePath);
+    //const FString Extension = FilePath.extension().wstring().erase(0, 1); // remove .
 
-    return nullptr;
+    TArray<UClass*> FactoryClasses = UClass::GetAllSubclassOfClass(UFactory::StaticClass());
+    TObjectPtr<UFactory> NewFactory;
+    for (UClass* Class : FactoryClasses)
+    {
+        UFactory* Factory = Class->GetDefaultObject<UFactory>();
+        if (Factory == nullptr)
+        {
+            E_LOG(Error, TEXT("CDO 로딩 중"));
+            return nullptr;
+        }
+
+        if (Factory->FactoryCanImport(InFilePath))
+        {
+            NewFactory = NewObject<UFactory>(nullptr, Factory->GetClass());
+            break;
+        }
+    }
+
+    if (NewFactory)
+    {
+        LoadedAssets[InAssetType.hash_code()][InFilePath] = NewFactory;
+    }
+
+    return NewFactory.get();
 }

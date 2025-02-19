@@ -23,6 +23,7 @@ public:
 	FName(ENoInit);
 	FName(EName InHashCode);
 	FName(FStringView InString);
+	FName(const FString& InString);
 	FName(const WIDECHAR* InString);
 
 	/**

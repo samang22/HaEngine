@@ -5,6 +5,7 @@ using Sharpmake;
 [module: Include("%EngineDir%/Engine/Source/CommonProject.build.cs")]
 [module: Include("%EngineDir%/Engine/Source/HE1/HE1.build.cs")]
 [module: Include("%EngineDir%/Engine/Source/Runtime/**/*.build.cs")]
+[module: Include("%EngineDir%/Engine/Source/ThirdParty/**/*.build.cs")]
 [module: Include("%EngineDir%/Engine/Config/EngineConfig.build.cs")]
 [module: Include("Utils.cs")]
 
@@ -40,7 +41,7 @@ public class EngineSolution : Solution
         // Add Projects
         {
             // // ThirdParty
-            // conf.AddProject<FBX>(target);
+            conf.AddProject<FBX>(target);
 
             // // dll
             conf.AddProject<Core>(target);

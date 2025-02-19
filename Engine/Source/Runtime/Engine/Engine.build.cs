@@ -15,6 +15,7 @@ public class Engine : CommonProject
         conf.AddPublicDependency<Core>(target);
         conf.AddPublicDependency<RenderCore>(target);
         conf.AddPublicDependency<RHI>(target);
+        conf.AddPublicDependency<FBX>(target);
         //conf.AddPublicDependency<Engine>(target);
         //if (target.LaunchType == ELaunchType.Editor)
         //{
