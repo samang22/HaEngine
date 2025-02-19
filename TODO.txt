@@ -68,27 +68,27 @@
     -> [o] TShaderMapRef<FMyShaderVS> MyShaderVS(GetGlobalShaderMap()); 같이 ShaderMap에서 Shader찾을 수 있는 구조
     -> [o] VertexDeclaration 만들기
         -> 1. RHI 함수 호출 생성, 2. TEXTUREGRAPHENGINE_API TGlobalResource<CoreMeshVertex_Decl> g_coreMeshVertexDecl; 처럼 생성
-    -> [o]RHICreateBoundShaderState 만들기
-    -> [o]RHISetBoundShaderState 만들기
+    -> [o] RHICreateBoundShaderState 만들기
+    -> [o] RHISetBoundShaderState 만들기
     -> [o] RHISetBoundShaderState 만들기 (전역변수로 정점 버퍼 우선 사용하기)
 
     -> 렌더링 파이프라인에 정점(DirectX), Shader 세팅, 그리고 Draw
     -> [o] 우선 shader에서 간단한 삼각형 렌더링 목적으로 기능 구현하기
-    -> [o]RHISetViewport 만들기 (Direct3DDeviceIMContext->RSSetViewports)
-    -> []Resize 대응
+    -> [o] RHISetViewport 만들기 (Direct3DDeviceIMContext->RSSetViewports)
+    -> [o] Resize 대응
 
 - StaticMeshActor 만들기
-    -> SceneComponent 마저 만들기
-    -> []FBX Loader, AssetManager, ...
-    -> []계층 구조 만들기
+    -> [o] SceneComponent UI 마저 만들기
+    -> [] FBX Loader, AssetManager, ...
+    -> [] 계층 구조 만들기
 - Editor 카메라 처리
 
 - Engine 계속 제작
-    -> []GameInstance, GameMode 제작
-    -> []User Project GameInstance, GameMode 추가
-    -> []Editor <-> PIE 제작
+    -> [] GameInstance, GameMode 제작
+    -> [] User Project GameInstance, GameMode 추가
+    -> [] Editor <-> PIE 제작
 
-    -> []Spawn된 Actor BeginPlay & Tick
+    -> [] Spawn된 Actor BeginPlay & Tick
 
 
 - 디퍼드 렌더링, PBR 추가, 시간나면 그림자 추가
