@@ -121,25 +121,13 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
 			}
 
 			TArray<uint32> Indices;
-            int32 PolygonSize = 0;
+            const int32 PolygonCount = Mesh->GetPolygonCount();
             // Indices 추출
 			{
 				// 삼각형의 갯수
-				const int32 PolygonCount = Mesh->GetPolygonCount();
 				for (int32 i = 0; i < PolygonCount; ++i)
 				{
-                    const int32 NewPolygonSize = Mesh->GetPolygonSize(i);
-                    if (PolygonSize != NewPolygonSize && PolygonSize != 0)
-                    {
-                        E_LOG(Error, TEXT("ExtractFbx PolygonSize != NewPolygonSize ({}, {})"), PolygonSize, NewPolygonSize);
-                        bSuccessed = false;
-                        break;
-                    }
-                    else
-                    {
-                        PolygonSize = NewPolygonSize;
-                    }
-
+					const int32 PolygonSize = Mesh->GetPolygonSize(i);
 					if (PolygonSize == -1)
 					{
 						E_LOG(Error, TEXT("ExtractFbx PolygonSize Error! (-1)"));
@@ -173,7 +161,7 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
 				FMeshData& NewMeshData = OutMeshData.emplace_back();
 				NewMeshData.Vertices = move(Vertices);
 				NewMeshData.Indices = move(Indices);
-                NewMeshData.NumPrimitives = NewMeshData.Indices.size() / PolygonSize;
+                NewMeshData.NumPrimitives = PolygonCount;
                 // Material 생성
 				{
 					const int MaterialCount = Mesh->GetElementMaterialCount();
