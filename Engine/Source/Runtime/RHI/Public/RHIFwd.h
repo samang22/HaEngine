@@ -5,15 +5,16 @@
 class FRHITexture;
 class FRHIPixelShader;
 class FRHIVertexShader;
+class FRHIUniformBuffer; 
 class FRHIViewport;
 class FRHIVertexDeclaration;
 class FRHIBoundShaderState;
 class FRHIBuffer;
 
 using FTextureRHIRef = TRefCountPtr<FRHITexture>;
-using FViewportRHIRef = TRefCountPtr<FRHIViewport>;
-using FVertexShaderRHIRef = TRefCountPtr<FRHIVertexShader>;
 using FPixelShaderRHIRef = TRefCountPtr<FRHIPixelShader>;
+using FVertexShaderRHIRef = TRefCountPtr<FRHIVertexShader>;
+using FUniformBufferRHIRef = TRefCountPtr<FRHIUniformBuffer>; 
 using FViewportRHIRef = TRefCountPtr<FRHIViewport>;
 using FVertexDeclarationRHIRef = TRefCountPtr<FRHIVertexDeclaration>;
 using FBoundShaderStateRHIRef = TRefCountPtr<FRHIBoundShaderState>;

@@ -301,7 +301,22 @@ public:
 };
 
 
+/** Uniform buffer resource class. */
+class FD3D11UniformBuffer : public FRHIUniformBuffer
+{
+public:
+	/** The D3D11 constant buffer resource */
+	TRefCountPtr<ID3D11Buffer> Resource;
 
+	FD3D11UniformBuffer() = delete;
+	FD3D11UniformBuffer(const uint32 NewBufferSize, TRefCountPtr<ID3D11Buffer> InResource)
+		: Resource(InResource), BufferSize(NewBufferSize) { }
+
+	uint32 GetBufferSize() const { return BufferSize; }
+
+private:
+	const uint32 BufferSize;
+};
 
 template<class T>
 struct TD3D11ResourceTraits
@@ -342,11 +357,11 @@ struct TD3D11ResourceTraits<FRHIBoundShaderState>
 //{
 //	typedef FD3D11RenderQuery TConcreteType;
 //};
-//template<>
-//struct TD3D11ResourceTraits<FRHIUniformBuffer>
-//{
-//	typedef FD3D11UniformBuffer TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHIUniformBuffer>
+{
+	typedef FD3D11UniformBuffer TConcreteType;
+};
 template<>
 struct TD3D11ResourceTraits<FRHIBuffer>
 {

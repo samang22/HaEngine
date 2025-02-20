@@ -82,6 +82,26 @@ public:
             Direct3DDeviceIMContext->IASetIndexBuffer(IndexBuffer, Format, Offset);
         }
     }
+    inline void InternalSetSetConstantBuffer(EShaderFrequency ShaderFrequency, uint32 SlotIndex, ID3D11Buffer*& ConstantBuffer)
+    {
+        switch (ShaderFrequency)
+        {
+        case SF_Vertex:        Direct3DDeviceIMContext->VSSetConstantBuffers(SlotIndex, 1, &ConstantBuffer); break;
+        case SF_Geometry:    Direct3DDeviceIMContext->GSSetConstantBuffers(SlotIndex, 1, &ConstantBuffer); break;
+        case SF_Pixel:        Direct3DDeviceIMContext->PSSetConstantBuffers(SlotIndex, 1, &ConstantBuffer); break;
+        case SF_Compute:    Direct3DDeviceIMContext->CSSetConstantBuffers(SlotIndex, 1, &ConstantBuffer); break;
+        }
+    }
+
+    inline void SetConstantBuffer(EShaderFrequency ShaderFrequency, ID3D11Buffer* ConstantBuffer, uint32 SlotIndex)
+    {
+        ID3D11Buffer* Buffer = CurrentConstantBuffers[ShaderFrequency][SlotIndex];
+        if (Buffer != ConstantBuffer)
+        {
+            CurrentConstantBuffers[ShaderFrequency][SlotIndex] = ConstantBuffer;
+            InternalSetSetConstantBuffer(ShaderFrequency, SlotIndex, ConstantBuffer);
+        }
+    }
 
     inline void SetStreamSource(ID3D11Buffer* VertexBuffer, uint32 StreamIndex, uint32 Stride, uint32 Offset)
     {
@@ -138,4 +158,6 @@ protected:
     D3D11_PRIMITIVE_TOPOLOGY CurrentPrimitiveTopology;
 
     uint16 StreamStrides[MaxVertexElementCount];
+
+    ID3D11Buffer* CurrentConstantBuffers[EShaderFrequency::SF_NumStandardFrequencies][D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT] = {};
 };

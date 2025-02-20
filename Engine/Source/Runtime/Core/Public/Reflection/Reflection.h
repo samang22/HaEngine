@@ -33,7 +33,6 @@ enum EPropertyFlags : uint8
 	//AAA    = 0x00000004,
 };
 
-
 struct FProperty
 {
 	EPropertyFlags PropertyFlags = EPropertyFlags::NoFlags;
@@ -43,7 +42,6 @@ struct FProperty
 	bool bBaseType = false; // int 등과 같은 기본 자료는 size 구해서 copy 할 목적
 	size_t PropertySize = 0;// 변수 타입 크기(우선은 기본 자료형만)
 };
-
 
 // Detail 패널에서 항목 편집을 위해 필요한 정보
 struct FPropertyInfo

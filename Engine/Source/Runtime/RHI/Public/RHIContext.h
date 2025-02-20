@@ -4,6 +4,7 @@ class FRHIViewport;
 class FRHITexture;
 class FRHIBoundShaderState;
 class FRHIBuffer;
+class FRHIUniformBuffer;
 
 // RHI 명령 컨텍스트 인터페이스. 때로는 RHI가 이를 처리합니다.
 // 명령 리스트를 병렬로 처리할 수 있는 플랫폼에서는 별도의 객체입니다.
@@ -19,6 +20,8 @@ public:
     virtual void RHISetBoundShaderState(FRHIBoundShaderState* BoundShaderState) = 0;
     virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) = 0;
     virtual void RHISetPrimitiveTopology(EPrimitiveType InPrimitiveType) = 0;
+    virtual void RHISetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer) = 0; 
+    
     virtual void RHIDrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances) = 0;
     virtual void RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances) = 0;
 

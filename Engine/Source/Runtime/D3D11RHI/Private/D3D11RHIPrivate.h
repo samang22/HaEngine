@@ -126,6 +126,9 @@ public:
     virtual void RHISetBoundShaderState(FRHIBoundShaderState* BoundShaderState) final override;
 
     virtual FBufferRHIRef RHICreateBuffer(FRHICommandList& RHICmdList, FRHIBufferDesc const& Desc, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo) final override;
+    virtual FUniformBufferRHIRef RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize);
+    virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents) final override;
+    virtual void RHISetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer) final override;
 
     virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) final override;
     virtual void RHISetPrimitiveTopology(EPrimitiveType InPrimitiveType) final override;

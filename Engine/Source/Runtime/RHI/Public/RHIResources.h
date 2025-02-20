@@ -7,7 +7,6 @@
 #include "RHI.h"
 #include "PixelFormat.h"
 
-
 class FResourceBulkDataInterface;
 extern RHI_API ERHIAccess RHIGetDefaultResourceState(ETextureCreateFlags InUsage, bool bInHasInitialData);
 
@@ -636,9 +635,9 @@ private:
 
 			if (NumRefs == 0) // caches can bring dead objects back to life
 			{
-				//#if DO_CHECK
-				//				Packed.fetch_or(DeletingBit, std::memory_order_acquire);
-				//#endif
+//#if DO_CHECK
+//				Packed.fetch_or(DeletingBit, std::memory_order_acquire);
+//#endif
 				return true;
 			}
 			else
@@ -1983,4 +1982,10 @@ protected:
 
 private:
 	FRHIBufferDesc Desc;
+};
+
+class FRHIUniformBuffer : public FRHIResource
+{
+public:
+	FRHIUniformBuffer() : FRHIResource(RRT_UniformBuffer) {}
 };

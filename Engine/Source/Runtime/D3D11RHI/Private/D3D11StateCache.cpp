@@ -69,13 +69,11 @@ void FD3D11StateCache::ClearState()
     CurrentIndexOffset = 0; */
     CurrentPrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
-    /*for (uint32 Frequency = 0; Frequency < SF_NumStandardFrequencies; Frequency++)
+    for (uint32 Frequency = 0; Frequency < SF_NumStandardFrequencies; Frequency++)
     {
         for (uint32 Index = 0; Index < D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT; Index++)
         {
-            CurrentConstantBuffers[Frequency][Index].Buffer = nullptr;
-            CurrentConstantBuffers[Frequency][Index].FirstConstant = 0;
-            CurrentConstantBuffers[Frequency][Index].NumConstants = D3D11_REQ_CONSTANT_BUFFER_ELEMENT_COUNT;
+            CurrentConstantBuffers[Frequency][Index] = nullptr;
         }
-    }*/
+    }
 }

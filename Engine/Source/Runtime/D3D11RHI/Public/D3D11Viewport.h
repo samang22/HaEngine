@@ -63,7 +63,7 @@ protected:
 	TRefCountPtr<IDXGISwapChain> SwapChain;
 	TRefCountPtr<FD3D11Texture> BackBuffer;
 };
-
+ 
 template<>
 struct TD3D11ResourceTraits<FRHIViewport>
 {
