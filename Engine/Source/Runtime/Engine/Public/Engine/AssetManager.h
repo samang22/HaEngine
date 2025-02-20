@@ -14,13 +14,13 @@ public:
 
 public:
     template<typename T>
-    T* LoadAsset(const FString& InFilePath)
+    TEnginePtr<T> LoadAsset(const FString& InFilePath)
     {
-        return dynamic_cast<T*>(LoadAsset(typeid(T), InFilePath));
+        return Cast<T>(LoadAsset(typeid(T), InFilePath));
     }
 
 protected:
-    UObject* LoadAsset(const type_info& InAssetType, const FString& InFilePath);
+    TEnginePtr<UObject> LoadAsset(const type_info& InAssetType, const FString& InFilePath);
     // void UnloadAsset();
 
 protected:

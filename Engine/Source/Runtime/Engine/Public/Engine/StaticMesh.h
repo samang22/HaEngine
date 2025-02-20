@@ -1,10 +1,22 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "VertexFactory.h"
 #include "StaticMesh.generated.h"
 
 struct FMeshData;
-class FStaticMeshVertexBuffer;
-class FStaticMeshIndexBuffer;
+class UMaterial;
+
+struct FStaticMeshRenderData
+{
+public:
+	void Create(class UStaticMesh* Outer, const FMeshData& NewMeshData);
+
+	FVertexFactory VertexFactory;
+
+	TObjectPtr<UMaterial> Material;
+	uint32 NumVertices = 0;
+	uint32 NumPrimitives = 0;
+};
 
 UCLASS()
 class ENGINE_API UStaticMesh : public UObject
@@ -15,15 +27,5 @@ public:
     virtual void Create(const TArray<FMeshData>& NewMeshData);
 
 protected:
-	struct FRenderData
-	{
-	public:
-		void Create(const FMeshData& NewMeshData);
-		TObjectPtr<FStaticMeshVertexBuffer> VertexBuffer;
-		TObjectPtr<FStaticMeshIndexBuffer> IndexBuffer;
-		// Material
-		uint32 NumVertices = 0;
-		uint32 NumPrimitives = 0;
-	};
-	TArray<FRenderData> RenderData;
+	TArray<FStaticMeshRenderData> RenderData;
 };

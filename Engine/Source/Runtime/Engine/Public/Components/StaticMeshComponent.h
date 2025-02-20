@@ -2,6 +2,7 @@
 #include "Components/MeshComponent.h"
 #include "StaticMeshComponent.generated.h"
 
+class UStaticMesh;
 
 UCLASS()
 class ENGINE_API UStaticMeshComponent : public UMeshComponent
@@ -9,4 +10,11 @@ class ENGINE_API UStaticMeshComponent : public UMeshComponent
 	GENERATED_BODY()
 public:
 	UStaticMeshComponent();
+
+	void SetStaticMesh(TEnginePtr<UStaticMesh> NewStaticMesh);
+
+	TEnginePtr<UStaticMesh> GetStaticMesh() const { return StaticMesh; }
+
+private:
+	TEnginePtr<UStaticMesh> StaticMesh;
 };

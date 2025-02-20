@@ -7,6 +7,7 @@ class TEnginePtr : public weak_ptr<_Ty>
 {
 public:
 	TEnginePtr() noexcept {}
+	TEnginePtr(nullptr_t) noexcept {}
 	TEnginePtr(const TEnginePtr& InOther) noexcept : weak_ptr<_Ty>(InOther) {}
 	template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
 	TEnginePtr(const weak_ptr<_Ty2>& InOther) noexcept : weak_ptr<_Ty>(InOther) {}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreTypes.h"
+#include "CoreMinimal.h"
 #include "DynamicRHI.h"
 #include "RHIContext.h"
 #include "RHIAccess.h"

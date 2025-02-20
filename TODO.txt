@@ -79,7 +79,12 @@
 
 - StaticMeshActor 만들기
     -> [o] SceneComponent UI 마저 만들기
-    -> [] FBX Loader, AssetManager, ...
+    -> [o] FBX Loader, AssetManager, ...
+    -> [o] VertexFactory, Material 만들기
+    -> [] Scene 만들기
+        -> [] Scene에 StaticMeshComponent 등록
+        -> [] Proxy 만들기
+        -> [] 화면에 물체 렌더링 하고 RenderDoc 으로 확인
     -> [] 계층 구조 만들기
 - Editor 카메라 처리
 

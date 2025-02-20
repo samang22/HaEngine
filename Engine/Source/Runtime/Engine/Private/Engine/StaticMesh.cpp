@@ -1,6 +1,6 @@
 #include "Engine/StaticMesh.h"
 #include "Factories/FbxFactory.h"
-#include "RenderCore.h"
+#include "Materials/Material.h"
 
 class ENGINE_API FStaticMeshVertexDeclaration : public FVertexDeclaration
 {
@@ -53,21 +53,32 @@ UStaticMesh::UStaticMesh()
 
 }
 
+void FStaticMeshRenderData::Create(UStaticMesh* Outer, const FMeshData& NewMeshData)
+{
+    VertexFactory.Declaration = GStaticMeshVertexDeclaration.VertexDeclarationRHI;
+
+    TObjectPtr<FStaticMeshVertexBuffer> VertexBuffer = make_shared<FStaticMeshVertexBuffer>();
+    VertexBuffer->VertexData = NewMeshData.Vertices;
+    VertexFactory.VertexBuffer = VertexBuffer;
+    VertexFactory.VertexBuffer->InitRHI(FRHICommandListExecutor::GetImmediateCommandList());
+
+    TObjectPtr<FStaticMeshIndexBuffer> IndexBuffer = make_shared<FStaticMeshIndexBuffer>();
+    IndexBuffer->IndexData = NewMeshData.Indices;
+    VertexFactory.IndexBuffer = IndexBuffer;
+    VertexFactory.IndexBuffer->InitRHI(FRHICommandListExecutor::GetImmediateCommandList());
+
+    TShaderMapRef<FMaterialVS> VertexShader;
+    TShaderMapRef<FMaterialPS> PixelShader;
+    Material = NewObject<UMaterial>(Outer, UMaterial::StaticClass());
+    Material->SetVertexShader(VertexShader);
+    Material->SetPixelShader(PixelShader);
+}
+
 void UStaticMesh::Create(const TArray<FMeshData>& NewMeshData)
 {
     RenderData.resize(NewMeshData.size());
     for (uint32 i = 0; i < RenderData.size(); ++i)
     {
-        RenderData[i].Create(NewMeshData[i]);
+        RenderData[i].Create(this, NewMeshData[i]);
     }
-}
-
-void UStaticMesh::FRenderData::Create(const FMeshData& NewMeshData)
-{
-    VertexBuffer = make_shared<FStaticMeshVertexBuffer>();
-    VertexBuffer->VertexData = NewMeshData.Vertices;
-    VertexBuffer->InitRHI(FRHICommandListExecutor::GetImmediateCommandList());
-    IndexBuffer = make_shared<FStaticMeshIndexBuffer>();
-    IndexBuffer->IndexData = NewMeshData.Indices;
-    IndexBuffer->InitRHI(FRHICommandListExecutor::GetImmediateCommandList());
-}
+} 

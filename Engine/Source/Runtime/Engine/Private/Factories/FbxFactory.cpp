@@ -49,8 +49,9 @@ TObjectPtr<UObject> UFbxFactory::FactoryCreateFile(const FName InName, const FSt
         ExtractFbx(Scene->GetRootNode(), MeshData);
         Scene->Destroy();
 
-        // NewStaticMesh->Create(MeshData);
-    }
+		NewStaticMesh = NewObject<UStaticMesh>(nullptr, UStaticMesh::StaticClass(), InName);
+		NewStaticMesh->Create(MeshData);
+	}
     return NewStaticMesh;
 }
 

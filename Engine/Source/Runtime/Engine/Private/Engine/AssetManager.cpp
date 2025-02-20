@@ -14,11 +14,11 @@ FAssetManager* FAssetManager::Get(const bool bDestroy)
     return Instance.get();
 }
 
-UObject* FAssetManager::LoadAsset(const type_info& InAssetType, const FString& InFilePath)
+TEnginePtr<UObject> FAssetManager::LoadAsset(const type_info& InAssetType, const FString& InFilePath)
 {
     if (LoadedAssets[InAssetType.hash_code()].contains(InFilePath))
     {
-        return LoadedAssets[InAssetType.hash_code()][InFilePath].get();
+        return LoadedAssets[InAssetType.hash_code()][InFilePath];
     }
 
     const bool bFileExist = std::filesystem::exists(InFilePath);
@@ -32,7 +32,7 @@ UObject* FAssetManager::LoadAsset(const type_info& InAssetType, const FString& I
     //const FString Extension = FilePath.extension().wstring().erase(0, 1); // remove .
 
     TArray<UClass*> FactoryClasses = UClass::GetAllSubclassOfClass(UFactory::StaticClass());
-    TObjectPtr<UFactory> NewFactory;
+    UFactory* NewFactory = nullptr;
     for (UClass* Class : FactoryClasses)
     {
         UFactory* Factory = Class->GetDefaultObject<UFactory>();
@@ -44,7 +44,7 @@ UObject* FAssetManager::LoadAsset(const type_info& InAssetType, const FString& I
 
         if (Factory->FactoryCanImport(InFilePath))
         {
-            NewFactory = NewObject<UFactory>(nullptr, Factory->GetClass());
+            NewFactory = Factory;
             break;
         }
     }
@@ -53,8 +53,9 @@ UObject* FAssetManager::LoadAsset(const type_info& InAssetType, const FString& I
     {
         TObjectPtr<UObject> NewAsset = NewFactory->FactoryCreateFile(InFilePath, InFilePath, nullptr);
         LoadedAssets[InAssetType.hash_code()][InFilePath] = NewAsset;
-        return NewAsset.get();
+        return NewAsset;
     }
 
-    return NewFactory.get();
+    _ASSERT(false);
+    return nullptr;
 }

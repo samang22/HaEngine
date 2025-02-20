@@ -33,16 +33,15 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 	}
 #endif
 #endif
+	{
+		// Shader를 컴파일 한다
+		FShaderCompilingManager::Get();
+	}
 
 	// CDO 객체를 생성한다
 	for (auto It : GetClassMap()) 
 	{
 		It.second->GetDefaultObject();
-	}
-
-	{
-		// Shader를 컴파일 한다
-		FShaderCompilingManager::Get();
 	}
 
 	return 0;

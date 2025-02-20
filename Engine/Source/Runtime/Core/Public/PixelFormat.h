@@ -3,6 +3,7 @@
 #include "CoreTypes.h"
 #include "Misc/EnumClassFlags.h"
 
+#undef PF_MAX
 enum EPixelFormat : uint8
 {
 	PF_Unknown = 0,
