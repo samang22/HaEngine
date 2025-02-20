@@ -60,6 +60,11 @@ public:
         return this->size() * sizeof(ElementType);
     }
 
+    virtual uint32 GetTypeSize() const
+    {
+        return sizeof(ElementType);
+    }
+
     /**
     * RHI가 리소스 데이터를 복사한 후 CPU의 사본이 더 이상 필요 없는 경우 non-UMA 시스템에서 호출됩니다.
     * 클라이언트에서만 리소스 메모리를 폐기하며, CPU가 이를 접근할 필요가 없는 경우에만 해당합니다.

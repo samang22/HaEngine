@@ -1,6 +1,5 @@
 #include "Engine/StaticMesh.h"
 #include "Factories/FbxFactory.h"
-#include "Materials/Material.h"
 
 class ENGINE_API FStaticMeshVertexDeclaration : public FVertexDeclaration
 {
@@ -39,7 +38,7 @@ public:
     virtual void InitRHI(FRHICommandList& RHICmdList) override
     {
         FRHIResourceCreateInfo CreateInfo(TEXT("IndexBuffer"), &IndexData);
-        IndexBufferRHI = GetCommandList().CreateIndexBuffer(IndexData.GetResourceDataSize(), BUF_Static, CreateInfo);
+        IndexBufferRHI = GetCommandList().CreateIndexBuffer(IndexData.GetResourceDataSize(), IndexData.GetTypeSize(), BUF_Static, CreateInfo);        
         if (!IndexBufferRHI)
         {
             E_LOG(Warning, TEXT("IndexBufferRHI creation failed"));

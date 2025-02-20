@@ -19,7 +19,7 @@ class FMaterialPS : public FShader
  * 경고: 새로운 재질을 직접 생성하면 셰이더 컴파일 시간이 증가합니다! 기존 재질을 사용하여 재질 인스턴스를 만드는 것을 고려하세요.
  */
 UCLASS()
-class UMaterial : public UObject
+class ENGINE_API UMaterial : public UObject
 {
     GENERATED_BODY()
 

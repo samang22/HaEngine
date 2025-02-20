@@ -72,6 +72,16 @@ public:
         }
     }
 
+    inline void InternalSetIndexBuffer(ID3D11Buffer* IndexBuffer, DXGI_FORMAT Format, uint32 Offset)
+    {
+        if (/*bAlwaysSetIndexBuffers ||*/ (CurrentIndexBuffer != IndexBuffer || CurrentIndexFormat != Format || CurrentIndexOffset != Offset) /*|| GD3D11SkipStateCaching*/)
+        {
+            CurrentIndexBuffer = IndexBuffer;
+            CurrentIndexFormat = Format;
+            CurrentIndexOffset = Offset;
+            Direct3DDeviceIMContext->IASetIndexBuffer(IndexBuffer, Format, Offset);
+        }
+    }
 
     inline void SetStreamSource(ID3D11Buffer* VertexBuffer, uint32 StreamIndex, uint32 Stride, uint32 Offset)
     {
@@ -82,6 +92,11 @@ public:
     inline void SetStreamSource(ID3D11Buffer* VertexBuffer, uint32 StreamIndex, uint32 Offset)
     {
         InternalSetStreamSource(VertexBuffer, StreamIndex, StreamStrides[StreamIndex], Offset);
+    }
+
+    inline void SetIndexBuffer(ID3D11Buffer* IndexBuffer, DXGI_FORMAT Format, uint32 Offset)
+    {
+        InternalSetIndexBuffer(IndexBuffer, Format, Offset);
     }
 
     inline void SetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology)
@@ -113,6 +128,11 @@ protected:
         uint32 Stride;
         uint32 Offset;
     } CurrentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+
+    // Index Buffer State
+    ID3D11Buffer* CurrentIndexBuffer;
+    DXGI_FORMAT CurrentIndexFormat;
+    uint32 CurrentIndexOffset;
 
     // Primitive Topology State
     D3D11_PRIMITIVE_TOPOLOGY CurrentPrimitiveTopology;

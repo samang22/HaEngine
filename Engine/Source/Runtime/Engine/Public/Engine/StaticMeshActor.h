@@ -18,7 +18,7 @@ class AStaticMeshActor : public AActor
     GENERATED_BODY()
 public:
     AStaticMeshActor();
-
+    virtual void Tick(float DeltaSeconds) override;
 private:
     //UPROPERTY()
     class UStaticMeshComponent* StaticMeshComponent;

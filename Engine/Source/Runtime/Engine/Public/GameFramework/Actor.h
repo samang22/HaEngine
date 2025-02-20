@@ -148,6 +148,16 @@ public:
 
 public:
 	/**
+	* 이 액터에서 매 프레임마다 호출되는 함수입니다. 매 프레임마다 실행할 사용자 정의 로직을 구현하려면 이 함수를 재정의하세요.
+	* 기본적으로 Tick은 비활성화되어 있으며, 이를 활성화하려면 PrimaryActorTick.bCanEverTick이 true로 설정되어 있는지 확인해야 합니다.
+	*
+	* @param   DeltaSeconds    시간 확장에 의해 수정된 마지막 프레임 동안 경과된 게임 시간
+	*/
+	virtual void Tick(float DeltaSeconds);
+
+
+public:
+	/**
 	 * 이 액터가 BeginPlay 이벤트를 받기 전에 Tick을 허용할지 여부입니다.
 	 * 일반적으로 우리는 BeginPlay 이후에만 액터를 Tick합니다; 이 설정을 통해 이러한 동작을 무효화할 수 있습니다.
 	 * 이 설정이 관련되기 위해서는 이 액터가 Tick할 수 있어야 합니다.

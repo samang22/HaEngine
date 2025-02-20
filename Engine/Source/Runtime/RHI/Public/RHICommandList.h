@@ -61,17 +61,16 @@ public:
         ERHIAccess ResourceState = RHIGetDefaultResourceState(Usage | EBufferUsageFlags::VertexBuffer, bHasInitialData);
         return CreateVertexBuffer(Size, Usage, ResourceState, CreateInfo);
     }
-
-    FORCEINLINE FBufferRHIRef CreateIndexBuffer(uint32 Size, EBufferUsageFlags Usage, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo)
+    FORCEINLINE FBufferRHIRef CreateIndexBuffer(uint32 Size, uint32 Stride, EBufferUsageFlags Usage, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo)
     {
-        return CreateBuffer(Size, Usage | EBufferUsageFlags::IndexBuffer, 0, ResourceState, CreateInfo);
+        return CreateBuffer(Size, Usage | EBufferUsageFlags::IndexBuffer, Stride, ResourceState, CreateInfo);
     }
 
-    FORCEINLINE FBufferRHIRef CreateIndexBuffer(uint32 Size, EBufferUsageFlags Usage, FRHIResourceCreateInfo& CreateInfo)
+    FORCEINLINE FBufferRHIRef CreateIndexBuffer(uint32 Size, uint32 Stride, EBufferUsageFlags Usage, FRHIResourceCreateInfo& CreateInfo) 
     {
         bool bHasInitialData = CreateInfo.BulkData != nullptr;
         ERHIAccess ResourceState = RHIGetDefaultResourceState(Usage | EBufferUsageFlags::IndexBuffer, bHasInitialData);
-        return CreateIndexBuffer(Size, Usage, ResourceState, CreateInfo);
+        return CreateIndexBuffer(Size, Stride, Usage, ResourceState, CreateInfo);
     }
 
 	RHI_API void SetBoundShaderState(FRHIBoundShaderState* BoundShaderState);
@@ -89,10 +88,17 @@ public:
     {
         GetContext().RHIDrawPrimitive(BaseVertexIndex, NumPrimitives, NumInstances);
     }
+
+    FORCEINLINE void DrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances)
+    {
+        GetContext().RHIDrawIndexedPrimitive(IndexBufferRHI, BaseVertexIndex, FirstInstance, NumVertices, StartIndex, NumPrimitives, NumInstances);
+    }
+
 private:
 	// 그래픽 명령이 기록되는 활성 컨텍스트.
 	IRHICommandContext* GraphicsContext = nullptr;
 };
+
 
 class FRHICommandListExecutor
 {

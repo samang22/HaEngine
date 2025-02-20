@@ -14,6 +14,8 @@ struct FMeshData
 {
     TArray<FVector3D> Vertices;
     TArray<uint32> Indices;
+
+    uint32 NumPrimitives = 0;
 };
 
 

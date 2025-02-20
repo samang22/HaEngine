@@ -40,6 +40,14 @@ void UWorld::InitalizeNewWorld()
 	Actor->Value2 = 2;
 }
 
+void UWorld::Tick(float DeltaSeconds)
+{
+	for (TObjectPtr<AActor> Actor : PersistentLevel->Actors)
+	{
+		Actor->Tick(DeltaSeconds);
+	}
+}
+
 AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, const FActorSpawnParameters& SpawnParameters)
 {
 	_ASSERT(PersistentLevel.get());

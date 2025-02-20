@@ -509,3 +509,7 @@ bool AActor::OwnsComponent(UActorComponent* Component) const
 	TObjectPtr<UActorComponent> ComponentPtr = Component->As<UActorComponent>();
 	return OwnedComponents.contains(ComponentPtr);
 }
+
+void AActor::Tick(float DeltaSeconds)
+{
+}

@@ -222,3 +222,54 @@ void FD3D11DynamicRHI::RHIDrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimit
 
     //EnableUAVOverlap();
 }
+
+void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances)
+{
+    // 임시로 컬링하지 않도록 설정
+    {
+        D3D11_RASTERIZER_DESC RasterDesc;
+        ZeroMemory(&RasterDesc, sizeof(RasterDesc));
+        RasterDesc.FillMode = D3D11_FILL_SOLID;
+        RasterDesc.CullMode = D3D11_CULL_NONE; // 기본적으로 설정됨
+        RasterDesc.FrontCounterClockwise = false;
+        RasterDesc.DepthClipEnable = false;
+
+        TRefCountPtr<ID3D11RasterizerState> RasterState;
+        Direct3DDevice->CreateRasterizerState(&RasterDesc, RasterState.GetInitReference());
+        Direct3DDeviceIMContext->RSSetState(RasterState);
+    }
+    FD3D11Buffer* IndexBuffer = ResourceCast(IndexBufferRHI);
+
+    // 호출된 함수는 입력이 유효한지 확인해야 합니다. 이는 숨겨진 버그를 방지합니다.
+    _ASSERT(NumPrimitives > 0);
+
+    //CommitGraphicsResourceTables();
+    //CommitNonComputeShaderConstants();
+
+    // determine 16bit vs 32bit indices
+    const DXGI_FORMAT Format = (IndexBuffer->GetStride() == sizeof(uint16) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT);
+
+    uint32 IndexCount = GetVertexCountForPrimitiveCount(NumPrimitives, PrimitiveType);
+
+    // 인덱스 버퍼 범위 밖을 읽으려고 하지 않는지 확인합니다.
+    // 테스트는 다음의 최적화된 버전입니다: StartIndex + IndexCount <= IndexBuffer->GetSize() / IndexBuffer->GetStride()
+    _ASSERT((StartIndex + IndexCount) * IndexBuffer->GetStride() <= IndexBuffer->GetSize(),
+        TEXT("Start %u, Count %u, Type %u, Buffer Size %u, Buffer stride %u"), StartIndex, IndexCount, PrimitiveType, IndexBuffer->GetSize(), IndexBuffer->GetStride());
+
+    TrackResourceBoundAsIB(IndexBuffer);
+    StateCache.SetIndexBuffer(IndexBuffer->Resource, Format, 0);
+    StateCache.SetPrimitiveTopology(GetD3D11PrimitiveType(PrimitiveType));
+
+    if (NumInstances > 1 || FirstInstance != 0)
+    {
+        const uint64 TotalIndexCount = (uint64)NumInstances * (uint64)IndexCount + (uint64)StartIndex;
+        _ASSERT(TotalIndexCount <= (uint64)0xFFFFFFFF, TEXT("Instanced Index Draw exceeds maximum d3d11 limit: Total: %llu, NumInstances: %llu, IndexCount: %llu, StartIndex: %llu, FirstInstance: %llu"), TotalIndexCount, NumInstances, IndexCount, StartIndex, FirstInstance);
+        Direct3DDeviceIMContext->DrawIndexedInstanced(IndexCount, NumInstances, StartIndex, BaseVertexIndex, FirstInstance);
+    }
+    else
+    {
+        Direct3DDeviceIMContext->DrawIndexed(IndexCount, StartIndex, BaseVertexIndex);
+    }
+
+    //EnableUAVOverlap();
+}

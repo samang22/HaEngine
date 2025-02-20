@@ -20,6 +20,7 @@ public:
     virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) = 0;
     virtual void RHISetPrimitiveTopology(EPrimitiveType InPrimitiveType) = 0;
     virtual void RHIDrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances) = 0;
+    virtual void RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances) = 0;
 
     // 이 메서드는 RHIThread와 함께 대기열에 추가되며, 그렇지 않으면 대기열에 추가된 후 플러시됩니다. 
     // RHI 스레드가 없으면 이 프레임 전진 명령을 대기열에 추가하는 데 이점이 없습니다.

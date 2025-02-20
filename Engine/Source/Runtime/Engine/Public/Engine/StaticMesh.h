@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "VertexFactory.h"
+#include "Materials/Material.h"
 #include "StaticMesh.generated.h"
 
 struct FMeshData;
@@ -25,7 +26,7 @@ class ENGINE_API UStaticMesh : public UObject
 public:
     UStaticMesh();
     virtual void Create(const TArray<FMeshData>& NewMeshData);
-
+	TArray<FStaticMeshRenderData>& GetRenderData() { return RenderData; }
 protected:
 	TArray<FStaticMeshRenderData> RenderData;
 };

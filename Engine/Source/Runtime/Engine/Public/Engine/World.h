@@ -50,6 +50,8 @@ public:
 
 	void InitalizeNewWorld();
 
+	void Tick(float DeltaSeconds);
+
 public:
 	/**
 	 * 주어진 Transform과 스폰 파라미터를 사용하여 액터를 스폰합니다.

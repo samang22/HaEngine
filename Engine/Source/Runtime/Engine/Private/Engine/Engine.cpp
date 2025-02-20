@@ -30,6 +30,7 @@ void UEngine::Init(HWND hViewportHandle)
 
 void UEngine::Tick(float DeltaSeconds)
 {
+    GWorld->Tick(DeltaSeconds);
 	EditorViewportClient->Draw();
 }
   

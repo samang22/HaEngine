@@ -63,6 +63,12 @@ void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 	Viewport = GDynamicRHI->RHICreateViewport(hInViewportHandle, ViewportSize.x, ViewportSize.y, false, PF_A2B10G10R10);
 }
 
+TArray<function<void()>> RenderCmds;
+void BeginRenderPass(function<void()> InCmd)
+{
+	RenderCmds.emplace_back(InCmd);
+}
+
 void UViewportClient::Draw()
 {
 	FRHICommandListExecutor::GetImmediateCommandList().BeginDrawingViewport(Viewport, FTextureRHIRef());
