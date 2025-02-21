@@ -78,22 +78,32 @@
     -> [o] Resize 대응
 
 - StaticMeshActor 만들기
-    -> [o] SceneComponent UI 마저 만들기
-    -> [o] FBX Loader, AssetManager, ...
+    -> [o] CreateDefaultSubobject 만들기 (PostInitProperties에서 Actor에 저장)
+    -> [o] SceneComponent UI에 띄우기
+	-> Component 목록 및 Transform UI에 시각화
+    -> [o] FBX Loader, AssetManager, UStaticMesh
+	-> ConstructorHelpers::FObjectFinder<UStaticMesh>로 로드하는 경우
+		-> FindOrLoadObject -> StaticLoadObject  -> ResolveName -> LoadPackage -> CreateExport -> StaticConstructObject_Internal -> UStaticMesh
+		* 언리얼은 FBX 로드해서 자신들 타입으로 변환해서 관리. 우리는 일단 매번 FBX 로드
     -> [o] VertexFactory, Material 만들기
+    -> [o] AStaticMeshActor에 Tick 만들어서 임시로 렌더링 해보기 및 렌더독으로 확인
     -> [] Scene 만들기
         -> [] Scene에 StaticMeshComponent 등록
         -> [] Proxy 만들기
         -> [] 화면에 물체 렌더링 하고 RenderDoc 으로 확인
+
     -> [] 계층 구조 만들기
 - Editor 카메라 처리
 
 - Engine 계속 제작
-    -> [] GameInstance, GameMode 제작
-    -> [] User Project GameInstance, GameMode 추가
-    -> [] Editor <-> PIE 제작
+    -> []GameInstance, GameMode 제작
+    -> []User Project GameInstance, GameMode 추가
+    -> []Editor <-> PIE 제작
 
-    -> [] Spawn된 Actor BeginPlay & Tick
+    -> []Spawn된 Actor BeginPlay & Tick
 
 
 - 디퍼드 렌더링, PBR 추가, 시간나면 그림자 추가
+
+
+
