@@ -7,6 +7,7 @@
 #include "MFCApplicationDoc.h"
 #include "Misc/MFCHeaders.h"
 #if WITH_EDITOR
+#include "EngineMinimal.h"
 #include <propkey.h>
 
 //#ifdef _DEBUG
@@ -53,11 +54,17 @@ void CMFCApplicationDoc::Serialize(CArchive& ar)
 {
 	if (ar.IsStoring())
 	{
-		// TODO: 여기에 저장 코드를 추가합니다.
+		string SaveString = GEngine->Save();
+		CString Str = SaveString.c_str();
+		ar << Str;
 	}
 	else
 	{
-		// TODO: 여기에 로딩 코드를 추가합니다.
+		CString Str;
+		ar >> Str;
+		FString WString = Str.GetString();
+		string LoadedString = TCHAR_TO_ANSI(WString);
+		GEngine->Load(LoadedString);
 	}
 }
 

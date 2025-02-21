@@ -29,3 +29,5 @@
 #include "Templates/SubclassOf.h"
 #include "Templates/RefCounting.h"
 #include "Templates/AlignmentTemplates.h"
+
+#include "Serialization/Archive.h"

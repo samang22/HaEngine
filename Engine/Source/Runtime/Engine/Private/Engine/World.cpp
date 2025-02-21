@@ -1,7 +1,12 @@
 #include "Engine/World.h"
 #include "Engine/Level.h"
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include "Engine/StaticMeshActor.h"
+
+
 
 FDelegate<UWorld*> WorldCreatedDelegate;
 FDelegate<UWorld*> WorldDestroyedDelegate;
@@ -45,6 +50,53 @@ void UWorld::Tick(float DeltaSeconds)
 	for (TObjectPtr<AActor> Actor : PersistentLevel->Actors)
 	{
 		Actor->Tick(DeltaSeconds);
+	}
+}
+
+string UWorld::Save()
+{
+	std::stringstream Buffer;
+	boost::archive::text_oarchive SaveArchive = boost::archive::text_oarchive(Buffer);
+	FArchive Ar = FArchive(SaveArchive);
+
+	uint64 ObjectCount = PersistentLevel->Actors.size();
+	Ar << ObjectCount;
+
+	for (TEnginePtr<AActor> Actor : PersistentLevel->Actors)
+	{
+		Actor->Serialize(Ar);
+	}
+
+	string String = Buffer.str();
+	return String;
+}
+
+void UWorld::Load(const string& InLoadString)
+{
+	std::stringstream Buffer = std::stringstream(InLoadString);
+	boost::archive::text_iarchive LoadArchive = boost::archive::text_iarchive(Buffer);
+	FArchive Ar = FArchive(LoadArchive);
+
+	uint64 ObjectCount = 0;
+	Ar << ObjectCount;
+
+	for (uint64 i = 0; i < ObjectCount; ++i)
+	{
+		FString ObjectName;
+		Ar << ObjectName;
+
+		auto It = std::find_if(PersistentLevel->Actors.begin(), PersistentLevel->Actors.end(),
+			[&ObjectName](TObjectPtr<AActor> Actor)
+			{
+				if (Actor->GetName() == ObjectName) { return true; }
+				return false;
+			}
+		);
+
+		if (It != PersistentLevel->Actors.end())
+		{
+			It->get()->Serialize(Ar);
+		}
 	}
 }
 

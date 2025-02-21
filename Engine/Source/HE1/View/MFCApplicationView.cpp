@@ -96,9 +96,13 @@ void CMFCApplicationView::OnDraw(CDC* pDC)
 //#endif //_DEBUG
 int32 LAUNCH_API EnginePreInit(const TCHAR* CmdLine);
 int32 LAUNCH_API EngineInit(HWND hViewportWnd = NULL);
+bool bInit = false;
 void CMFCApplicationView::OnInitialUpdate()
 {
 	CView::OnInitialUpdate();
+
+	if (bInit == true) { return; }
+	bInit = true;
 
 	int32 ErrorLevel = 0;
 	ErrorLevel = EnginePreInit(nullptr);

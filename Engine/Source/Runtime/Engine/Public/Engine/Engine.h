@@ -16,6 +16,11 @@ public:
     void Tick(float DeltaSeconds);
     void PreExit();
 
+public:
+    string Save();
+    void Load(const string& InLoadString);
+
+public:
     void WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 
 protected:

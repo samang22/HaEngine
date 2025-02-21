@@ -1,9 +1,14 @@
 #pragma once
 #include "UObjectBase.h"
+#include "Serialization/Archive.h"
+
 class UClass;
 class FObjectInitializer;
 class CORE_API UObject : public UObjectBase
 {
+public:
+	void Serialize(FArchive& Ar);
+
 public:
 	/** 아래 템플릿을 위한 유틸리티 함수 */
 	UObject* CreateDefaultSubobject(FName SubobjectFName, UClass* ReturnType, UClass* ClassToCreateByDefault, bool bIsRequired, bool bIsTransient);

@@ -40,6 +40,16 @@ void UEngine::PreExit()
 	CurrentViewportClient = nullptr;
 }
 
+string UEngine::Save()
+{
+    return World->Save();
+}
+
+void UEngine::Load(const string& InLoadString)
+{
+    World->Load(InLoadString);
+}
+
 void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 {
     switch (Message)

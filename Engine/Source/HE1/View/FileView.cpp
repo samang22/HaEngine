@@ -179,12 +179,12 @@ void CFileView::OnProperties()
 
 void CFileView::OnFileOpen()
 {
-	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	int a = 0;
 }
 
 void CFileView::OnFileOpenWith()
 {
-	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	int a = 0;
 }
 
 void CFileView::OnDummyCompile()

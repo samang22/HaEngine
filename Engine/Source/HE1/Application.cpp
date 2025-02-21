@@ -139,12 +139,6 @@ BOOL CMFCApplication::OnIdle(LONG lCount)
 		return FALSE;
 	}
 
-	if (GetAsyncKeyState(VK_F3) & 0x8000)
-	{
-		static int Val = 0;
-		E_LOG(Log, TEXT("Test: {}"), ++Val);
-	}
-
 	EngineTick();
 	//if (LastSelectedActor)
 	//{
