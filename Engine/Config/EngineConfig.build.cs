@@ -12,8 +12,6 @@ public class EngineConfig : CommonProject
     public EngineConfig() 
     {
         SourceFilesExtensions.Add(".ini");
-        SourceFilesExtensions.Add(".fbx");
-        SourceFilesExtensions.Add(".hlsl"); // 임시
     }
 
     public override void ConfigureAll(Configuration conf, EngineTarget target)
@@ -24,6 +22,6 @@ public class EngineConfig : CommonProject
         conf.TargetPath += "/Config";
 
         conf.EventPreBuild.Clear();
-        conf.EventPreBuild.Add(@"(robocopy /s ""[project.SourceRootPath]"" " + @"""" + conf.TargetPath + @"""" + " *.ini *.hlsl *.fbx /njh /njs /ndl /nc /ns) ^& IF %ERRORLEVEL% LEQ 3 exit 0");
+        conf.EventPreBuild.Add(@"(robocopy /s ""[project.SourceRootPath]"" " + @"""" + conf.TargetPath + @"""" + " *.ini /njh /njs /ndl /nc /ns) ^& IF %ERRORLEVEL% LEQ 3 exit 0");
     }
 }

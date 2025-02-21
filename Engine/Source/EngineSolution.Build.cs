@@ -7,6 +7,8 @@ using Sharpmake;
 [module: Include("%EngineDir%/Engine/Source/Runtime/**/*.build.cs")]
 [module: Include("%EngineDir%/Engine/Source/ThirdParty/**/*.build.cs")]
 [module: Include("%EngineDir%/Engine/Config/EngineConfig.build.cs")]
+[module: Include("%EngineDir%/Engine/Content/EngineContent.build.cs")]
+[module: Include("%EngineDir%/Engine/Shaders/EngineShaders.build.cs")]
 [module: Include("Utils.cs")]
 
 [Generate]
@@ -56,6 +58,8 @@ public class EngineSolution : Solution
 
             // config
             conf.AddProject<EngineConfig>(target);
+            conf.AddProject<EngineContent>(target);
+            conf.AddProject<EngineShaders>(target);
 
             // exe
             conf.AddProject<HE1>(target);

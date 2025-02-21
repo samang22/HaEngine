@@ -1,6 +1,8 @@
 #include "UObject/UObjectBase.h"
 #include "Uobject/Object.h"
 
+extern CORE_API map<UClass*, map<FString, TEnginePtr<UObject>>> ObjectMap;
+
 #pragma warning(disable:26495)
 UObjectBase::UObjectBase()
 	: NamePrivate(NoInit)
@@ -13,8 +15,10 @@ UObjectBase::UObjectBase(EObjectFlags InObjectFlags, UClass* InClass, UObject* I
 {
 }
 
-UObjectBase::~UObjectBase()
+UObjectBase::~UObjectBase()                                                                                                  
 {
+	map<FString, TEnginePtr<UObject>>& Objects = ObjectMap[GetClass()];
+	Objects.erase(GetName());
 }
 
 /**

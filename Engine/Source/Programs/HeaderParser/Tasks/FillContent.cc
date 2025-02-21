@@ -120,9 +120,9 @@ void FFillContentTask::RunTask(Value::ConstValueIterator& InDoc, string& InOutCo
 										{
 											const Value& Template_Type_Name = Members[i - 1]["dataType"]["name"];
 											const string strTemplate_Type_Name = Template_Type_Name.GetString();
-											if (strTemplate_Type_Name == "shared_ptr")
+											if (strTemplate_Type_Name == "TObjectPtr")
 											{
-												InOutContent += ".PropertyType = EPropertyType::T_SHARED_PTR";
+												InOutContent += ".PropertyType = EPropertyType::T_OBJECT_PTR";
 											}
 											else if (strTemplate_Type_Name == "TEnginePtr")
 											{

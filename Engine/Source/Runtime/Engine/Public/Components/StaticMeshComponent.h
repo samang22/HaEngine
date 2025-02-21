@@ -16,5 +16,6 @@ public:
 	TEnginePtr<UStaticMesh> GetStaticMesh() const { return StaticMesh; }
 
 private:
+	UPROPERTY(EditAnywhere)
 	TEnginePtr<UStaticMesh> StaticMesh;
 };

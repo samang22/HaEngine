@@ -12,6 +12,18 @@ FString FPaths::EngineConfigDir()
 	return Path;
 }
 
+FString FPaths::ContentDir()
+{
+    static const FString Path = EngineDir() + TEXT("\\Content");
+    return Path;
+}
+
+FString FPaths::ShaderDir()
+{
+    static const FString Path = EngineDir() + TEXT("\\Shaders");
+    return Path;
+}
+
 FString FPaths::ProjectDLLDir()
 {
 	static const FString Path = EngineDir() + TEXT("\\Project");

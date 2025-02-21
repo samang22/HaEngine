@@ -10,7 +10,7 @@ bool CORE_API IsEngineExitRequested()
 	return GIsRequestingExit;
 }
 
-//CORE_API map<UClass*, vector<EnginePtr<UObject>>> ObjectMap;
+CORE_API map<UClass*, map<FString, TEnginePtr<UObject>>> ObjectMap;
 
 //void CORE_API RequestEngineExit(const FString ReasonString)
 //{
@@ -210,8 +210,8 @@ CORE_API TObjectPtr<UObject> StaticConstructObject_Internal(FStaticConstructObje
 
 	InClass->ClassConstructor(FObjectInitializer(Result, Params));
 
-	/*auto& ObjectVector = ObjectMap[InClass];
-	ObjectVector.emplace_back(Result);*/
+	auto& ObjectVector = ObjectMap[InClass];
+	ObjectVector.emplace(InName.ToString(), Result);
 
 	return Result;
 }

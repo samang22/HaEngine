@@ -1,7 +1,7 @@
 #include "Materials/Material.h"
 
-IMPLEMENT_SHADER_TYPE(FMaterialVS, FPaths::EngineConfigDir() + L"/MaterialShader.hlsl", "VS", SF_Vertex)
-IMPLEMENT_SHADER_TYPE(FMaterialPS, FPaths::EngineConfigDir() + L"/MaterialShader.hlsl", "PS", SF_Pixel)
+IMPLEMENT_SHADER_TYPE(FMaterialVS, FPaths::ShaderDir() + L"/MaterialShader.hlsl", "VS", SF_Vertex)
+IMPLEMENT_SHADER_TYPE(FMaterialPS, FPaths::ShaderDir() + L"/MaterialShader.hlsl", "PS", SF_Pixel)
 
 void UMaterial::SetVertexShader(TShaderMapRef<FMaterialVS> InShader)
 {

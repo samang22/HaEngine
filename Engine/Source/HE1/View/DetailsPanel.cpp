@@ -250,6 +250,8 @@ void CDetailsPanel::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 	SetPropListFont();
 }
 
+extern CORE_API map<UClass*, map<FString, TEnginePtr<UObject>>> ObjectMap;
+
 LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 {
 	if (!GEngine)
@@ -273,7 +275,18 @@ LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 	case T_NONE:
 		break;
 	case T_ENGINE_PTR:
+	{
+		TEnginePtr<UObject>* Value = (TEnginePtr<UObject>*)PropertyInfo->PropertyAddress;
+		TEnginePtr<UObject> EnginePtr = *Value;
+		UClass* Class = EnginePtr->GetClass();
+		map<FString, TEnginePtr<UObject>> Objects = ObjectMap[Class];
+
+		BSTR CurrentValue = Prop->GetValue().bstrVal;
+		FString String = CurrentValue;
+		TEnginePtr<UObject> FindObject = Objects[String];
+		*Value = FindObject;
 		break;
+	}
 	case T_BOOL:
 	{
 		bool CurrentValue = Prop->GetValue().boolVal;
