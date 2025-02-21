@@ -11,13 +11,6 @@ AStaticMeshActor::AStaticMeshActor()
     StaticMeshComponent->SetStaticMesh(StaticMesh2);
 	StaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -100.f));
 	RootComponent = Cast<USceneComponent>(StaticMeshComponent);
-
-    if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject))
-    {
-        return;
-    }
-
-    UniformBuffer = RHICreateUniformBuffer(&SceneUniformBuffer, sizeof(SceneUniformBuffer));
 }
 
 void BeginRenderPass(function<void()> InCmd);
@@ -42,10 +35,18 @@ void AStaticMeshActor::Tick(float DeltaSeconds)
 					).GetReference()
 				);
 
+				if (!UniformBuffer)
+				{
+					const FConstantBufferInfo& ConstantBufferInfo = RenderData.Material->GetVertexShader()->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
+					UniformBuffer = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
+				}
+
 				FMatrix Matrix = FMatrix::CreatePerspectiveFieldOfView(3.14f / 4.f, 16.f / 9.f, 0.1f, 1000.f);
 				SceneUniformBuffer.ProjectionMatrix = Matrix.Transpose();
-				::RHIUpdateUniformBuffer(UniformBuffer, &SceneUniformBuffer);
-				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, 1, UniformBuffer);
+
+				RHIUpdateUniformBuffer(UniformBuffer, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
+				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, UniformBuffer);
+
 
 				FObjectUniformBuffer ObjectUniformBuffer;
 				ObjectUniformBuffer.Matrix = StaticMeshComponent->GetComponentTransform().GetMatrix();

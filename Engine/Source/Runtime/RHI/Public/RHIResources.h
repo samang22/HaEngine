@@ -1987,5 +1987,11 @@ private:
 class FRHIUniformBuffer : public FRHIResource
 {
 public:
-	FRHIUniformBuffer() : FRHIResource(RRT_UniformBuffer) {}
+	FRHIUniformBuffer(const FConstantBufferInfo& InLayout) : FRHIResource(RRT_UniformBuffer), Layout(InLayout) {}
+
+	uint32 GetBufferSize() const { return Layout.Size; }
+	FConstantBufferInfo& GetLayout() { return Layout; }
+
+protected:
+	FConstantBufferInfo Layout;
 };

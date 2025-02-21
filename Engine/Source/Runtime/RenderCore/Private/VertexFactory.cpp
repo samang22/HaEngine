@@ -12,7 +12,7 @@ public:
 };
 TGlobalResource<FStaticMeshVertexDeclaration> GStaticMeshVertexDeclaration;
 
-void FVertexFactory::Create(TObjectPtr<FVertexBuffer> InVertexBuffer, TObjectPtr<FIndexBuffer> InIndexBuffer)
+void FVertexFactory::Create(TObjectPtr<FVertexBuffer> InVertexBuffer, TObjectPtr<FIndexBuffer> InIndexBuffer, const FConstantBufferInfo& ConstantBufferInfo)
 {
 	Declaration = GStaticMeshVertexDeclaration.VertexDeclarationRHI;
 	VertexBuffer = InVertexBuffer;
@@ -21,13 +21,13 @@ void FVertexFactory::Create(TObjectPtr<FVertexBuffer> InVertexBuffer, TObjectPtr
 	IndexBuffer = InIndexBuffer;
 	IndexBuffer->InitRHI(FRHICommandListExecutor::GetImmediateCommandList());
 
-	UniformBuffer = ::RHICreateUniformBuffer(&ObjectUniformBuffer, sizeof(ObjectUniformBuffer));
+	UniformBuffer = ::RHICreateUniformBuffer(ConstantBufferInfo, &ObjectUniformBuffer, sizeof(ObjectUniformBuffer));
 }
 
 void FVertexFactory::UpdateObjectUniformBuffer(FRHICommandList& CommandList, const FObjectUniformBuffer& InBuffer)
 {
 	ObjectUniformBuffer = InBuffer;
 	ObjectUniformBuffer.Matrix = ObjectUniformBuffer.Matrix.Transpose();
-	::RHIUpdateUniformBuffer(UniformBuffer, &ObjectUniformBuffer);
-	CommandList.SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, 0, UniformBuffer);
+	RHIUpdateUniformBuffer(UniformBuffer, &ObjectUniformBuffer, sizeof(ObjectUniformBuffer));
+	CommandList.SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, UniformBuffer);
 }

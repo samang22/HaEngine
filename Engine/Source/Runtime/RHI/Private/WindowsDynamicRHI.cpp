@@ -33,14 +33,14 @@ static IDynamicRHIModule* LoadDynamicRHIModule(ERHIFeatureLevel::Type& DesiredFe
     return nullptr;
 }
 
-FUniformBufferRHIRef RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize)
+FUniformBufferRHIRef RHICreateUniformBuffer(const FConstantBufferInfo& Layout, const void* Contents, const uint32 ContentsSize)
 {
-    return GDynamicRHI->RHICreateUniformBuffer(Contents, ContentsSize);
+    return GDynamicRHI->RHICreateUniformBuffer(Layout, Contents, ContentsSize);
 }
 
-void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents)
+void RHI_API RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize)
 {
-    GDynamicRHI->RHIUpdateUniformBuffer(UniformBufferRHI, Contents);
+    GDynamicRHI->RHIUpdateUniformBuffer(UniformBufferRHI, Contents, ContentsSize);
 }
 
 FDynamicRHI* PlatformCreateDynamicRHI()

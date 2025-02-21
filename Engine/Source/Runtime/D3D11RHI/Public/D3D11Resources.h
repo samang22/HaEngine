@@ -309,13 +309,9 @@ public:
 	TRefCountPtr<ID3D11Buffer> Resource;
 
 	FD3D11UniformBuffer() = delete;
-	FD3D11UniformBuffer(const uint32 NewBufferSize, TRefCountPtr<ID3D11Buffer> InResource)
-		: Resource(InResource), BufferSize(NewBufferSize) { }
 
-	uint32 GetBufferSize() const { return BufferSize; }
-
-private:
-	const uint32 BufferSize;
+	FD3D11UniformBuffer(const FConstantBufferInfo& InLayout, TRefCountPtr<ID3D11Buffer> InResource)
+		: FRHIUniformBuffer(InLayout), Resource(InResource) { }
 };
 
 template<class T>

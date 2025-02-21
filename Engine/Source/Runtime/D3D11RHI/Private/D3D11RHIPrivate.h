@@ -110,7 +110,7 @@ public:
     }
 
 public:
-    virtual bool RHICompileShader(class FShaderType* InShaderType, TArray<uint8>& OutResult);
+    virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader);
 
 public:
     virtual void RHISetViewports(FVector3D RenderTargetSize);
@@ -126,8 +126,8 @@ public:
     virtual void RHISetBoundShaderState(FRHIBoundShaderState* BoundShaderState) final override;
 
     virtual FBufferRHIRef RHICreateBuffer(FRHICommandList& RHICmdList, FRHIBufferDesc const& Desc, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo) final override;
-    virtual FUniformBufferRHIRef RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize);
-    virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents) final override;
+    virtual FUniformBufferRHIRef RHICreateUniformBuffer(const FConstantBufferInfo& Layout, const void* Contents, const uint32 ContentsSize);
+    virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) final override;
     virtual void RHISetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer) final override;
 
     virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) final override;

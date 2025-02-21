@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "RenderResource.h"
+#include "Shader.h"
 
 struct FObjectUniformBuffer
 {
@@ -13,7 +14,7 @@ struct FObjectUniformBuffer
 class RENDERCORE_API FVertexFactory : public FRenderResource
 {
 public:
-    void Create(TObjectPtr<FVertexBuffer> InVertexBuffer, TObjectPtr<FIndexBuffer> InIndexBuffer);
+    void Create(TObjectPtr<FVertexBuffer> InVertexBuffer, TObjectPtr<FIndexBuffer> InIndexBuffer, const FConstantBufferInfo& ConstantBufferInfo); 
     void UpdateObjectUniformBuffer(FRHICommandList& CommandList, const FObjectUniformBuffer& InBuffer);
 
 public:

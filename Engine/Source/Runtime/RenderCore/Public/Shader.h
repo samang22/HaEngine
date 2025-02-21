@@ -11,17 +11,27 @@
 class FShader
 {
     friend class FShaderType;
-    friend class FShaderCompilingManager;
+	friend class FD3D11DynamicRHI;
+	friend class FShaderCompilingManager;
     template<typename ShaderType>
     friend class TShaderMapRef;
 
 public:
     RENDERCORE_API virtual ~FShader();
     inline EShaderFrequency GetFrequency() const { return Frequency; }
+	const FConstantBufferInfo& GetConstantBufferInfo(FString InConstantBufferName)
+	{
+		if (!ConstantBufferInfos.contains(InConstantBufferName))
+		{
+			E_LOG(Error, TEXT("Failed to find ConstantBufferInfo : {}"), InConstantBufferName);
+		}
 
+		return ConstantBufferInfos[InConstantBufferName];
+	}
 private:
     EShaderFrequency Frequency;
     TArray<uint8> Code;
+	unordered_map<FString, FConstantBufferInfo> ConstantBufferInfos;
 };
 
 /**
@@ -127,6 +137,13 @@ public:
 	{
 		return static_cast<FRHIPixelShader*>(GetRHIShaderBase(SF_Pixel));
 	}
+
+	ShaderType* operator->()
+	{
+		return ShaderContent;
+	}
+
+	ShaderType* GetShader() const { return ShaderContent; }
 
 private:
 	ShaderType* ShaderContent = nullptr;

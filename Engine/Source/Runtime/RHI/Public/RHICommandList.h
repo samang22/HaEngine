@@ -75,9 +75,9 @@ public:
 
 	RHI_API void SetBoundShaderState(FRHIBoundShaderState* BoundShaderState);
 
-    FORCEINLINE void SetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer)
+    FORCEINLINE void SetShaderUniformBuffer(EShaderFrequency Frequency, FRHIUniformBuffer* InUniformBuffer)
     {
-        GetContext().RHISetShaderUniformBuffer(Frequency, RegisterIndex, InUniformBuffer);
+        GetContext().RHISetShaderUniformBuffer(Frequency, InUniformBuffer->GetLayout().RegisterIndex, InUniformBuffer);
     }
 
     FORCEINLINE void SetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset)

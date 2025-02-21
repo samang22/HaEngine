@@ -20,12 +20,9 @@ FShaderCompilingManager::FShaderCompilingManager()
     {
         FShaderType* ShaderType = It.second;
 
-        TArray<uint8> Result;
-        if (GDynamicRHI->RHICompileShader(ShaderType, Result))
+        TObjectPtr<FShader> NewShader;
+        if (GDynamicRHI->RHICompileShader(ShaderType, NewShader))
         {
-            TObjectPtr<FShader> NewShader = ShaderType->ShaderConstructFunction();
-            NewShader->Code = std::move(Result);
-            NewShader->Frequency = ShaderType->Frequency;
             FGlobalShaderMap::Shaders.emplace(ShaderType->TypeIndex, NewShader);
         }
     }

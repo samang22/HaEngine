@@ -35,18 +35,18 @@ public:
 	virtual FBoundShaderStateRHIRef RHICreateBoundShaderState(FRHIVertexDeclaration* VertexDeclaration, FRHIVertexShader* VertexShader, FRHIPixelShader* PixelShader/*, FRHIGeometryShader* GeometryShader*/) = 0;
 
 	virtual FBufferRHIRef RHICreateBuffer(FRHICommandList& RHICmdList, FRHIBufferDesc const& Desc, ERHIAccess ResourceState, FRHIResourceCreateInfo& CreateInfo) = 0;
-	virtual FUniformBufferRHIRef RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize) = 0;
-	virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents) = 0;
+	virtual FUniformBufferRHIRef RHICreateUniformBuffer(const FConstantBufferInfo& Layout, const void* Contents, const uint32 ContentsSize) = 0;
+	virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) = 0;
 
-	virtual bool RHICompileShader(class FShaderType* InShaderType, TArray<uint8>& OutResult) = 0;
+	virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader) = 0;
 };
 
 // 동적으로 바인딩된 RHI 구현을 가리키는 전역 포인터.
 extern RHI_API FDynamicRHI* GDynamicRHI;
 
-FUniformBufferRHIRef RHI_API RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize);
+FUniformBufferRHIRef RHI_API RHICreateUniformBuffer(const FConstantBufferInfo& Layout, const void* Contents, const uint32 ContentsSize);
 
-void RHI_API RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents);
+void RHI_API RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize);
 
 /** 동적 RHI(랜더링 하드웨어 인터페이스)를 구현하는 모듈의 인터페이스를 정의합니다. */
 class IDynamicRHIModule : public IModuleInterface

@@ -1,9 +1,14 @@
 #include "D3D11RHIPrivate.h"
 
-FUniformBufferRHIRef FD3D11DynamicRHI::RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize)
+FUniformBufferRHIRef FD3D11DynamicRHI::RHICreateUniformBuffer(const FConstantBufferInfo& Layout, const void* Contents, const uint32 ContentsSize) 
 {
     FD3D11UniformBuffer* NewUniformBuffer = nullptr;
-    const uint32 NumBytes = ContentsSize;
+    const uint32 NumBytes = Layout.Size;
+    if (Layout.Size != ContentsSize)
+    {
+        E_LOG(Error, TEXT("{} Layout.Size({}) != ContentsSize({})"), Layout.Name, Layout.Size, ContentsSize);
+        return nullptr;
+    }
 
     D3D11_BUFFER_DESC Desc;
     Desc.ByteWidth = NumBytes;
@@ -20,12 +25,12 @@ FUniformBufferRHIRef FD3D11DynamicRHI::RHICreateUniformBuffer(const void* Conten
     TRefCountPtr<ID3D11Buffer> UniformBufferResource;
     VERIFYD3D11RESULT_EX(Direct3DDevice->CreateBuffer(&Desc, Contents ? &ImmutableData : nullptr, UniformBufferResource.GetInitReference()), Direct3DDevice);
 
-    NewUniformBuffer = new FD3D11UniformBuffer(ContentsSize, UniformBufferResource);
+    NewUniformBuffer = new FD3D11UniformBuffer(Layout, UniformBufferResource);
 
     return NewUniformBuffer;
 }
 
-void FD3D11DynamicRHI::RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents)
+void FD3D11DynamicRHI::RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) 
 {
     FD3D11UniformBuffer* UniformBuffer = ResourceCast(UniformBufferRHI);
     const uint32 ConstantBufferSize = UniformBuffer->GetBufferSize();

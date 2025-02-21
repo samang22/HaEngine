@@ -29,6 +29,8 @@ public:
 
     FRHIVertexShader* GetVertexShaderRHI() const;
     FRHIPixelShader* GetPixelShaderRHI() const;
+    FMaterialVS* GetVertexShader() const { return VertexShader.GetShader(); }
+    FMaterialPS* GetPixelShader() const { return PixelShader.GetShader(); }
 
 private:
     TShaderMapRef<FMaterialVS> VertexShader;

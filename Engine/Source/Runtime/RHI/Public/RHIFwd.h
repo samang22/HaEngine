@@ -22,3 +22,10 @@ using FBufferRHIRef = TRefCountPtr<FRHIBuffer>;
 
 struct FVertexElement;
 typedef TArray<FVertexElement> FVertexDeclarationElementList;
+
+struct FConstantBufferInfo
+{
+    FString Name;
+    uint8 RegisterIndex = -1;
+    uint32 Size = -1;
+};

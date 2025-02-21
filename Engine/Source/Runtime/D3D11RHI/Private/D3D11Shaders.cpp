@@ -3,10 +3,8 @@
 
 D3D11RHI_API map<type_index, TRefCountPtr<FRHIShader>> RHIShaders;
 
-bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TArray<uint8>& OutResult)
+bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TObjectPtr<FShader>& OutShader) 
 {
-    OutResult.clear();
-
     string TargetName;
     switch (InShaderType->Frequency)
     {
@@ -33,6 +31,7 @@ bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TArray<uint8>
         return false;
     }
 
+    OutShader = InShaderType->ShaderConstructFunction();
     // Reflection
     {
         TRefCountPtr<ID3D11ShaderReflection> Reflector;
@@ -60,21 +59,50 @@ bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TArray<uint8>
             Reflector->GetInputParameterDesc(i, &ParamDesc);
             // 입력 파라미터 정보 사용
         }
+        for (UINT i = 0; i < ShaderDesc.BoundResources; ++i)
+        {
+            D3D11_SHADER_INPUT_BIND_DESC BindDesc;
+            Reflector->GetResourceBindingDesc(i, &BindDesc);
 
+            if (BindDesc.Type == D3D_SIT_CBUFFER)
+            {
+                const FString Name = ANSI_TO_TCHAR(BindDesc.Name);
+                FConstantBufferInfo& ConstantBufferInfo = OutShader->ConstantBufferInfos[Name];
+                ConstantBufferInfo.Name = Name;
+                ConstantBufferInfo.RegisterIndex = BindDesc.BindPoint;
+            }
+        }
+
+        // 상수 버퍼(cbuffer)의 정보
         for (UINT i = 0; i < ShaderDesc.ConstantBuffers; ++i)
         {
             ID3D11ShaderReflectionConstantBuffer* ConstantBuffer = Reflector->GetConstantBufferByIndex(i);
-            D3D11_SHADER_BUFFER_DESC bufferDesc;
-            ConstantBuffer->GetDesc(&bufferDesc);
-            // 상수 버퍼 정보 사용
+            D3D11_SHADER_BUFFER_DESC BufferDesc;
+            ConstantBuffer->GetDesc(&BufferDesc);
+            const FString Name = ANSI_TO_TCHAR(BufferDesc.Name);
+            FConstantBufferInfo& ConstantBufferInfo = OutShader->ConstantBufferInfos[Name];
+            ConstantBufferInfo.Size = BufferDesc.Size;
+
+            // 변수 하나하나의 정보
+            /*for (UINT j = 0; j < BufferDesc.Variables; ++j)
+            {
+                ID3D11ShaderReflectionVariable* Variable = ConstantBuffer->GetVariableByIndex(j);
+                D3D11_SHADER_VARIABLE_DESC VarDesc;
+                Variable->GetDesc(&VarDesc);
+                VarDesc.Size;
+            }*/
+
         }
     }
 
-    const uint64 BufferSize = Blob->GetBufferSize();
-    OutResult.resize(BufferSize);
-
-    void* Address = Blob->GetBufferPointer();
-    memcpy_s(OutResult.data(), OutResult.size(), Address, BufferSize);
+    // Set shader code
+    {
+        const uint64 BufferSize = Blob->GetBufferSize();
+        OutShader->Code.resize(BufferSize);
+        void* Address = Blob->GetBufferPointer();
+        memcpy_s(OutShader->Code.data(), OutShader->Code.size(), Address, BufferSize);
+    }
+    OutShader->Frequency = InShaderType->Frequency;
 
     return true;
 }

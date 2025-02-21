@@ -54,22 +54,22 @@ UStaticMesh::UStaticMesh()
 
 void FStaticMeshRenderData::Create(UStaticMesh* Outer, const FMeshData& NewMeshData)
 {
+    TShaderMapRef<FMaterialVS> VertexShader;
+    TShaderMapRef<FMaterialPS> PixelShader;
+    Material = NewObject<UMaterial>(Outer, UMaterial::StaticClass());
+    Material->SetVertexShader(VertexShader);
+    Material->SetPixelShader(PixelShader);
+
     TObjectPtr<FStaticMeshVertexBuffer> VertexBuffer = make_shared<FStaticMeshVertexBuffer>();
     VertexBuffer->VertexData = NewMeshData.Vertices;
 
     TObjectPtr<FStaticMeshIndexBuffer> IndexBuffer = make_shared<FStaticMeshIndexBuffer>();
     IndexBuffer->IndexData = NewMeshData.Indices;
 
-    VertexFactory.Create(VertexBuffer, IndexBuffer);
+    VertexFactory.Create(VertexBuffer, IndexBuffer, VertexShader->GetConstantBufferInfo(TEXT("FObjectUniformBuffer")));
 
     NumVertices = NewMeshData.Vertices.size();
     NumPrimitives = NewMeshData.NumPrimitives;
-
-    TShaderMapRef<FMaterialVS> VertexShader;
-    TShaderMapRef<FMaterialPS> PixelShader;
-    Material = NewObject<UMaterial>(Outer, UMaterial::StaticClass());
-    Material->SetVertexShader(VertexShader);
-    Material->SetPixelShader(PixelShader);
 }
 
 void UStaticMesh::Create(const TArray<FMeshData>& NewMeshData)
