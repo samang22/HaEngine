@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "RHIDefinitions.h"
 #include "RHIFwd.h"
+#include "RHIDefinitions.h"
 #include "RHIResources.h"
 #include "RHI.h"
 #include "RHICommandList.h"

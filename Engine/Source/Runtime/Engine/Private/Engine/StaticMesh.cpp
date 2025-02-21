@@ -54,17 +54,16 @@ UStaticMesh::UStaticMesh()
 
 void FStaticMeshRenderData::Create(UStaticMesh* Outer, const FMeshData& NewMeshData)
 {
-    VertexFactory.Declaration = GStaticMeshVertexDeclaration.VertexDeclarationRHI;
-
     TObjectPtr<FStaticMeshVertexBuffer> VertexBuffer = make_shared<FStaticMeshVertexBuffer>();
     VertexBuffer->VertexData = NewMeshData.Vertices;
-    VertexFactory.VertexBuffer = VertexBuffer;
-    VertexFactory.VertexBuffer->InitRHI(FRHICommandListExecutor::GetImmediateCommandList());
 
     TObjectPtr<FStaticMeshIndexBuffer> IndexBuffer = make_shared<FStaticMeshIndexBuffer>();
     IndexBuffer->IndexData = NewMeshData.Indices;
-    VertexFactory.IndexBuffer = IndexBuffer;
-    VertexFactory.IndexBuffer->InitRHI(FRHICommandListExecutor::GetImmediateCommandList());
+
+    VertexFactory.Create(VertexBuffer, IndexBuffer);
+
+    NumVertices = NewMeshData.Vertices.size();
+    NumPrimitives = NewMeshData.NumPrimitives;
 
     TShaderMapRef<FMaterialVS> VertexShader;
     TShaderMapRef<FMaterialPS> PixelShader;

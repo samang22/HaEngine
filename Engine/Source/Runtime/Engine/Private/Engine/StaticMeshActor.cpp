@@ -10,6 +10,13 @@ AStaticMeshActor::AStaticMeshActor()
     StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
     StaticMeshComponent->SetStaticMesh(StaticMesh2);
     RootComponent = Cast<USceneComponent>(StaticMeshComponent);
+
+    if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject))
+    {
+        return;
+    }
+
+    UniformBuffer = RHICreateUniformBuffer(&SceneUniformBuffer, sizeof(SceneUniformBuffer));
 }
 
 void BeginRenderPass(function<void()> InCmd);
@@ -18,23 +25,32 @@ void AStaticMeshActor::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 
-    BeginRenderPass([this]()
-        {
-            TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
-            TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
-            for (FStaticMeshRenderData& RenderData : RenderDatas)
-            {
-                GetCommandList().SetBoundShaderState(
-                    GDynamicRHI->RHICreateBoundShaderState(
-                        RenderData.VertexFactory.Declaration,
-                        RenderData.Material->GetVertexShaderRHI(),
-                        RenderData.Material->GetPixelShaderRHI()
-                    ).GetReference()
-                );
-                GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-                GetCommandList().SetStreamSource(0, RenderData.VertexFactory.VertexBuffer->VertexBufferRHI, 0);
-                GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.IndexBuffer->IndexBufferRHI, 0, 0,
-                    RenderData.NumVertices, 0, RenderData.NumPrimitives, 1);
-            }
-        });
+	BeginRenderPass([this]()
+		{
+			TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
+			TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
+			for (FStaticMeshRenderData& RenderData : RenderDatas)
+			{
+				GetCommandList().SetBoundShaderState(
+					GDynamicRHI->RHICreateBoundShaderState(
+						RenderData.VertexFactory.GetDeclaration(),
+						RenderData.Material->GetVertexShaderRHI(),
+						RenderData.Material->GetPixelShaderRHI()
+					).GetReference()
+				);
+
+				FMatrix Matrix = FMatrix::CreatePerspectiveFieldOfView(3.14f / 4.f, 16.f / 9.f, 0.1f, 1000.f);
+				SceneUniformBuffer.ProjectionMatrix = Matrix.Transpose();
+				::RHIUpdateUniformBuffer(UniformBuffer, &SceneUniformBuffer);
+				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, 1, UniformBuffer);
+
+				FObjectUniformBuffer ObjectUniformBuffer;
+				ObjectUniformBuffer.Matrix = FMatrix::CreateTranslation(FVector3D(0.f, 0.f, -100.f));
+				RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
+				GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+				GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);
+				GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.GetIndexBufferRHI(), 0, 0,
+					RenderData.NumVertices, 0, RenderData.NumPrimitives, 1);
+			}
+		});
 }

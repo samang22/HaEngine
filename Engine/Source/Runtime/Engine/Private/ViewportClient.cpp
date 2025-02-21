@@ -74,19 +74,25 @@ void UViewportClient::Draw()
 	FRHICommandListExecutor::GetImmediateCommandList().BeginDrawingViewport(Viewport, FTextureRHIRef());
 
 	{
-		TShaderMapRef<FTestVS> VertextShader;
-		TShaderMapRef<FTestPS> PixelShader;
-		GetCommandList().SetBoundShaderState(
-			GDynamicRHI->RHICreateBoundShaderState(
-				GTestVertexDeclaration.VertexDeclarationRHI,
-				VertextShader.GetVertexShader(),
-				PixelShader.GetPixelShader()
-			).GetReference()
-		);
-		GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-		GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
-		GetCommandList().DrawPrimitive(0, 1, 1);
+		//TShaderMapRef<FTestVS> VertextShader;
+		//TShaderMapRef<FTestPS> PixelShader;
+		//GetCommandList().SetBoundShaderState(
+		//	GDynamicRHI->RHICreateBoundShaderState(
+		//		GTestVertexDeclaration.VertexDeclarationRHI,
+		//		VertextShader.GetVertexShader(),
+		//		PixelShader.GetPixelShader()
+		//	).GetReference()
+		//);
+		//GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+		//GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
+		//GetCommandList().DrawPrimitive(0, 1, 1);
 	}
+
+	for (function Cmd : RenderCmds)
+	{
+		Cmd();
+	}
+	RenderCmds.clear();
 
 	FRHICommandListExecutor::GetImmediateCommandList().EndDrawingViewport(Viewport, true, false);
 }

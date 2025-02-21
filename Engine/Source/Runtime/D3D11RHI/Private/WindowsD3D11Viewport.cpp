@@ -158,10 +158,11 @@ D3D11RHI_API FD3D11Texture* FD3D11Viewport::GetSwapChainSurface(FD3D11DynamicRHI
 	SRVDesc.Texture2D.MipLevels = 1;
 	VERIFYD3D11RESULT_EX(D3DRHI->GetDevice()->CreateShaderResourceView(BackBufferResource, &SRVDesc, BackBufferShaderResourceView.GetInitReference()), D3DRHI->GetDevice());
 
-	const FRHITextureCreateDesc CreateDesc =
+	FRHITextureCreateDesc CreateDesc =
 		FRHITextureCreateDesc::Create2D(TEXT("FD3D11Viewport::GetSwapChainSurface"), TextureDesc.Width, TextureDesc.Height, PixelFormat)
 		.SetFlags(ETextureCreateFlags::RenderTargetable)
 		.DetermineInititialState();
+	CreateDesc.SetClearValue(FClearValueBinding(FLinearColor::Blue));
 
 	FD3D11Texture* NewTexture = new FD3D11Texture(
 		CreateDesc,

@@ -22,4 +22,12 @@ public:
 private:
     //UPROPERTY()
     class UStaticMeshComponent* StaticMeshComponent;
+
+    struct FSceneUniformBuffer
+    {
+        FMatrix ViewMatrix = FMatrix::Identity;
+        FMatrix ProjectionMatrix = FMatrix::Identity;
+    };
+    FSceneUniformBuffer SceneUniformBuffer;
+    FUniformBufferRHIRef UniformBuffer;
 };

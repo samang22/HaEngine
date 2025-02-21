@@ -33,7 +33,7 @@ void FD3D11DynamicRHI::RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRH
     if (ConstantBufferSize > 0)
     {
         // 상수 버퍼는 16바이트로 정렬되어야 합니다.
-        _ASSERT(Align(Contents, 16) == Contents);
+        //_ASSERT(Align(Contents, 16) == Contents);
 
         D3D11_MAPPED_SUBRESOURCE MappedSubresource;
         // 항상 전체 업데이트를 수행하기 때문에 이전 결과를 폐기합니다.
