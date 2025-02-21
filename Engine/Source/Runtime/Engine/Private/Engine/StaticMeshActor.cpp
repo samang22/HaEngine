@@ -9,7 +9,8 @@ AStaticMeshActor::AStaticMeshActor()
     TEnginePtr<UStaticMesh> StaticMesh2 = FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::EngineConfigDir() + L"/SK_SMG11_X.FBX");
     StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
     StaticMeshComponent->SetStaticMesh(StaticMesh2);
-    RootComponent = Cast<USceneComponent>(StaticMeshComponent);
+	StaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -100.f));
+	RootComponent = Cast<USceneComponent>(StaticMeshComponent);
 
     if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject))
     {
@@ -27,6 +28,8 @@ void AStaticMeshActor::Tick(float DeltaSeconds)
 
 	BeginRenderPass([this]()
 		{
+			StaticMeshComponent->UpdateComponentToWorld();
+
 			TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
 			TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
 			for (FStaticMeshRenderData& RenderData : RenderDatas)
@@ -45,7 +48,8 @@ void AStaticMeshActor::Tick(float DeltaSeconds)
 				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, 1, UniformBuffer);
 
 				FObjectUniformBuffer ObjectUniformBuffer;
-				ObjectUniformBuffer.Matrix = FMatrix::CreateTranslation(FVector3D(0.f, 0.f, -100.f));
+				ObjectUniformBuffer.Matrix = StaticMeshComponent->GetComponentTransform().GetMatrix();
+
 				RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
 				GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
 				GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);

@@ -1,4 +1,5 @@
 #include "Components/SceneComponent.h"
+#include "GameFramework/Actor.h"
 
 USceneComponent::USceneComponent()
 {
@@ -7,4 +8,146 @@ USceneComponent::USceneComponent()
 USceneComponent* USceneComponent::GetAttachParent() const
 {
     return AttachParent;
+}
+
+FTransform USceneComponent::GetSocketTransform(FName InSocketName, ERelativeTransformSpace TransformSpace) const
+{
+    switch (TransformSpace)
+    {
+    case RTS_Actor:
+    {
+        _ASSERT(false);
+        //return GetComponentTransform().GetRelativeTransform(GetOwner()->GetTransform());
+        return FTransform::Identity;
+    }
+    case RTS_Component:
+    case RTS_ParentBoneSpace:
+    {
+        return FTransform::Identity;
+    }
+    default:
+    {
+        return GetComponentTransform();
+    }
+    }
+}
+
+void USceneComponent::SetRelativeLocation(FVector NewLocation)
+{
+    SetRelativeLocationAndRotation(NewLocation, RelativeRotationCache.RotatorToQuat(GetRelativeRotation())/*, bSweep, OutSweepHitResult, Teleport*/);
+}
+
+void USceneComponent::SetRelativeRotation(FRotator NewRotation)
+{
+    if (!NewRotation.Equals(GetRelativeRotation(), SCENECOMPONENT_ROTATOR_TOLERANCE))
+    {
+        // We know the rotations are different, don't bother with the cache.
+        SetRelativeLocationAndRotation(GetRelativeLocation(), NewRotation.Quaternion()/*, bSweep, OutSweepHitResult, Teleport*/);
+    }
+}
+
+void USceneComponent::SetRelativeRotation(const FQuat& NewRotation)
+{
+    SetRelativeLocationAndRotation(GetRelativeLocation(), NewRotation/*, bSweep, OutSweepHitResult, Teleport*/);
+}
+
+void USceneComponent::SetRelativeTransform(const FTransform& NewTransform)
+{
+    SetRelativeLocationAndRotation(NewTransform.GetTranslation(), NewTransform.GetRotation()/*, bSweep, OutSweepHitResult, Teleport*/);
+    SetRelativeScale3D(NewTransform.GetScale3D());
+}
+
+void USceneComponent::SetRelativeLocationAndRotation(FVector NewLocation, FRotator NewRotation)
+{
+    RelativeLocation = NewLocation;
+    RelativeRotation = NewRotation;
+
+    UpdateComponentToWorld();
+}
+
+void USceneComponent::SetRelativeLocationAndRotation(FVector NewLocation, const FQuat& NewRotation)
+{
+    RelativeLocation = NewLocation;
+    RelativeRotation = NewRotation.Rotator(); //RelativeRotationCache.QuatToRotator(NewRotation);
+
+    UpdateComponentToWorld();
+}
+
+void USceneComponent::SetRelativeScale3D(FVector NewScale3D)
+{
+    if (NewScale3D != GetRelativeScale3D())
+    {
+        RelativeScale3D = NewScale3D;
+
+        //if (UNLIKELY(NeedsInitialization() || OwnerNeedsInitialization()))
+        //{
+        //    // If we're in the component or actor constructor, don't do anything else.
+        //    return;
+        //}
+
+        UpdateComponentToWorld();
+
+        //if (IsRegistered())
+        //{
+        //    if (!IsDeferringMovementUpdates())
+        //    {
+        //        UpdateOverlaps();
+        //    }
+        //    else
+        //    {
+        //        // Invalidate cached overlap state at this location.
+        //        TArray<FOverlapInfo> EmptyOverlaps;
+        //        GetCurrentScopedMovement()->AppendOverlapsAfterMove(EmptyOverlaps, false, false);
+        //    }
+        //}
+    }
+}
+
+void USceneComponent::UpdateComponentToWorldWithParent(USceneComponent* Parent, const FQuat& RelativeRotationQuat)
+{// 부모가 이전에 업데이트되지 않았다면, 부모 연결 계층을 따라 올라가야 합니다.
+    if (Parent && !Parent->bComponentToWorldUpdated)
+    {
+        //QUICK_SCOPE_CYCLE_COUNTER(STAT_USceneComponent_UpdateComponentToWorldWithParent_Parent);
+        Parent->UpdateComponentToWorld();
+
+        // 부모를 업데이트하면(우리가 이미 부모에 부착되어 있는 경우) 업데이트될 수 있으므로, 그냥 반환합니다.
+        if (bComponentToWorldUpdated)
+        {
+            return;
+        }
+    }
+
+    bComponentToWorldUpdated = true;
+
+    FTransform NewTransform;
+
+    {
+        //QUICK_SCOPE_CYCLE_COUNTER(STAT_USceneComponent_UpdateComponentToWorldWithParent_XForm);
+        // 새로운 ComponentToWorld 변환을 계산합니다.
+        const FTransform RelativeTransform(RelativeRotationQuat, GetRelativeLocation(), GetRelativeScale3D());
+        NewTransform = CalcNewComponentToWorld(RelativeTransform, Parent/*, SocketName*/);
+    }
+
+    // 변환이 변경되었는지 확인합니다.
+    bool bHasChanged;
+    {
+        //QUICK_SCOPE_CYCLE_COUNTER(STAT_USceneComponent_UpdateComponentToWorldWithParent_HasChanged);
+        bHasChanged = !GetComponentTransform().Equals(NewTransform, UE_SMALL_NUMBER);
+    }
+
+    // 트랜스폼 변경 여부를 기반으로 여기서 전파합니다. 다른 컴포넌트는 텔레포트 플래그를 사용하여
+    // 컴포넌트의 직접 계층 구조 외부의 트랜스폼을 감지할 수 있습니다(예: 액터 트랜스폼).
+    if (bHasChanged /*|| Teleport != ETeleportType::None*/)
+    {
+        //QUICK_SCOPE_CYCLE_COUNTER(STAT_USceneComponent_UpdateComponentToWorldWithParent_Changed);
+        // 변환 업데이트
+        ComponentToWorld = NewTransform;
+        //PropagateTransformUpdate(true, UpdateTransformFlags, Teleport);
+    }
+    else
+    {
+        //QUICK_SCOPE_CYCLE_COUNTER(STAT_USceneComponent_UpdateComponentToWorldWithParent_NotChanged);
+        //PropagateTransformUpdate(false);
+    }
+
 }

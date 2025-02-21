@@ -148,6 +148,24 @@ public:
 
 public:
 	/**
+	 * 액터에서 월드로 변환을 가져옵니다.
+	 * @return 액터 공간에서 월드 공간으로 변환하는 변환입니다.
+	 */
+	 //UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Actor Transform", ScriptName = "GetActorTransform"), Category = "Transformation")
+	const FTransform& GetTransform() const
+	{
+		return ActorToWorld();
+	}
+
+	/** RootComponent의 로컬에서 월드로 변환을 가져옵니다. GetTransform()과 동일합니다. */
+	FORCEINLINE const FTransform& ActorToWorld() const
+	{
+		return (RootComponent ? RootComponent->GetComponentTransform() : FTransform::Identity);
+	}
+
+
+public:
+	/**
 	* 이 액터에서 매 프레임마다 호출되는 함수입니다. 매 프레임마다 실행할 사용자 정의 로직을 구현하려면 이 함수를 재정의하세요.
 	* 기본적으로 Tick은 비활성화되어 있으며, 이를 활성화하려면 PrimaryActorTick.bCanEverTick이 true로 설정되어 있는지 확인해야 합니다.
 	*

@@ -1,4 +1,7 @@
 #pragma once
+#include "CoreMinimal.h"
+
+#define LIKELY(x)            (!!(x))
 
 /** UWorld 객체의 goal/source를 지정합니다 */
 namespace EWorldType
@@ -30,3 +33,87 @@ namespace EWorldType
         Inactive
     };
 }
+
+
+/** Quat<->Rotator 변환을 캐시하기 위한 구조체입니다. */
+struct FRotationConversionCache
+{
+    FRotationConversionCache()
+    {
+    }
+
+    /** FRotator를 FQuat로 변환합니다. 가능한 경우 캐시된 변환을 사용하고, 일치하는 항목이 없으면 캐시를 업데이트합니다. */
+    FORCEINLINE FQuat RotatorToQuat(const FRotator& InRotator) const
+    {
+        FPayload& Payload = GetOrCreatePayload();
+        if (LIKELY(Payload.CachedRotator != InRotator))
+        {
+            Payload.CachedRotator = InRotator.GetNormalized();
+            Payload.CachedQuat = Payload.CachedRotator.Quaternion();
+        }
+        return Payload.CachedQuat;
+    }
+
+    /** FRotator를 FQuat로 변환합니다. 가능한 경우 캐시된 변환을 사용하지만, 일치하는 항목이 없으면 캐시를 업데이트하지 않습니다. */
+    FORCEINLINE FQuat RotatorToQuat_ReadOnly(const FRotator& InRotator) const
+    {
+        if (PayloadPtr)
+        {
+            FPayload& Payload = *PayloadPtr;
+            if (LIKELY(Payload.CachedRotator == InRotator))
+            {
+                return Payload.CachedQuat;
+            }
+        }
+        return InRotator.Quaternion();
+    }
+
+    /** FQuat를 FRotator로 변환합니다. 가능한 경우 캐시된 변환을 사용하고, 일치하는 항목이 없으면 캐시를 업데이트합니다. */
+    //FORCEINLINE FRotator QuatToRotator(const FQuat& InQuat) const
+    //{
+    //  FPayload& Payload = GetOrCreatePayload();
+    //  if (LIKELY(Payload.CachedQuat != InQuat))
+    //  {
+    //      Payload.CachedQuat = InQuat.GetNormalized();
+    //      Payload.CachedRotator = Payload.CachedQuat.Rotator();
+    //  }
+    //  return Payload.CachedRotator;
+    //}
+
+    /** Quat이 이미 정규화된 경우 사용되는 QuatToRotator의 버전입니다. */
+    FORCEINLINE FRotator NormalizedQuatToRotator(const FQuat& InNormalizedQuat) const
+    {
+        FPayload& Payload = GetOrCreatePayload();
+        if (LIKELY(Payload.CachedQuat != InNormalizedQuat))
+        {
+            Payload.CachedQuat = InNormalizedQuat;
+            Payload.CachedRotator = InNormalizedQuat.Rotator();
+        }
+        return Payload.CachedRotator;
+    }
+
+private:
+
+    struct FPayload
+    {
+        mutable FQuat               CachedQuat;     // CachedRotator와 일치하는 FQuat. CachedQuat.Rotator() == CachedRotator 여야 함.
+        mutable FRotator            CachedRotator;  // CachedQuat와 일치하는 FRotator. CachedRotator.Quaternion() == CachedQuat 여야 함.
+
+        FPayload()
+            : CachedQuat(FQuat::Identity)
+            , CachedRotator(FRotator::ZeroRotator)
+        {
+        }
+    };
+
+    inline FPayload& GetOrCreatePayload() const
+    {
+        if (!PayloadPtr)
+        {
+            PayloadPtr = make_unique<FPayload>();
+        }
+        return *PayloadPtr;
+    }
+
+    mutable unique_ptr<FPayload>    PayloadPtr;
+};
