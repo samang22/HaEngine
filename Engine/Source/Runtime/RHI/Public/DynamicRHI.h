@@ -13,11 +13,6 @@ class FRHICommandList;
 struct FRHIBufferDesc;
 struct FRHIResourceCreateInfo;
 
-class FDynamicRHI;
-
-// 동적으로 바인딩된 RHI 구현을 가리키는 전역 포인터.
-extern RHI_API FDynamicRHI* GDynamicRHI;
-
 /** 동적으로 바인딩된 RHI가 구현하는 인터페이스입니다. */
 class FDynamicRHI
 {
@@ -46,15 +41,12 @@ public:
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TArray<uint8>& OutResult) = 0;
 };
 
-FORCEINLINE FUniformBufferRHIRef RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize)
-{
-	return GDynamicRHI->RHICreateUniformBuffer(Contents, ContentsSize);
-}
+// 동적으로 바인딩된 RHI 구현을 가리키는 전역 포인터.
+extern RHI_API FDynamicRHI* GDynamicRHI;
 
-FORCEINLINE void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents)
-{
-	GDynamicRHI->RHIUpdateUniformBuffer(UniformBufferRHI, Contents);
-}
+FUniformBufferRHIRef RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize);
+
+void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents);
 
 /** 동적 RHI(랜더링 하드웨어 인터페이스)를 구현하는 모듈의 인터페이스를 정의합니다. */
 class IDynamicRHIModule : public IModuleInterface

@@ -33,6 +33,16 @@ static IDynamicRHIModule* LoadDynamicRHIModule(ERHIFeatureLevel::Type& DesiredFe
     return nullptr;
 }
 
+FUniformBufferRHIRef RHICreateUniformBuffer(const void* Contents, const uint32 ContentsSize)
+{
+    return GDynamicRHI->RHICreateUniformBuffer(Contents, ContentsSize);
+}
+
+void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents)
+{
+    GDynamicRHI->RHIUpdateUniformBuffer(UniformBufferRHI, Contents);
+}
+
 FDynamicRHI* PlatformCreateDynamicRHI()
 {
     FDynamicRHI* DynamicRHI = nullptr;
