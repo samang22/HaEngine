@@ -87,6 +87,12 @@
 		* 언리얼은 FBX 로드해서 자신들 타입으로 변환해서 관리. 우리는 일단 매번 FBX 로드
     -> [o] VertexFactory, Material 만들기
     -> [o] AStaticMeshActor에 Tick 만들어서 임시로 렌더링 해보기 및 렌더독으로 확인
+    -> [o] StaticMeshComponent Transform 계산 및 GUI에서 수치 변경하면 위치 등 적용 가능하도록 처리
+    -> [o] 상수버퍼 Reflection으로 Register index 자동화
+    -> [o] 에디터에서 Mesh 변경 가능하도록 처리
+    -> [o] Save Load 만들기
+        -> [o] Archive 만들기
+        -> [o] CDO와 값이 같다면 저장 하지 않도록 처리
     -> [] Scene 만들기
         -> [] Scene에 StaticMeshComponent 등록
         -> [] Proxy 만들기
