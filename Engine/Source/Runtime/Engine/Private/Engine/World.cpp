@@ -1,6 +1,10 @@
 #include "Engine/World.h"
 #include "Engine/Level.h"
 
+#include "EngineModule.h"
+#include "RendererInterface.h"
+#include "SceneInterface.h"
+
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
@@ -32,6 +36,13 @@ UWorld::~UWorld()
 {
 	if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
 	WorldDestroyedDelegate.Broadcast(this);
+
+
+	if (Scene)
+	{
+		Scene->Release();
+		Scene = nullptr;
+	}
 }
 
 void UWorld::InitalizeNewWorld()
@@ -46,6 +57,7 @@ void UWorld::InitalizeNewWorld()
 
 void UWorld::InitWorld()
 {
+	GetRendererModule().AllocateScene(this, ERHIFeatureLevel::SM5);
 }
 
 void UWorld::Tick(float DeltaSeconds)

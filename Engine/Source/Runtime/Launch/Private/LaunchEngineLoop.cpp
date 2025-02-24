@@ -1,8 +1,10 @@
 #include "LaunchEngineLoop.h"
-#include "Engine/Engine.h"
+#include "EngineModule.h"
 #include "Engine/AssetManager.h"
-#include "RHI.h"                                                                            
+#include "RHI.h"                
+#include "Engine/Engine.h"
 #include "ShaderCompiler.h"
+#include "RHI.h"
 
 CORE_API map<FString, UClass*>& GetClassMap(); 
 
@@ -27,6 +29,17 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 		}
 
 		RHIInit();
+
+		{
+			// Shader를 컴파일 한다
+			FShaderCompilingManager::Get();
+
+			{
+				// 렌더링 모듈을 메인 스레드에 캐시하여 나중에 렌더링 스레드에서 안전하게 가져올 수 있도록 합니다.
+				// * 우리는 렌더 스레드는 없음. 위 설명은 언리얼 설명
+				GetRendererModule();
+			}
+		}
 	}
 
 #if WITH_EDITOR
@@ -40,10 +53,6 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 	}
 #endif
 #endif
-	{
-		// Shader를 컴파일 한다
-		FShaderCompilingManager::Get();
-	}
 
 	// CDO 객체를 생성한다
 	for (auto It : GetClassMap()) 

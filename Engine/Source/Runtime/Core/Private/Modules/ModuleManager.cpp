@@ -126,6 +126,16 @@ IModuleInterface* FModuleManager::LoadModule(const FName InModuleName)
     return LoadedModule;
 }
 
+CORE_API IModuleInterface& FModuleManager::LoadModuleChecked(const FName InModuleName)
+{
+    IModuleInterface* Module = LoadModule(InModuleName/*, ELoadModuleFlags::LogFailures*/);
+    _ASSERT(Module, TEXT("%s"), *InModuleName.ToString());
+
+    return *Module;
+}
+
+
+
 CORE_API void FModuleManager::AddModule(const FName InModuleName)
 {
     if (Modules.contains(InModuleName))

@@ -13,3 +13,6 @@ public:
     virtual void StartupModule();
     virtual void ShutdownModule();
 };
+
+/** 렌더러 모듈을 가져오고 결과를 캐시하는 접근자입니다. */
+extern ENGINE_API IRendererModule& GetRendererModule();

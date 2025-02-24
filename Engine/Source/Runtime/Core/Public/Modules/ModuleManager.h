@@ -107,6 +107,34 @@ public:
 	}
 
 	/**
+	 * 이름으로 모듈을 로드하고, 존재하는지 확인합니다.
+	 *
+	 * 이 메서드는 모듈이 실제로 존재하는지 확인합니다. 모듈이 존재하지 않으면 assertion이 발생합니다.
+	 * 모듈이 이미 이전에 로드된 경우, 기존 인스턴스가 반환됩니다.
+	 *
+	 * @param ModuleName 찾고 로드할 모듈
+	 * @return 지정된 typename으로 캐스트된 모듈 인터페이스를 반환합니다.
+	 * @see GetModulePtr, LoadModulePtr, LoadModuleChecked
+	 */
+	template<typename TModuleInterface>
+	static TModuleInterface& LoadModuleChecked(const FName InModuleName)
+	{
+		IModuleInterface& ModuleInterface = FModuleManager::Get()->LoadModuleChecked(InModuleName);
+		return static_cast<TModuleInterface&>(ModuleInterface);
+	}
+
+	/**
+	 * 지정된 모듈을 로드하고, 존재하는지 확인합니다.
+	 *
+	 * @param InModuleName 모듈 파일의 기본 이름입니다. 경로, 확장자 또는 플랫폼/구성 정보는 포함하지 않아야 합니다.
+	 * 이는 모듈 파일 이름의 "모듈 이름" 부분입니다. 이름은 전역적으로 고유해야 합니다.
+	 * @return 로드된 모듈 또는 로드 작업이 실패한 경우 nullptr을 반환합니다.
+	 * @see AbandonModule, IsModuleLoaded, LoadModuleChecked, LoadModulePtr, LoadModuleWithFailureReason, UnloadModule
+	 */
+	CORE_API IModuleInterface& LoadModuleChecked(const FName InModuleName);
+
+
+	/**
 	 * Registers an initializer for a module that is statically linked.
 	 *
 	 * @param InModuleName The name of this module.
