@@ -62,11 +62,11 @@ void AActor::Serialize(FArchive& Ar)
 		uint64 ComponentSize = 0;
 		Ar << ComponentSize;
 
-		FString ComponentName;
-		Ar << ComponentName;
 
 		for (uint64 i = 0; i < ComponentSize; ++i)
 		{
+			FString ComponentName;
+			Ar << ComponentName;
 			auto It = find_if(OwnedComponents.begin(), OwnedComponents.end(),
 				[&ComponentName](TEnginePtr<UActorComponent> InComponent)
 				{

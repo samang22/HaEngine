@@ -498,8 +498,12 @@ void CWorldOutliner::FillDetails(const bool bSameActor, CMFCPropertyGridProperty
 							break;
 						}
 						case T_FLOAT:
-							_ASSERT(false);
+						{
+							float* Value = (float*)Data.get(handle(Type.GetNode(), InObject)).data();
+							NewPropUI = new CMFCPropertyGridProperty(PropName.data(), _variant_t(*Value), TEXT(""));
+							PropertyAddress = (void*)Value;							
 							break;
+						}
 						case T_FVECTOR:
 						{
 							FVector* Value = (FVector*)Data.get(handle(Type.GetNode(), InObject)).data();
