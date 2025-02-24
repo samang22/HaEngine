@@ -48,8 +48,15 @@ public:
 	UWorld();
 	~UWorld();
 
+public:
+	/**
+	 * 새로 생성된 월드를 초기화합니다.
+	 */
 	void InitalizeNewWorld();
-
+	/**
+	 * 월드를 초기화하고, 지속적인 레벨을 연결하며, 적절한 영역을 설정합니다.
+	 */
+	void InitWorld();
 	void Tick(float DeltaSeconds);
 
 public:

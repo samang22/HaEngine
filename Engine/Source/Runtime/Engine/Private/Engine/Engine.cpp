@@ -1,7 +1,19 @@
 #include "Engine/Engine.h"
 #include "EditorViewportClient.h"
+#include "EngineModule.h"
 
-IMPLEMENT_MODULE(FDefaultModuleImpl, Engine);
+
+IMPLEMENT_MODULE(FEngineModule, Engine);
+
+void FEngineModule::StartupModule()
+{
+    FDefaultModuleImpl::StartupModule();
+}
+
+void FEngineModule::ShutdownModule()
+{
+    FDefaultModuleImpl::ShutdownModule();
+}
 
 TObjectPtr<UEngine> GEngine;
 ENGINE_API UWorld* GWorld = nullptr;

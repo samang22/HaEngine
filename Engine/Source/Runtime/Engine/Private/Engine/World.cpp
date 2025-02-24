@@ -39,7 +39,13 @@ void UWorld::InitalizeNewWorld()
 	PersistentLevel = NewObject<ULevel>(this, ULevel::StaticClass(), TEXT("PersistentLevel"));
 	PersistentLevel->OwningWorld = this->As<UWorld>();
 
+	InitWorld();
+
 	AStaticMeshActor* Actor = SpawnActor<AStaticMeshActor>(nullptr, FTransform::Identity);	
+}
+
+void UWorld::InitWorld()
+{
 }
 
 void UWorld::Tick(float DeltaSeconds)

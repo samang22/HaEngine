@@ -18,7 +18,14 @@ int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 	FAssetManager::Get();
 	FConfigCacheIni::Get();
 
+	// PreInitPreStartupScreen
 	{
+		// LoadPreInitModules
+		{
+			FModuleManager::Get()->LoadModule(TEXT("Engine"));
+			FModuleManager::Get()->LoadModule(TEXT("Renderer"));
+		}
+
 		RHIInit();
 	}
 
