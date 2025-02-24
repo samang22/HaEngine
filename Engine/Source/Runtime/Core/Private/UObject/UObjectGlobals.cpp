@@ -12,6 +12,15 @@ bool CORE_API IsEngineExitRequested()
 
 CORE_API map<UClass*, map<FString, TEnginePtr<UObject>>> ObjectMap;
 
+TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FString& InObjectName)
+{
+	UClass* Class = UClass::FindClass(InClassName);
+	if (!Class) { return nullptr; }
+	if (!ObjectMap[Class].contains(InObjectName)) { return nullptr; }
+
+	return ObjectMap[Class][InObjectName];
+}
+
 //void CORE_API RequestEngineExit(const FString ReasonString)
 //{
 //	E_LOG(Trace, TEXT("{}"), ReasonString.c_str());

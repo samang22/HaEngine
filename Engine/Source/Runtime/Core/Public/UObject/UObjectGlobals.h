@@ -305,3 +305,5 @@ shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NA
 
 	return Cast<T>(StaticConstructObject_Internal(Params));
 }
+
+TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FString& InObjectName);

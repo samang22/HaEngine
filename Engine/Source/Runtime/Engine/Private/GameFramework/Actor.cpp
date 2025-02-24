@@ -43,6 +43,43 @@ AActor::AActor()
 
 }
 
+void AActor::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+
+	if (Ar.IsSaving())
+	{
+		uint64 ComponentSize = OwnedComponents.size();
+		Ar << ComponentSize;
+
+		for (TEnginePtr<UActorComponent> It : OwnedComponents)
+		{
+			It->Serialize(Ar);
+		}
+	}
+	else
+	{
+		uint64 ComponentSize = 0;
+		Ar << ComponentSize;
+
+		FString ComponentName;
+		Ar << ComponentName;
+
+		for (uint64 i = 0; i < ComponentSize; ++i)
+		{
+			auto It = find_if(OwnedComponents.begin(), OwnedComponents.end(),
+				[&ComponentName](TEnginePtr<UActorComponent> InComponent)
+				{
+					return InComponent->GetName() == ComponentName;
+				});
+			if (It != OwnedComponents.end())
+			{
+				It->get()->Serialize(Ar);
+			}
+		}
+	}
+}
+
 void AActor::PostSpawnInitialize(FTransform const& UserSpawnTransform, AActor* InOwner, APawn* InInstigator, ESpawnActorScaleMethod TransformScaleMethod)
 {
 	// 일반적인 흐름은 다음과 같습니다

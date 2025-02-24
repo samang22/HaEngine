@@ -23,6 +23,9 @@ class ENGINE_API AActor : public UObject
 public:
 	AActor();
 
+public:
+	virtual void Serialize(FArchive& Ar);
+
 	/** 액터가 월드에 스폰된 후 호출됩니다. 플레이를 위한 액터 설정을 담당합니다. */
 	void PostSpawnInitialize(FTransform const& SpawnTransform, AActor* InOwner, APawn* InInstigator/*, bool bRemoteOwned, bool bNoFail, bool bDeferConstruction*/, ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::MultiplyWithRoot);
 
@@ -180,8 +183,8 @@ public:
 	 * 일반적으로 우리는 BeginPlay 이후에만 액터를 Tick합니다; 이 설정을 통해 이러한 동작을 무효화할 수 있습니다.
 	 * 이 설정이 관련되기 위해서는 이 액터가 Tick할 수 있어야 합니다.
 	 */
-	 //UPROPERTY(EditDefaultsOnly, Category = Tick)
-	UPROPERTY(EditAnywhere)
+	//UPROPERTY(VisibleAnywhere /*EditDefaultsOnly, Category = Tick*/)
+	UPROPERTY(EditAnywhere /*EditDefaultsOnly, Category = Tick*/)
 	bool bAllowTickBeforeBeginPlay = false;
 
 public:
@@ -223,8 +226,6 @@ private:
 public:
 	//UPROPERTY(VisibleAnywhere)
 	int Value = 0;
-
-	int NoCopyValue = 0;
 
 	UPROPERTY(EditAnywhere);
 	int Value2 = 0;

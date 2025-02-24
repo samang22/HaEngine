@@ -40,9 +40,6 @@ void UWorld::InitalizeNewWorld()
 	PersistentLevel->OwningWorld = this->As<UWorld>();
 
 	AStaticMeshActor* Actor = SpawnActor<AStaticMeshActor>(nullptr, FTransform::Identity);	
-	Actor->Value = 12345;
-	Actor->NoCopyValue = 321;
-	Actor->Value2 = 2;
 }
 
 void UWorld::Tick(float DeltaSeconds)

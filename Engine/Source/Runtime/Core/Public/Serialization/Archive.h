@@ -1,6 +1,9 @@
 #pragma once
 #include "CoreTypes.h"
 #include <boost/serialization/nvp.hpp>
+#include "Math/SimpleMath.h"
+#include "UObject/EnginePtr.h"
+
 namespace boost {
     namespace serialization { template<class T> class nvp; }
     namespace archive
@@ -10,6 +13,7 @@ namespace boost {
     }
 }
 
+struct FRotator; 
 class UObject;
 class CORE_API FArchive
 {
@@ -19,8 +23,13 @@ public:
     FArchive(boost::archive::text_oarchive& OutputArchive);
     FArchive(boost::archive::text_iarchive& InputArchive);
 
-    FArchive& operator<<(uint64& InOutData);
+    FArchive& operator<<(bool& InOutData);
     FArchive& operator<<(int32& InOutData);
+    FArchive& operator<<(float& InOutData);
+    FArchive& operator<<(FRotator& InOutData);
+    FArchive& operator<<(FVector& InOutData);
+    FArchive& operator<<(TEnginePtr<UObject>& InOutData);
+    FArchive& operator<<(uint64& InOutData);
     FArchive& operator<<(FString& InString);
     FArchive& operator<<(string& InString);
 

@@ -22,7 +22,58 @@ void UObject::Serialize(FArchive& Ar)
             Data.prop([&](meta::prop p)
                 {
                     FProperty Prop = p.value().cast<FProperty>();
-                    PropertyDatas.emplace(Prop.Name, FPropertyData(Data, p));
+                    if (Ar.IsLoading())
+                    {
+                        PropertyDatas.emplace(Prop.Name, FPropertyData(Data, p));
+                    }
+                    else
+                    {
+                        // CDO 값과 같으면 저장에서 생략한다
+                        bool bDefaultValue = false;
+                        if (Prop.bBaseType)
+                        {
+                            void* Value = (void*)Data.get(handle(Type.GetNode(), this)).data();
+                            void* CDOValue = (void*)Data.get(handle(Type.GetNode(), GetClass()->GetDefaultObject())).data();
+                            if (0 == memcmp(Value, CDOValue, Prop.PropertySize))
+                            {
+                                bDefaultValue = true;
+                            }
+                        }
+                        else
+                        {
+                            switch (Prop.PropertyType)
+                            {
+                            case EPropertyType::T_FROTATOR:
+                            {
+                                FRotator* Value = (FRotator*)Data.get(handle(Type.GetNode(), this)).data();
+                                FRotator* CDOValue = (FRotator*)Data.get(handle(Type.GetNode(), GetClass()->GetDefaultObject())).data();
+                                if (*CDOValue == *Value) { bDefaultValue = true; }
+                                break;
+                            }
+                            case EPropertyType::T_FVECTOR:
+                            {
+                                FVector* Value = (FVector*)Data.get(handle(Type.GetNode(), this)).data();
+                                FVector* CDOValue = (FVector*)Data.get(handle(Type.GetNode(), GetClass()->GetDefaultObject())).data();
+                                if (*CDOValue == *Value) { bDefaultValue = true; }
+                                break;
+                            }
+                            case EPropertyType::T_ENGINE_PTR:
+                            {
+                                TEnginePtr<UObject>* Value = (TEnginePtr<UObject>*)Data.get(handle(Type.GetNode(), this)).data();
+                                TEnginePtr<UObject>* CDOValue = (TEnginePtr<UObject>*)Data.get(handle(Type.GetNode(), GetClass()->GetDefaultObject())).data();
+                                if (*CDOValue == *Value) { bDefaultValue = true; }
+                                break;
+                            }
+                            default:
+                                bDefaultValue = true;
+                                break;
+                            }
+                        }
+                        if (!bDefaultValue)
+                        {
+                            PropertyDatas.emplace(Prop.Name, FPropertyData(Data, p));
+                        }
+                    }
                 }
             );
         }
@@ -43,9 +94,39 @@ void UObject::Serialize(FArchive& Ar)
 
             switch (Prop.PropertyType)
             {
+            case EPropertyType::T_BOOL:
+            {
+                bool* Value = (bool*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                Ar << *Value;
+                break;
+            }
             case EPropertyType::T_INT:
             {
                 int* Value = (int*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                Ar << *Value;
+                break;
+            }
+            case EPropertyType::T_FLOAT:
+            {
+                float* Value = (float*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                Ar << *Value;
+                break;
+            }
+            case EPropertyType::T_FROTATOR:
+            {
+                FRotator* Value = (FRotator*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                Ar << *Value;
+                break;
+            }
+            case EPropertyType::T_FVECTOR:
+            {
+                FVector* Value = (FVector*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                Ar << *Value;
+                break;
+            }
+            case EPropertyType::T_ENGINE_PTR:
+            {
+                TEnginePtr<UObject>* Value = (TEnginePtr<UObject>*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
                 Ar << *Value;
                 break;
             }
@@ -66,9 +147,39 @@ void UObject::Serialize(FArchive& Ar)
                 FProperty Prop = PropertyDatas[PropName].Prop.value().cast<FProperty>();
                 switch (Prop.PropertyType)
                 {
+                case EPropertyType::T_BOOL:
+                {
+                    bool* Value = (bool*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                    Ar << *Value;
+                    break;
+                }
                 case EPropertyType::T_INT:
                 {
                     int* Value = (int*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                    Ar << *Value;
+                    break;
+                }
+                case EPropertyType::T_FLOAT:
+                {
+                    float* Value = (float*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                    Ar << *Value;
+                    break;
+                }
+                case EPropertyType::T_FROTATOR:
+                {
+                    FRotator* Value = (FRotator*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                    Ar << *Value;
+                    break;
+                }
+                case EPropertyType::T_FVECTOR:
+                {
+                    FVector* Value = (FVector*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
+                    Ar << *Value;
+                    break;
+                }
+                case EPropertyType::T_ENGINE_PTR:
+                {
+                    TEnginePtr<UObject>* Value = (TEnginePtr<UObject>*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
                     Ar << *Value;
                     break;
                 }
