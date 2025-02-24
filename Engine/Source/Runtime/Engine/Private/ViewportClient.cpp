@@ -1,5 +1,9 @@
 #include "ViewportClient.h"
 #include "RenderResource.h"
+#include "RendererInterface.h"
+#include "SceneView.h"
+#include "EngineModule.h"
+#include "Engine/World.h"
 
 #include "Shader.h"
 class FTestVS : public FShader
@@ -71,6 +75,15 @@ void BeginRenderPass(function<void()> InCmd)
 
 void UViewportClient::Draw()
 {
+	// 뷰포트를 위한 FSceneViewFamily/FSceneView 설정
+	FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(
+		Viewport,  // 캔버스의 렌더 타겟을 가져옴
+		GetScene())
+	);
+
+	GetRendererModule().BeginRenderingViewFamily(&ViewFamily);
+
+
 	FRHICommandListExecutor::GetImmediateCommandList().BeginDrawingViewport(Viewport, FTextureRHIRef());
 
 	{
@@ -100,4 +113,15 @@ void UViewportClient::Draw()
 void UViewportClient::RequestResize(const uint32 NewSizeX, const uint32 NewSizeY)
 {
 	Viewport->Resize(NewSizeX, NewSizeY);
+}
+
+FSceneInterface* UViewportClient::GetScene() const
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		return World->Scene;
+	}
+
+	return NULL;
 }

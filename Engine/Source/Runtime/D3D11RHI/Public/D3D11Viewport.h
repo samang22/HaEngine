@@ -32,6 +32,7 @@ public:
 	}
 
 	virtual void Resize(const uint32 NewSizeX, const uint32 NewSizeY);
+	virtual FRHITexture* GetRenderTarget() const override { return BackBuffer; }
 
 	/** 스왑 체인을 표시합니다.
 	* 엔진에 의해 Present가 수행된 경우 true를 반환합니다.
@@ -45,7 +46,6 @@ public:
 protected:
 	/** Gets the swap chain flags */
 	D3D11RHI_API uint32 GetSwapChainFlags();
-
 protected:
 	FD3D11DynamicRHI* D3DRHI = nullptr;
 	HWND WindowHandle = NULL;

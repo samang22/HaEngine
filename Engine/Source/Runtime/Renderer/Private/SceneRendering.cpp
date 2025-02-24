@@ -27,3 +27,7 @@ void FRendererModule::RemoveScene(FSceneInterface* Scene)
     AllocatedScenes.erase(Scene);
     delete Scene;
 }
+
+void FRendererModule::BeginRenderingViewFamily(FSceneViewFamily* ViewFamily)
+{
+}

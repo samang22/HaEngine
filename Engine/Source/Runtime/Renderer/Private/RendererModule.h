@@ -19,6 +19,8 @@ public:
     virtual FSceneInterface* AllocateScene(UWorld* World, ERHIFeatureLevel::Type InFeatureLevel) override;
     virtual void RemoveScene(FSceneInterface* Scene) override;
 
+    virtual void BeginRenderingViewFamily(FSceneViewFamily* ViewFamily) override;
+
 private:
     TSet<FSceneInterface*> AllocatedScenes;
 };

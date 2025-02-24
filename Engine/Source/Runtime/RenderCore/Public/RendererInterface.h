@@ -3,6 +3,7 @@
 #include "RHI.h"
 
 class FSceneInterface;
+class FSceneViewFamily;
 
 /**
  * 렌더러 모듈의 공개 인터페이스입니다.
@@ -16,6 +17,7 @@ public:
     * @param bInRequiresHitProxies - 씬에서 히트 프록시를 렌더링해야 하는지 여부를 나타냅니다.
     */
     virtual FSceneInterface* AllocateScene(UWorld* World, /*bool bInRequiresHitProxies, bool bCreateFXSystem,*/ ERHIFeatureLevel::Type InFeatureLevel) = 0;
-
     virtual void RemoveScene(FSceneInterface* Scene) = 0;
+
+    virtual void BeginRenderingViewFamily(FSceneViewFamily* ViewFamily) = 0;
 };

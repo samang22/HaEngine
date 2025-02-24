@@ -678,6 +678,7 @@ class FRHIViewport : public FRHIResource
 {
 public:
 	FRHIViewport() : FRHIResource(RRT_Viewport) {}
+	virtual FRHITexture* GetRenderTarget() const = 0;
 	virtual void Resize(const uint32 NewSizeX, const uint32 NewSizeY) = 0;
 };
 
