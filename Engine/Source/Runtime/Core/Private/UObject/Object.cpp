@@ -8,20 +8,21 @@ UClass* UObjectRegisterEngineClass = TGetPrivateStaticClassBody<UObject>(
 
 void UObject::Serialize(FArchive& Ar)
 {
-    struct FPropertyArchiveData
+    struct FPropertyData
     {
-        map<string, meta::data> Data;
-        map<string, FProperty> Prop;
+        FPropertyData() = default;
+        FPropertyData(meta::data& InData, meta::prop& InProp) : Data(InData), Prop(InProp) {}
+        meta::data Data;
+        meta::prop Prop;
     };
-    FPropertyArchiveData PropertyArchiveData;
+    map<string, FPropertyData> PropertyDatas;
     type Type = resolve(Hash(GetClass()->ClassName.data()));
     Type.data([&](meta::data Data)
         {
             Data.prop([&](meta::prop p)
                 {
                     FProperty Prop = p.value().cast<FProperty>();
-                    PropertyArchiveData.Data.emplace(Prop.Name, Data);
-                    PropertyArchiveData.Prop.emplace(Prop.Name, Prop);
+                    PropertyDatas.emplace(Prop.Name, FPropertyData(Data, p));
                 }
             );
         }
@@ -32,17 +33,19 @@ void UObject::Serialize(FArchive& Ar)
         FString ObjectName = GetName();
         Ar << ObjectName;
 
-        uint64 PropSize = PropertyArchiveData.Prop.size();
+        uint64 PropSize = PropertyDatas.size();
         Ar << PropSize;
-        for (auto& It : PropertyArchiveData.Prop)
+        for (auto& It : PropertyDatas)
         {
-            Ar << It.second.Name;
+            FProperty Prop = It.second.Prop.value().cast<FProperty>();
+            string& PropName = Prop.Name;
+            Ar << PropName;
 
-            switch (It.second.PropertyType)
+            switch (Prop.PropertyType)
             {
             case EPropertyType::T_INT:
             {
-                int* Value = (int*)PropertyArchiveData.Data[It.second.Name].get(handle(Type.GetNode(), this)).data();
+                int* Value = (int*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
                 Ar << *Value;
                 break;
             }
@@ -58,15 +61,16 @@ void UObject::Serialize(FArchive& Ar)
             string PropName;
             Ar << PropName;
 
-            if (PropertyArchiveData.Prop.contains(PropName))
+            if (PropertyDatas.contains(PropName))
             {
-                FProperty& Prop = PropertyArchiveData.Prop[PropName];
+                FProperty Prop = PropertyDatas[PropName].Prop.value().cast<FProperty>();
                 switch (Prop.PropertyType)
                 {
                 case EPropertyType::T_INT:
                 {
-                    int* Value = (int*)PropertyArchiveData.Data[Prop.Name].get(handle(Type.GetNode(), this)).data();
+                    int* Value = (int*)PropertyDatas[PropName].Data.get(handle(Type.GetNode(), this)).data();
                     Ar << *Value;
+                    break;
                 }
                 }
             }
