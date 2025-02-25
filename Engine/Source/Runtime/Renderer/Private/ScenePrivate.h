@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "SceneInterface.h"
 
+class FPrimitiveSceneProxy;
 /**
  * 렌더러 모듈에 비공개된 렌더러 씬입니다.
  * 일반적으로 이는 UWorld의 렌더러 버전이지만, UWorld가 없는 에디터에서 미리보기를 위해 FScene이 생성될 수 있습니다.
@@ -19,5 +20,12 @@ public:
     FScene(UWorld* InWorld, /*bool bInRequiresHitProxies, bool bInIsEditorScene, bool bCreateFXSystem,*/ ERHIFeatureLevel::Type InFeatureLevel);
     virtual ~FScene();
 
+    // FSceneInterface interface.
+    virtual void AddPrimitive(UPrimitiveComponent* Primitive) override;
+    virtual void RemovePrimitive(UPrimitiveComponent* Primitive) override;
+
     virtual void Release() override;
+
+public:
+    TArray<FPrimitiveSceneProxy*> Proxies;
 };

@@ -15,6 +15,12 @@ public:
 
 	TEnginePtr<UStaticMesh> GetStaticMesh() const { return StaticMesh; }
 
+protected:
+	virtual bool ShouldCreateRenderState() const;
+
+private:
+	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
+
 private:
 	UPROPERTY(EditAnywhere)
 	TEnginePtr<UStaticMesh> StaticMesh;

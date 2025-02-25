@@ -67,47 +67,13 @@ void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 	Viewport = GDynamicRHI->RHICreateViewport(hInViewportHandle, ViewportSize.x, ViewportSize.y, false, PF_A2B10G10R10);
 }
 
-TArray<function<void()>> RenderCmds;
-void BeginRenderPass(function<void()> InCmd)
-{
-	RenderCmds.emplace_back(InCmd);
-}
-
 void UViewportClient::Draw()
 {
-	// 뷰포트를 위한 FSceneViewFamily/FSceneView 설정
-	FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(
-		Viewport,  // 캔버스의 렌더 타겟을 가져옴
-		GetScene())
-	);
+	if (!GetScene()) { return; }
+
+	FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(Viewport, GetScene()));
 
 	GetRendererModule().BeginRenderingViewFamily(&ViewFamily);
-
-
-	FRHICommandListExecutor::GetImmediateCommandList().BeginDrawingViewport(Viewport, FTextureRHIRef());
-
-	{
-		//TShaderMapRef<FTestVS> VertextShader;
-		//TShaderMapRef<FTestPS> PixelShader;
-		//GetCommandList().SetBoundShaderState(
-		//	GDynamicRHI->RHICreateBoundShaderState(
-		//		GTestVertexDeclaration.VertexDeclarationRHI,
-		//		VertextShader.GetVertexShader(),
-		//		PixelShader.GetPixelShader()
-		//	).GetReference()
-		//);
-		//GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-		//GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
-		//GetCommandList().DrawPrimitive(0, 1, 1);
-	}
-
-	for (function Cmd : RenderCmds)
-	{
-		Cmd();
-	}
-	RenderCmds.clear();
-
-	FRHICommandListExecutor::GetImmediateCommandList().EndDrawingViewport(Viewport, true, false);
 }
 
 void UViewportClient::RequestResize(const uint32 NewSizeX, const uint32 NewSizeY)
@@ -117,11 +83,5 @@ void UViewportClient::RequestResize(const uint32 NewSizeX, const uint32 NewSizeY
 
 FSceneInterface* UViewportClient::GetScene() const
 {
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		return World->Scene;
-	}
-
-	return NULL;
+	return World->Scene;
 }

@@ -142,7 +142,8 @@ public:
     {
         UpdateComponentToWorldWithParent(GetAttachParent(), /*GetAttachSocketName(), UpdateTransformFlags,*/ RelativeRotationCache.RotatorToQuat(GetRelativeRotation())/*, Teleport*/);
     }
-
+protected:
+    virtual bool ShouldCreateRenderState() const override { return true; }
 
 protected:
     /** 이 컴포넌트의 새로운 ComponentToWorld 변환 값을 계산합니다.

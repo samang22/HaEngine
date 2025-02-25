@@ -199,7 +199,7 @@ UWorld* AActor::GetWorld() const
 	{
 		if (ULevel* Level = GetLevel())
 		{
-			return Level->OwningWorld.GetChecked();
+			return Level->OwningWorld.Get();
 		}
 	}
 	return nullptr;

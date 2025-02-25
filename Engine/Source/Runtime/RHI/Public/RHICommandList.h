@@ -98,10 +98,25 @@ public:
     {
         GetContext().RHIDrawIndexedPrimitive(IndexBufferRHI, BaseVertexIndex, FirstInstance, NumVertices, StartIndex, NumPrimitives, NumInstances);
     }
+    void BeginRenderPass(function<void()> InCmd)
+    {
+        RenderCmds.emplace_back(InCmd);
+    }
+
+    void ExecuteRenderPass()
+    {
+        for (function Cmd : RenderCmds)
+        {
+            Cmd();
+        }
+        RenderCmds.clear();
+    }
+
 
 private:
 	// 그래픽 명령이 기록되는 활성 컨텍스트.
 	IRHICommandContext* GraphicsContext = nullptr;
+    TArray<function<void()>> RenderCmds;
 };
 
 

@@ -38,13 +38,13 @@ public:
         ConstructionValues& operator=(const ConstructionValues& Other) = default;
 
         ENGINE_API ConstructionValues(
-            const FRHIViewport* InRenderTarget, // FRenderTarget
+            FRHIViewport* InRenderTarget, // FRenderTarget
             FSceneInterface* InScene//,
             //const FEngineShowFlags& InEngineShowFlags
         );
 
         /** 뷰 패밀리를 구성하는 뷰들. */
-        const FRHIViewport* RenderTarget; // FRenderTarget
+        FRHIViewport* RenderTarget; // FRenderTarget
 
         /** 뷰가 렌더링되는 렌더 타겟. */
         FSceneInterface* Scene;
@@ -60,7 +60,7 @@ public:
     TArray<const FSceneView*> Views;
 
     /** 뷰가 렌더링되는 렌더 타겟. */
-    const FRHIViewport* RenderTarget;
+    FRHIViewport* RenderTarget;
 
     /** 조회되는 장면. */
     FSceneInterface* Scene;

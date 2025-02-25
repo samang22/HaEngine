@@ -2,6 +2,8 @@
 #include "Components/SceneComponent.h"
 #include "PrimitiveComponent.generated.h"
 
+class FPrimitiveSceneProxy;
+
 /**
  * PrimitiveComponent는 렌더링되거나 충돌 데이터로 사용하기 위해 일정한 형태의 지오메트리를 포함하거나 생성하는 SceneComponent입니다.
  * 여러 유형의 지오메트리를 위한 여러 서브클래스가 있지만, 가장 일반적인 것은 ShapeComponent(캡슐, 구, 박스), StaticMeshComponent 및 SkeletalMeshComponent입니다.
@@ -10,7 +12,21 @@
 UCLASS()
 class ENGINE_API UPrimitiveComponent : public USceneComponent
 {
+	friend class FScene;
 	GENERATED_BODY()
 public:
 	UPrimitiveComponent();
+    ~UPrimitiveComponent();
+
+    FMatrix GetRenderMatrix() const;
+
+protected:
+    /**
+     * 이 컴포넌트의 렌더링 스레드 정보를 생성하는 데 사용됩니다.
+     * @warning 여러 스레드에서 동시에 호출됩니다(그러나 동일한 컴포넌트는 동시에 호출되지 않습니다).
+     */
+    virtual void CreateRenderState_Concurrent(FRegisterComponentContext* Context);
+
+private:
+    virtual FPrimitiveSceneProxy* CreateSceneProxy() { return nullptr; }
 };

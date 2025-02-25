@@ -10,7 +10,7 @@ FSceneViewFamilyContext::~FSceneViewFamilyContext()
 
 }
 
-FSceneViewFamily::ConstructionValues::ConstructionValues(const FRHIViewport* InRenderTarget, FSceneInterface* InScene)
+FSceneViewFamily::ConstructionValues::ConstructionValues(FRHIViewport* InRenderTarget, FSceneInterface* InScene)
     : RenderTarget(InRenderTarget)
     , Scene(InScene)
     , bResolveScene(true)
