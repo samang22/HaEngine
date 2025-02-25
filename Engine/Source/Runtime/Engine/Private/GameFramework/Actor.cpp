@@ -105,21 +105,22 @@ void AActor::PostSpawnInitialize(FTransform const& UserSpawnTransform, AActor* I
 	{
 		_ASSERT(SceneRootComponent->GetOwner() == this);
 
-		//// Respect any non-default transform value that the root component may have received from the archetype that's owned
-		//// by the native CDO, so the final transform might not always necessarily equate to the passed-in UserSpawnTransform.
-		//const FTransform RootTransform(SceneRootComponent->GetRelativeRotation(), SceneRootComponent->GetRelativeLocation(), SceneRootComponent->GetRelativeScale3D());
-		//FTransform FinalRootComponentTransform = RootTransform;
-		//switch (TransformScaleMethod)
-		//{
-		//case ESpawnActorScaleMethod::OverrideRootScale:
-		//	FinalRootComponentTransform = UserSpawnTransform;
-		//	break;
-		//case ESpawnActorScaleMethod::MultiplyWithRoot:
-		//case ESpawnActorScaleMethod::SelectDefaultAtRuntime:
-		//	FinalRootComponentTransform = RootTransform * UserSpawnTransform;
-		//	break;
-		//}
-		//SceneRootComponent->SetWorldTransform(FinalRootComponentTransform, false, nullptr, ETeleportType::ResetPhysics);
+		// Respect any non-default transform value that the root component may have received from the archetype that's owned
+		// by the native CDO, so the final transform might not always necessarily equate to the passed-in UserSpawnTransform.
+		const FTransform RootTransform(SceneRootComponent->GetRelativeRotation(), SceneRootComponent->GetRelativeLocation(), SceneRootComponent->GetRelativeScale3D());
+		FTransform FinalRootComponentTransform = RootTransform;
+		switch (TransformScaleMethod)
+		{
+		case ESpawnActorScaleMethod::OverrideRootScale:
+			FinalRootComponentTransform = UserSpawnTransform;
+			break;
+		case ESpawnActorScaleMethod::MultiplyWithRoot:
+		case ESpawnActorScaleMethod::SelectDefaultAtRuntime:
+			FinalRootComponentTransform = RootTransform * UserSpawnTransform;
+			break;
+		}
+		SceneRootComponent->SetWorldTransform(FinalRootComponentTransform/*, false, nullptr, ETeleportType::ResetPhysics*/);
+
 	}
 
 	// 모든 기본(네이티브) 컴포넌트에서 OnComponentCreated를 호출합니다.

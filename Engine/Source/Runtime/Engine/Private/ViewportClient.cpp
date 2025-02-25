@@ -5,53 +5,6 @@
 #include "EngineModule.h"
 #include "Engine/World.h"
 
-#include "Shader.h"
-class FTestVS : public FShader
-{
-	DECLARE_SHADER_TYPE(FTestVS)
-};
-IMPLEMENT_SHADER_TYPE(FTestVS, FPaths::ShaderDir() + L"/VertexShader.hlsl", "VS", SF_Vertex)
-
-class FTestPS : public FShader
-{
-	DECLARE_SHADER_TYPE(FTestPS)
-};
-IMPLEMENT_SHADER_TYPE(FTestPS, FPaths::ShaderDir() + L"/PixelShader.hlsl", "PS", SF_Pixel)
-
-class FTestVertexDeclaration : public FVertexDeclaration 
-{
-public:
-	virtual void InitRHI(FRHICommandList& RHICmdList) override
-	{
-		FVertexDeclarationElementList Elements;
-		Elements.push_back(FVertexElement(0, 0, VET_Float3, 0, sizeof(FVector3D)));
-		VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
-	}
-};
-TGlobalResource<FTestVertexDeclaration> GTestVertexDeclaration;
-
-class FNDCTriangleVertexBuffer : public FVertexBuffer
-{
-public:
-	virtual void InitRHI(FRHICommandList& RHICmdList)
-	{
-		TResourceArray<FVector3D> PositionData;
-		PositionData.emplace_back(0.0f, 0.5f, 0.0f);
-		PositionData.emplace_back(0.5f, -0.5f, 0.0f);
-		PositionData.emplace_back(-0.5f, -0.5f, 0.0f);
-
-		FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"), &PositionData);
-		VertexBufferRHI = GetCommandList().CreateVertexBuffer(PositionData.GetResourceDataSize(), BUF_Static, CreateInfo);
-		if (!VertexBufferRHI)
-		{
-			E_LOG(Warning, TEXT("VertexBufferRHI creation failed"));
-			return;
-		}
-	}
-};
-
-TGlobalResource<FNDCTriangleVertexBuffer> GNDCTriangleVertexBuffer;
-
 void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 {
     hViewportHandle = hInViewportHandle;

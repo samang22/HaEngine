@@ -62,6 +62,54 @@ struct FStaticMeshDrawCommand
     TArray<FStaticMeshRenderData>& RenderDatas;
 };
 
+
+#include "Shader.h"
+class FTestVS : public FShader
+{
+	DECLARE_SHADER_TYPE(FTestVS)
+};
+IMPLEMENT_SHADER_TYPE(FTestVS, FPaths::ShaderDir() + L"/VertexShader.hlsl", "VS", SF_Vertex)
+
+class FTestPS : public FShader
+{
+	DECLARE_SHADER_TYPE(FTestPS)
+};
+IMPLEMENT_SHADER_TYPE(FTestPS, FPaths::ShaderDir() + L"/PixelShader.hlsl", "PS", SF_Pixel)
+
+class FTestVertexDeclaration : public FVertexDeclaration
+{
+public:
+	virtual void InitRHI(FRHICommandList& RHICmdList) override
+	{
+		FVertexDeclarationElementList Elements;
+		Elements.push_back(FVertexElement(0, 0, VET_Float3, 0, sizeof(FVector3D)));
+		VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
+	}
+};
+TGlobalResource<FTestVertexDeclaration> GTestVertexDeclaration;
+
+class FNDCTriangleVertexBuffer : public FVertexBuffer
+{
+public:
+	virtual void InitRHI(FRHICommandList& RHICmdList)
+	{
+		TResourceArray<FVector3D> PositionData;
+		PositionData.emplace_back(0.0f, 0.5f, 0.0f);
+		PositionData.emplace_back(0.5f, -0.5f, 0.0f);
+		PositionData.emplace_back(-0.5f, -0.5f, 0.0f);
+
+		FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"), &PositionData);
+		VertexBufferRHI = GetCommandList().CreateVertexBuffer(PositionData.GetResourceDataSize(), BUF_Static, CreateInfo);
+		if (!VertexBufferRHI)
+		{
+			E_LOG(Warning, TEXT("VertexBufferRHI creation failed"));
+			return;
+		}
+	}
+};
+TGlobalResource<FNDCTriangleVertexBuffer> GNDCTriangleVertexBuffer;
+
+
 void FSceneRenderer::Render()
 {
 	FRHICommandListExecutor::GetImmediateCommandList().BeginDrawingViewport(ViewFamily.RenderTarget, FTextureRHIRef());
@@ -102,16 +150,21 @@ void FSceneRenderer::Render()
 	FRHICommandListExecutor::GetImmediateCommandList().BeginRenderPass(
 		[this, MeshDrawCommands = move(MeshDrawCommands)]()
 		{
+			TShaderMapRef<FMaterialVS> MaterialVS;
+
+			const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
+			SceneUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
+
+			FMatrix Matrix = FMatrix::CreatePerspectiveFieldOfView(3.14f / 4.f, 16.f / 9.f, 0.1f, 1000.f);
+			SceneUniformBuffer.ProjectionMatrix = Matrix.Transpose();
+			RHIUpdateUniformBuffer(SceneUniformBufferRHI, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
+			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
+
+
 			for (const FStaticMeshDrawCommand& StaticMeshDrawCommand : MeshDrawCommands)
 			{
 				for (FStaticMeshRenderData& RenderData : StaticMeshDrawCommand.RenderDatas)
 				{
-					if (!UniformBuffer)
-					{
-						const FConstantBufferInfo& ConstantBufferInfo = RenderData.Material->GetVertexShader()->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
-						UniformBuffer = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
-					}
-
 					GetCommandList().SetBoundShaderState(
 						GDynamicRHI->RHICreateBoundShaderState(
 							RenderData.VertexFactory.GetDeclaration(),
@@ -119,11 +172,6 @@ void FSceneRenderer::Render()
 							RenderData.Material->GetPixelShaderRHI()
 						).GetReference()
 					);
-
-					FMatrix Matrix = FMatrix::CreatePerspectiveFieldOfView(3.14f / 4.f, 16.f / 9.f, 0.1f, 1000.f);
-					SceneUniformBuffer.ProjectionMatrix = Matrix.Transpose();
-					RHIUpdateUniformBuffer(UniformBuffer, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
-					GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, UniformBuffer);
 
 					FObjectUniformBuffer ObjectUniformBuffer;
 					ObjectUniformBuffer.Matrix = StaticMeshDrawCommand.Proxy->GetTransform();

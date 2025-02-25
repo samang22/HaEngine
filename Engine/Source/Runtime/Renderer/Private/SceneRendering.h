@@ -23,5 +23,5 @@ public:
         FMatrix ProjectionMatrix = FMatrix::Identity;
     };
     FSceneUniformBuffer SceneUniformBuffer;
-    FUniformBufferRHIRef UniformBuffer;
+    FUniformBufferRHIRef SceneUniformBufferRHI;
 };

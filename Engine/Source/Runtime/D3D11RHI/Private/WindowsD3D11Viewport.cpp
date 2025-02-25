@@ -162,7 +162,7 @@ D3D11RHI_API FD3D11Texture* FD3D11Viewport::GetSwapChainSurface(FD3D11DynamicRHI
 		FRHITextureCreateDesc::Create2D(TEXT("FD3D11Viewport::GetSwapChainSurface"), TextureDesc.Width, TextureDesc.Height, PixelFormat)
 		.SetFlags(ETextureCreateFlags::RenderTargetable)
 		.DetermineInititialState();
-	CreateDesc.SetClearValue(FClearValueBinding(FLinearColor::Blue));
+	CreateDesc.SetClearValue(FClearValueBinding(FLinearColor::Black));
 
 	FD3D11Texture* NewTexture = new FD3D11Texture(
 		CreateDesc,

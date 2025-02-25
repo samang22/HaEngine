@@ -137,6 +137,8 @@ public:
     /** 컴포넌트의 비균일 스케일을 부모와 상대적으로 설정합니다. */
     void SetRelativeScale3D(FVector NewScale3D);
 
+    void SetWorldTransform(const FTransform& NewTransform/*, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None*/);
+
 public:
     virtual void UpdateComponentToWorld()
     {

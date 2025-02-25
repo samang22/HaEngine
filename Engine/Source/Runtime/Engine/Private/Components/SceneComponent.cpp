@@ -103,6 +103,40 @@ void USceneComponent::SetRelativeScale3D(FVector NewScale3D)
     }
 }
 
+void USceneComponent::SetWorldTransform(const FTransform& NewTransform)
+{
+    // 무언가에 붙어 있다면, 로컬 공간으로 변환합니다.
+    if (GetAttachParent() != nullptr)
+    {
+        _ASSERT(false);// 미구현
+
+        //const FTransform ParentToWorld = GetAttachParent()->GetSocketTransform(NAME_None /*GetAttachSocketName()*/);
+        //FTransform RelativeTM = NewTransform.GetRelativeTransform(ParentToWorld);
+
+        //// 절대 위치, 회전, 스케일은 월드 변환을 직접 사용합니다.
+        //if (IsUsingAbsoluteLocation())
+        //{
+        //    RelativeTM.CopyTranslation(NewTransform);
+        //}
+
+        //if (IsUsingAbsoluteRotation())
+        //{
+        //    RelativeTM.CopyRotation(NewTransform);
+        //}
+
+        //if (IsUsingAbsoluteScale())
+        //{
+        //    RelativeTM.CopyScale3D(NewTransform);
+        //}
+
+        //SetRelativeTransform(RelativeTM, bSweep, OutSweepHitResult, Teleport);
+    }
+    else
+    {
+        SetRelativeTransform(NewTransform/*, bSweep, OutSweepHitResult, Teleport*/);
+    }
+}
+
 void USceneComponent::UpdateComponentToWorldWithParent(USceneComponent* Parent, const FQuat& RelativeRotationQuat)
 {// 부모가 이전에 업데이트되지 않았다면, 부모 연결 계층을 따라 올라가야 합니다.
     if (Parent && !Parent->bComponentToWorldUpdated)

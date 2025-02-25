@@ -1,7 +1,19 @@
 #include "D3D11RHIPrivate.h"
 
+unordered_map<FString, FUniformBufferRHIRef> UniformBuffers;
+
 FUniformBufferRHIRef FD3D11DynamicRHI::RHICreateUniformBuffer(const FConstantBufferInfo& Layout, const void* Contents, const uint32 ContentsSize) 
 {
+    if (UniformBuffers.contains(Layout.Name))
+    {
+        if (Layout.Size != ContentsSize)
+        {
+            E_LOG(Error, TEXT("Size 가 다릅니다"));
+        }
+        return UniformBuffers[Layout.Name];
+    }
+
+
     FD3D11UniformBuffer* NewUniformBuffer = nullptr;
     const uint32 NumBytes = Layout.Size;
     if (Layout.Size != ContentsSize)
@@ -26,6 +38,8 @@ FUniformBufferRHIRef FD3D11DynamicRHI::RHICreateUniformBuffer(const FConstantBuf
     VERIFYD3D11RESULT_EX(Direct3DDevice->CreateBuffer(&Desc, Contents ? &ImmutableData : nullptr, UniformBufferResource.GetInitReference()), Direct3DDevice);
 
     NewUniformBuffer = new FD3D11UniformBuffer(Layout, UniformBufferResource);
+
+    UniformBuffers.emplace(Layout.Name, NewUniformBuffer);
 
     return NewUniformBuffer;
 }

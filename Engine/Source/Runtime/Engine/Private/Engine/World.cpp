@@ -52,7 +52,13 @@ void UWorld::InitalizeNewWorld()
 
 	InitWorld();
 
-	AStaticMeshActor* Actor = SpawnActor<AStaticMeshActor>(nullptr, FTransform::Identity);	
+	FActorSpawnParameters ActorSpawnParameters;
+	ActorSpawnParameters.TransformScaleMethod = ESpawnActorScaleMethod::OverrideRootScale;
+	FTransform TransformLeft = FTransform(FRotator::ZeroRotator, FVector3D(-100.f, 0.f, -200.f), FVector3D(0.5f, 0.5f, 0.5f));
+	FTransform TransformRight = FTransform(FRotator::ZeroRotator, FVector3D(100.f, 0.f, -200.f), FVector3D(0.5f, 0.5f, 0.5f));
+	AStaticMeshActor* Actor = SpawnActor<AStaticMeshActor>(nullptr, TransformLeft, ActorSpawnParameters);
+	AStaticMeshActor* Actor2 = SpawnActor<AStaticMeshActor>(nullptr, TransformRight, ActorSpawnParameters);
+
 }
 
 void UWorld::InitWorld()
@@ -62,10 +68,10 @@ void UWorld::InitWorld()
 
 void UWorld::Tick(float DeltaSeconds)
 {
-	for (TObjectPtr<AActor> Actor : PersistentLevel->Actors)
+	/*for (TObjectPtr<AActor> Actor : PersistentLevel->Actors)
 	{
 		Actor->Tick(DeltaSeconds);
-	}
+	}*/
 }
 
 string UWorld::Save()
