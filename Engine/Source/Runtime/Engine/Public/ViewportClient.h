@@ -15,6 +15,7 @@ class ENGINE_API UViewportClient : public UObject
     GENERATED_BODY()
 public:
     virtual void Init(HWND hInViewportHandle, UWorld* InWorld);
+    virtual void Tick(float DeltaTime);
     virtual void Draw();
     virtual void RequestResize(const uint32 NewSizeX, const uint32 NewSizeY);
 

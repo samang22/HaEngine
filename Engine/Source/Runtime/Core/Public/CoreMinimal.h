@@ -22,6 +22,9 @@
 #include "Math/Transform.h"
 #include "Math/Rotator.h"
 
+#include "Input/Keyboard.h"
+#include "Input/Mouse.h"
+
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/Names.h"
 #include "Misc/Paths.h"

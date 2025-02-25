@@ -12,6 +12,10 @@ public:
     // IModuleInterface
     virtual void StartupModule();
     virtual void ShutdownModule();
+
+protected:
+    std::unique_ptr<DirectX::Keyboard> Keyboard;
+    std::unique_ptr<DirectX::Mouse> Mouse;
 };
 
 /** 렌더러 모듈을 가져오고 결과를 캐시하는 접근자입니다. */
