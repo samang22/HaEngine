@@ -56,6 +56,60 @@ void UEngine::PreExit()
 	CurrentViewportClient = nullptr;
 }
 
+void UEngine::UpdateTimeAndHandleMaxTickRate()
+{
+    // 이것은 항상 실시간으로 처리되며 고정 프레임 속도로 조정되지 않습니다. 현재 실시간보다 약간 빨리 시작합니다.
+    static double LastRealTime = FPlatformTime::Seconds() - 0.0001;
+
+    // 논리적 마지막 시간을 지난 틱의 논리적 현재 시간과 일치하도록 업데이트합니다.
+    FApp::UpdateLastTime();
+
+    {
+        // 논리적 시간을 현재 시간으로 업데이트합니다. // [우리는 해당 x]이는 아래의 고정 프레임 속도에 의해 변경될 수 있습니다.
+        double CurrentRealTime = FPlatformTime::Seconds();
+        FApp::SetCurrentTime(CurrentRealTime);
+
+        // 델타 시간을 계산합니다. 이는 실시간 초 단위입니다.
+        float DeltaRealTime = CurrentRealTime - LastRealTime;
+
+        // 델타 타임이 너무 낮은 경우 또는 높은 경우 보정을 한다
+        const float MaxTickRate = GetMaxTickRate(DeltaRealTime);
+
+        float WaitTime = 0.f;
+        // 최대 FPS에서 대기 시간으로 변환합니다.
+        if (MaxTickRate > 0)
+        {
+            WaitTime = FMath::Max(1.f / MaxTickRate - DeltaRealTime, 0.f);
+        }
+
+        // 최대 프레임 속도와 부드러운 프레임 속도를 적용하기 위해 대기합니다.
+        if (WaitTime > 0.f)
+        {
+            double WaitEndTime = CurrentRealTime + WaitTime;
+
+            // 5ms 이상 기다려야 하는 경우 슬립합니다. 우리는 PC에서 시작할 때 스케줄러의 세분도를 1ms로 설정합니다.
+            // 2ms의 여유 시간을 예약하고, 이를 대기하기 위해 타임슬라이스를 포기합니다.
+            if (WaitTime > 5.f / 1000.f)
+            {
+                uint32 Milliseconds = (uint32)((WaitTime - 0.002f) * 1000.0);
+                Sleep(Milliseconds);
+            }
+
+            while (FPlatformTime::Seconds() < WaitEndTime)
+            {
+                ::SwitchToThread();
+            }
+        }
+
+        CurrentRealTime = FPlatformTime::Seconds();
+        FApp::SetCurrentTime(CurrentRealTime);
+        // 논리적 현재 시간을 기준으로 논리적 델타 시간을 업데이트합니다.
+        FApp::SetDeltaTime(FApp::GetCurrentTime() - LastRealTime);
+
+        LastRealTime = CurrentRealTime;
+    }
+}
+
 string UEngine::Save()
 {
     return World->Save();
@@ -115,4 +169,9 @@ void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResu
     default:
         break;
     }
+}
+
+float UEngine::GetMaxTickRate(float DeltaTime)
+{
+    return 0.0f;
 }

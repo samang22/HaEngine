@@ -13,3 +13,6 @@ public:
 };
 
 IMPLEMENT_MODULE(FCoreModule, Core);
+
+/** FPlatformTime::Seconds()가 처음으로 초기화된 시간(메인 함수 이전) */
+double GStartTime = FPlatformTime::InitTiming();

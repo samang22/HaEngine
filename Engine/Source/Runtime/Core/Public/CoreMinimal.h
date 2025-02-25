@@ -5,6 +5,8 @@
 #include "CoreGlobals.h"
 #include "PixelFormat.h"
 
+#include "GenericPlatform/GenericPlatformTime.h"
+
 #include "Containers/ResourceArray.h"
 #include "Containers/DynamicRHIResourceArray.h"
 
@@ -28,6 +30,7 @@
 #include "Misc/ConfigCacheIni.h"
 #include "Misc/Names.h"
 #include "Misc/Paths.h"
+#include "Misc/App.h"
 
 #include "Templates/SubclassOf.h"
 #include "Templates/RefCounting.h"

@@ -16,12 +16,21 @@ public:
     void Tick(float DeltaSeconds);
     void PreExit();
 
+    /**
+     * 최대 틱 속도를 고려하여 FApp::CurrentTime / FApp::DeltaTime을 업데이트합니다.
+    */
+    void UpdateTimeAndHandleMaxTickRate();
+
 public:
     string Save();
     void Load(const string& InLoadString);
 
 public:
     void WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+
+protected:
+    /** 틱 레이트 제한기를 가져옵니다. */
+    float GetMaxTickRate(float DeltaTime);
 
 protected:
     HWND MainViewportHandle = NULL;
