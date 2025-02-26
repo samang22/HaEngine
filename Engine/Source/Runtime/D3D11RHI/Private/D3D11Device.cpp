@@ -108,9 +108,11 @@ FD3D11DynamicRHI::FD3D11DynamicRHI(IDXGIFactory1* InDXGIFactory1, D3D_FEATURE_LE
 
 extern bool GIsDebugLayerEnabled;
 extern D3D11RHI_API map<type_index, TRefCountPtr<FRHIShader>> RHIShaders;
+extern unordered_map<FString, FUniformBufferRHIRef> UniformBuffers;
 
 void FD3D11DynamicRHI::CleanupD3DDevice()
 {
+    UniformBuffers.clear();
     RHIShaders.clear();
     E_LOG(Log, TEXT("CleanupD3DDevice"));
     _ASSERT(Direct3DDevice);

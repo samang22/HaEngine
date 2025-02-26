@@ -16,6 +16,9 @@ void FEngineModule::StartupModule()
 void FEngineModule::ShutdownModule()
 {
     FDefaultModuleImpl::ShutdownModule();
+
+    Keyboard = nullptr;
+    Mouse = nullptr;
 }
 
 TObjectPtr<UEngine> GEngine;
