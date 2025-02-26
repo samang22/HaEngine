@@ -96,20 +96,17 @@
     -> [o] Scene 만들기
         -> [o] Scene에 StaticMeshComponent 등록
         -> [o] Proxy 만들기
-        -> [] 화면에 물체 렌더링 하고 RenderDoc 으로 확인
-
-- [] Editor 카메라 처리
+- [o] FApp 추가 및 DeltaTime 계산
+- [o] Editor 카메라 처리
 - [] 계층 구조 만들기 (Setup Attachment)
-    PIE 제작
+
+- PIE 제작
     -> [] GameInstance, GameMode 제작
     -> [] User Project GameInstance, GameMode 추가
     -> [] Editor <-> PIE 제작
     -> [] Spawn된 Actor BeginPlay & Tick
 
-
 - 렌더러 개선
     -> [] Directional Light 광원 추가
     -> [] 포워드로 PBR 추가
     -> [] 디퍼드로 PBR 포팅
-
-

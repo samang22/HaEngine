@@ -35,6 +35,8 @@ void UViewportClient::Draw()
 
 void UViewportClient::RequestResize(const uint32 NewSizeX, const uint32 NewSizeY)
 {
+	ViewportSize.x = NewSizeX;
+	ViewportSize.y = NewSizeY;
 	Viewport->Resize(NewSizeX, NewSizeY);
 }
 

@@ -4,6 +4,7 @@
 
 class FCameraControllerUserImpulseData;
 class FEditorCameraController;
+class FSceneViewFamily;
 
 /**
  * 뷰포트 카메라의 변환 데이터를 저장합니다.
@@ -99,6 +100,14 @@ protected:
      */
     virtual void UpdateMouseDelta();
 
+    /**
+     * 지정된 FSceneView 객체를 이 뷰포트의 뷰 및 투영 행렬로 구성합니다.
+     * @param    View        구성할 뷰입니다. 유효해야 합니다.
+     * @param    StereoPass    스테레오 모드에서 이 뷰를 그릴 때 어느 눈을 위한 것인지 지정합니다.
+     * @return    뷰포트의 기본 뷰를 나타내는 뷰 패밀리 내의 뷰에 대한 포인터를 반환합니다.
+    */
+    virtual /*FSceneView**/void CalcSceneView(FSceneViewFamily* ViewFamily/*, const int32 StereoViewIndex = INDEX_NONE*/);
+
 protected:
     /** 현재 캐시된 임펄스 상태 */
     FCameraControllerUserImpulseData* CameraUserImpulseData = nullptr;
@@ -110,4 +119,5 @@ protected:
 
 private:
     DirectX::Mouse::State LastMouseState;
+    DirectX::Mouse::State RightButtonStartMouseState; // 우클릭 시작한 시점의 마우스 상태
 };

@@ -46,25 +46,7 @@ void UEditorViewportClient::Draw()
     // 뷰포트를 위한 FSceneViewFamily/FSceneView 설정
     FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(Viewport, GetScene()));
 
-    FRotator ViewRotation = GetViewRotation();
-
-    ViewFamily.ViewRotationMatrix = FInverseRotationMatrix(ViewRotation);
-
-    // 언리얼 축에 맞게 View Matrix를 회전하고 있습니다.
-    // X가 전후방
-    // Y가 좌우
-    // Z가 상하
-    ViewFamily.ViewRotationMatrix = ViewFamily.ViewRotationMatrix * FMatrix(
-        FPlane(0, 0, 1, 0),
-        FPlane(1, 0, 0, 0),
-        FPlane(0, 1, 0, 0),
-        FPlane(0, 0, 0, 1));
-
-    FVector ViewOrigin = GetViewLocation();
-    FMatrix ViewTranslationMatrix = FMatrix::CreateTranslation(-ViewOrigin);
-
-    ViewFamily.ViewMatrix = ViewTranslationMatrix * ViewFamily.ViewRotationMatrix;
-    ViewFamily.ProjectionMatrix = FMatrix::CreatePerspectiveFieldOfView(3.14f / 4.f, 16.f / 9.f, 100.f, 1000.f);
+    CalcSceneView(&ViewFamily);
     GetRendererModule().BeginRenderingViewFamily(&ViewFamily);
 }
 
@@ -205,10 +187,95 @@ void UEditorViewportClient::UpdateMouseDelta()
     DirectX::Mouse::State CurrentMouseState = DirectX::Mouse::Get().GetState();
     FUpdateLastMouseState UpdateLastMouseStateScope{ .LastMouseState = LastMouseState, .CurrentMouseState = CurrentMouseState };
 
-    if (!CurrentMouseState.rightButton)
+    const bool RightMouseButtonDown = CurrentMouseState.rightButton;
+    const bool LastRightMouseButtonDown = LastMouseState.rightButton;
+    if (!RightMouseButtonDown)
     {
+        if (LastRightMouseButtonDown == true && RightMouseButtonDown == false)
+        {
+            ShowCursor(TRUE);
+        }
         return;
     }
 
-    //E_LOG(Log, TEXT("r btn clicked"));
+    if (LastRightMouseButtonDown == false && RightMouseButtonDown == true)
+    {
+        RightButtonStartMouseState = CurrentMouseState;
+        ShowCursor(FALSE);
+    }
+
+    // 변화량을 계산할 수 있으므로, 마우스의 위치를 우클릭을 시작한 위치로 이동한다
+    {
+        POINT Point = POINT(RightButtonStartMouseState.x, RightButtonStartMouseState.y);
+        // 우리 윈도우의 상대 좌표를 Windows의 Screen 좌표로 변환한다
+        ClientToScreen(hViewportHandle, &Point);
+        SetCursorPos(Point.x, Point.y);
+    }
+
+    // UE에서 왼쪽으로 마우스 이동시 -x, 아래로 이동시 -y
+    const FVector2D Delta = FVector2D(CurrentMouseState.x - RightButtonStartMouseState.x, RightButtonStartMouseState.y - CurrentMouseState.y);
+    FRotator Rot = FRotator::ZeroRotator;
+
+    {
+        // MouseDeltaTracker->ConvertMovementDeltaToDragRot
+        // -> InViewportClient->ConvertMovementToDragRot
+        Rot.Yaw = Delta.x * 0.2f;
+        Rot.Pitch = Delta.y * 0.2f;
+    }
+
+    // MoveViewportPerspectiveCamera
+    {
+        FRotator ViewRotation = GetViewRotation();
+        ViewRotation += Rot;
+
+        ViewRotation.Yaw = FRotator::NormalizeAxis(ViewRotation.Yaw);
+        ViewRotation.Pitch = FRotator::NormalizeAxis(ViewRotation.Pitch);
+
+        // 각도를 ±90도 범위 내로 유지
+        ViewRotation.Pitch = FMath::Clamp(ViewRotation.Pitch, -90.f + UE_SMALL_NUMBER, 90.f - UE_SMALL_NUMBER);
+
+        SetViewRotation(ViewRotation);
+    }
+}
+
+void UEditorViewportClient::CalcSceneView(FSceneViewFamily* ViewFamily)
+{
+    FRotator ViewRotation = GetViewRotation();
+
+    ViewFamily->ViewRotationMatrix = FInverseRotationMatrix(ViewRotation);
+
+    // 언리얼 축에 맞게 View Matrix를 회전하고 있습니다.
+    // X가 전후방
+    // Y가 좌우
+    // Z가 상하
+    ViewFamily->ViewRotationMatrix = ViewFamily->ViewRotationMatrix * FMatrix(
+        FPlane(0, 0, 1, 0),
+        FPlane(1, 0, 0, 0),
+        FPlane(0, 1, 0, 0),
+        FPlane(0, 0, 0, 1));
+
+    FVector ViewOrigin = GetViewLocation();
+    FMatrix ViewTranslationMatrix = FMatrix::CreateTranslation(-ViewOrigin);
+
+    ViewFamily->ViewMatrix = ViewTranslationMatrix * ViewFamily->ViewRotationMatrix;
+
+    const float FOV = 90.0;
+    const float RadianFOV = DirectX::XMConvertToRadians(FOV);
+    const float HalfRadianFOV = RadianFOV / 2.f;
+
+    float XAxisMultiplier;
+    float YAxisMultiplier;
+    if (ViewportSize.x > ViewportSize.y)
+    {
+        XAxisMultiplier = 1.f;
+        YAxisMultiplier = ViewportSize.x / (float)ViewportSize.y;
+    }
+    else
+    {
+        XAxisMultiplier = ViewportSize.y / (float)ViewportSize.x;
+        YAxisMultiplier = 1.f;
+    }
+
+    ViewFamily->ProjectionMatrix = FReversedZPerspectiveMatrix(HalfRadianFOV, HalfRadianFOV, XAxisMultiplier, YAxisMultiplier, 10.f, 10.f);
+
 }
