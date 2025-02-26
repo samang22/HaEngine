@@ -8,12 +8,12 @@ class FRenderTarget;
 /**
  * 장면 공간에서 2D 화면 영역으로의 투영.
  */
-class FSceneView
-{
-public:
-    const FSceneViewFamily* Family;
-
-};
+//class FSceneView
+//{
+//public:
+//    const FSceneViewFamily* Family;
+//
+//};
 
 /**
  * 뷰 변환과 소유자 액터만 다른 장면에 대한 여러 뷰의 집합.
@@ -57,7 +57,7 @@ public:
     };
 
     /** 뷰 패밀리를 구성하는 뷰들. */
-    TArray<const FSceneView*> Views;
+    //TArray<const FSceneView*> Views;
 
     /** 뷰가 렌더링되는 렌더 타겟. */
     FRHIViewport* RenderTarget;
@@ -67,6 +67,10 @@ public:
 
     /** true인 경우 장면 렌더링 결과를 렌더 타겟에 복사/해결함. */
     uint32 bResolveScene : 1;
+
+    Matrix ViewMatrix = Matrix::Identity;
+    Matrix ViewRotationMatrix = Matrix::Identity;
+    Matrix ProjectionMatrix = Matrix::Identity;
 
     /** Initialization constructor. */
     ENGINE_API FSceneViewFamily(const ConstructionValues& CVS);

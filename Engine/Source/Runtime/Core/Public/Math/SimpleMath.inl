@@ -2587,7 +2587,8 @@ inline Matrix Matrix::CreatePerspectiveFieldOfView(float fov, float aspectRatio,
 {
     using namespace DirectX;
     Matrix R;
-    XMStoreFloat4x4(&R, XMMatrixPerspectiveFovRH(fov, aspectRatio, nearPlane, farPlane));
+    //XMStoreFloat4x4(&R, XMMatrixPerspectiveFovRH(fov, aspectRatio, nearPlane, farPlane));
+    XMStoreFloat4x4(&R, XMMatrixPerspectiveFovLH(fov, aspectRatio, nearPlane, farPlane));
     return R;
 }
 

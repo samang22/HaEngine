@@ -23,6 +23,12 @@ void FEditorCameraController::UpdatePosition(const FCameraControllerUserImpulseD
 			FVector(UserImpulse.MoveForwardBackwardImpulse,		// 로컬 공간의 앞/뒤
 				UserImpulse.MoveRightLeftImpulse,			// 로컬 공간의 좌/우
 				0.0f);										// 로컬 공간의 위/아래
+
+		// DirectX 기본
+		/*LocalSpaceImpulse =
+		FVector(UserImpulse.MoveRightLeftImpulse,
+		0.f,
+		-UserImpulse.MoveForwardBackwardImpulse);*/
 	}
 
 	// 월드 공간 가속도를 계산합니다.
@@ -38,6 +44,11 @@ void FEditorCameraController::UpdatePosition(const FCameraControllerUserImpulseD
 			FVector(0.0f,											// 월드 공간의 앞/뒤
 				0.0f,											// 월드 공간의 좌/우
 				UserImpulse.MoveUpDownImpulse);				// 월드 공간의 위/아래
+
+		/*WorldSpaceImpulse +=
+		FVector(0.0f,
+		UserImpulse.MoveUpDownImpulse,
+		0.0f);*/
 
 		// 임펄스의 크기가 1.0보다 큰 경우 정규화하여 제한합니다.
 		//if (WorldSpaceImpulse.SizeSquared() > 1.0f)

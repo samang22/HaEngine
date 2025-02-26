@@ -155,8 +155,8 @@ void FSceneRenderer::Render()
 			const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
 			SceneUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
 
-			FMatrix Matrix = FMatrix::CreatePerspectiveFieldOfView(3.14f / 4.f, 16.f / 9.f, 0.1f, 1000.f);
-			SceneUniformBuffer.ProjectionMatrix = Matrix.Transpose();
+			SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
+			SceneUniformBuffer.ProjectionMatrix = ViewFamily.ProjectionMatrix.Transpose();
 			RHIUpdateUniformBuffer(SceneUniformBufferRHI, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
 			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
 

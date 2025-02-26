@@ -1182,4 +1182,4 @@ FMatrix CORE_API FReversedZPerspectiveMatrix(float HalfFOVX, float HalfFOVY, flo
 FMatrix CORE_API FPerspectiveMatrix(float HalfFOVX, float HalfFOVY, float MultFOVX, float MultFOVY, float MinZ, float MaxZ);
 
 // TInverseRotationMatrix
-//FMatrix CORE_API FInverseRotationMatrix(const FRotator& Rot);
+FMatrix CORE_API FInverseRotationMatrix(const FRotator& Rot);

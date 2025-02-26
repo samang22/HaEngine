@@ -69,6 +69,19 @@ public:
         return ViewTransform.GetRotation();
     }
 
+    /** 뷰포트 카메라의 위치를 설정합니다 */
+    void SetViewLocation(const FVector& NewLocation)
+    {
+        FViewportCameraTransform& ViewTransform = GetViewTransform();
+        ViewTransform.SetLocation(NewLocation);
+    }
+
+    /** 뷰포트 카메라의 회전을 설정합니다 */
+    void SetViewRotation(const FRotator& NewRotation)
+    {
+        FViewportCameraTransform& ViewTransform = GetViewTransform();
+        ViewTransform.SetRotation(NewRotation);
+    }
 
 protected:
     /**
@@ -77,6 +90,9 @@ protected:
      * @param DeltaTime 마지막 업데이트 이후 경과된 시간(초)
      */
     void UpdateCameraMovement(float DeltaTime);
+
+    /** 원근 카메라를 이동시킵니다 */
+    void MoveViewportPerspectiveCamera(const FVector& InDrag, const FRotator& InRot);
 
     /**
      * 델타 마우스 움직임을 기반으로 뷰포트를 업데이트하기 위해 매 프레임마다 호출됩니다.

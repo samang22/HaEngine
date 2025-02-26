@@ -348,23 +348,23 @@ FMatrix CORE_API FPerspectiveMatrix(float HalfFOVX, float HalfFOVY, float MultFO
     );
 }
 
-//FMatrix CORE_API FInverseRotationMatrix(const FRotator& Rot)
-//{
-//    return FMatrix(
-//        FMatrix( // Yaw
-//            FPlane(+cos(Rot.Yaw * XM_PI / 180.f), -sin(Rot.Yaw * XM_PI / 180.f), 0.0f, 0.0f),
-//            FPlane(+sin(Rot.Yaw * XM_PI / 180.f), +cos(Rot.Yaw * XM_PI / 180.f), 0.0f, 0.0f),
-//            FPlane(0.0f, 0.0f, 1.0f, 0.0f),
-//            FPlane(0.0f, 0.0f, 0.0f, 1.0f)) *
-//        FMatrix( // Pitch
-//            FPlane(+cos(Rot.Pitch * XM_PI / 180.f), 0.0f, -sin(Rot.Pitch * XM_PI / 180.f), 0.0f),
-//            FPlane(0.0f, 1.0f, 0.0f, 0.0f),
-//            FPlane(+sin(Rot.Pitch * XM_PI / 180.f), 0.0f, +cos(Rot.Pitch * XM_PI / 180.f), 0.0f),
-//            FPlane(0.0f, 0.0f, 0.0f, 1.0f)) *
-//        FMatrix( // Roll
-//            FPlane(1.0f, 0.0f, 0.0f, 0.0f),
-//            FPlane(0.0f, +cos(Rot.Roll * XM_PI / 180.f), +sin(Rot.Roll * XM_PI / 180.f), 0.0f),
-//            FPlane(0.0f, -sin(Rot.Roll * XM_PI / 180.f), +cos(Rot.Roll * XM_PI / 180.f), 0.0f),
-//            FPlane(0.0f, 0.0f, 0.0f, 1.0f))
-//    );
-//}
+FMatrix CORE_API FInverseRotationMatrix(const FRotator& Rot)
+{
+    return FMatrix(
+        FMatrix( // Yaw
+            FPlane(+cos(Rot.Yaw * XM_PI / 180.f), -sin(Rot.Yaw * XM_PI / 180.f), 0.0f, 0.0f),
+            FPlane(+sin(Rot.Yaw * XM_PI / 180.f), +cos(Rot.Yaw * XM_PI / 180.f), 0.0f, 0.0f),
+            FPlane(0.0f, 0.0f, 1.0f, 0.0f),
+            FPlane(0.0f, 0.0f, 0.0f, 1.0f)) *
+        FMatrix( // Pitch
+            FPlane(+cos(Rot.Pitch * XM_PI / 180.f), 0.0f, -sin(Rot.Pitch * XM_PI / 180.f), 0.0f),
+            FPlane(0.0f, 1.0f, 0.0f, 0.0f),
+            FPlane(+sin(Rot.Pitch * XM_PI / 180.f), 0.0f, +cos(Rot.Pitch * XM_PI / 180.f), 0.0f),
+            FPlane(0.0f, 0.0f, 0.0f, 1.0f)) *
+        FMatrix( // Roll
+            FPlane(1.0f, 0.0f, 0.0f, 0.0f),
+            FPlane(0.0f, +cos(Rot.Roll * XM_PI / 180.f), +sin(Rot.Roll * XM_PI / 180.f), 0.0f),
+            FPlane(0.0f, -sin(Rot.Roll * XM_PI / 180.f), +cos(Rot.Roll * XM_PI / 180.f), 0.0f),
+            FPlane(0.0f, 0.0f, 0.0f, 1.0f))
+    );
+}

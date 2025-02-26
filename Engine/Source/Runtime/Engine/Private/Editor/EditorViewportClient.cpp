@@ -1,5 +1,10 @@
 #include "Editor/EditorViewportClient.h"
 #include "Editor/CameraController.h"
+#include "RenderResource.h"
+#include "RendererInterface.h"
+#include "SceneView.h"
+#include "EngineModule.h"
+#include "Engine/World.h"
 
 UEditorViewportClient::~UEditorViewportClient()
 {
@@ -35,7 +40,32 @@ void UEditorViewportClient::Tick(float DeltaTime)
 
 void UEditorViewportClient::Draw()
 {
-    Super::Draw();
+    //Super::Draw();
+
+    if (!GetScene()) { return; }
+    // 뷰포트를 위한 FSceneViewFamily/FSceneView 설정
+    FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(Viewport, GetScene()));
+
+    FRotator ViewRotation = GetViewRotation();
+
+    ViewFamily.ViewRotationMatrix = FInverseRotationMatrix(ViewRotation);
+
+    // 언리얼 축에 맞게 View Matrix를 회전하고 있습니다.
+    // X가 전후방
+    // Y가 좌우
+    // Z가 상하
+    ViewFamily.ViewRotationMatrix = ViewFamily.ViewRotationMatrix * FMatrix(
+        FPlane(0, 0, 1, 0),
+        FPlane(1, 0, 0, 0),
+        FPlane(0, 1, 0, 0),
+        FPlane(0, 0, 0, 1));
+
+    FVector ViewOrigin = GetViewLocation();
+    FMatrix ViewTranslationMatrix = FMatrix::CreateTranslation(-ViewOrigin);
+
+    ViewFamily.ViewMatrix = ViewTranslationMatrix * ViewFamily.ViewRotationMatrix;
+    ViewFamily.ProjectionMatrix = FMatrix::CreatePerspectiveFieldOfView(3.14f / 4.f, 16.f / 9.f, 100.f, 1000.f);
+    GetRendererModule().BeginRenderingViewFamily(&ViewFamily);
 }
 
 void UEditorViewportClient::UpdateCameraMovement(float DeltaTime)
@@ -127,6 +157,37 @@ void UEditorViewportClient::UpdateCameraMovement(float DeltaTime)
         CameraUserImpulseData->RotatePitchVelocityModifier = 0.0f;
         CameraUserImpulseData->RotateRollVelocityModifier = 0.0f;
     }
+
+    // 위치/회전이 변경되었는지 확인
+    const bool bTransformDifferent = !NewViewLocation.Equals(GetViewLocation(), UE_SMALL_NUMBER) || NewViewRotation != GetViewRotation();
+    if (bTransformDifferent)
+    {
+        MoveViewportPerspectiveCamera(
+            NewViewLocation - GetViewLocation(),
+            NewViewRotation - GetViewRotation());
+    }
+}
+
+void UEditorViewportClient::MoveViewportPerspectiveCamera(const FVector& InDrag, const FRotator& InRot)
+{
+    FVector ViewLocation = GetViewLocation();
+    FRotator ViewRotation = GetViewRotation();
+
+    {
+        // 카메라 회전 업데이트
+        ViewRotation += FRotator(InRot.Pitch, InRot.Yaw, InRot.Roll);
+
+        // -180도에서 180도로 정규화
+        ViewRotation.Pitch = FRotator::NormalizeAxis(ViewRotation.Pitch);
+        // 나중에 카메라 방향 변환에서 발생할 수 있는 수치적 문제를 피하기 위해 피치를 ±90도 (작은 허용 오차를 포함하여) 이내로 유지
+        ViewRotation.Pitch = FMath::Clamp(ViewRotation.Pitch, -90.f + UE_SMALL_NUMBER, 90.f - UE_SMALL_NUMBER);
+    }
+
+    // Update camera Location
+    ViewLocation += InDrag;
+
+    SetViewLocation(ViewLocation);
+    SetViewRotation(ViewRotation);
 }
 
 void UEditorViewportClient::UpdateMouseDelta()

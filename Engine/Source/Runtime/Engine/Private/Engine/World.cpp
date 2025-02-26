@@ -54,8 +54,8 @@ void UWorld::InitalizeNewWorld()
 
 	FActorSpawnParameters ActorSpawnParameters;
 	ActorSpawnParameters.TransformScaleMethod = ESpawnActorScaleMethod::OverrideRootScale;
-	FTransform TransformLeft = FTransform(FRotator::ZeroRotator, FVector3D(-100.f, 0.f, -200.f), FVector3D(0.5f, 0.5f, 0.5f));
-	FTransform TransformRight = FTransform(FRotator::ZeroRotator, FVector3D(100.f, 0.f, -200.f), FVector3D(0.5f, 0.5f, 0.5f));
+	FTransform TransformLeft = FTransform(FRotator::ZeroRotator, FVector3D(200.f, -100.f, 0.f), FVector3D(0.5f, 0.5f, 0.5f));
+	FTransform TransformRight = FTransform(FRotator::ZeroRotator, FVector3D(200.f, 100.f, 0.f), FVector3D(0.5f, 0.5f, 0.5f));	
 	AStaticMeshActor* Actor = SpawnActor<AStaticMeshActor>(nullptr, TransformLeft, ActorSpawnParameters);
 	AStaticMeshActor* Actor2 = SpawnActor<AStaticMeshActor>(nullptr, TransformRight, ActorSpawnParameters);
 

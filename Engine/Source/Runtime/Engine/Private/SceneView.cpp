@@ -3,10 +3,10 @@
 FSceneViewFamilyContext::~FSceneViewFamilyContext()
 {
     // 이 뷰 패밀리에 할당된 뷰들을 정리합니다.
-    for (int32 ViewIndex = 0; ViewIndex < Views.size(); ViewIndex++)
-    {
-        delete Views[ViewIndex];
-    }
+    //for (int32 ViewIndex = 0; ViewIndex < Views.size(); ViewIndex++)
+    //{
+    //    delete Views[ViewIndex];
+    //}
 
 }
 
