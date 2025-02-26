@@ -157,6 +157,7 @@ void FSceneRenderer::Render()
 
 			SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
 			SceneUniformBuffer.ProjectionMatrix = ViewFamily.ProjectionMatrix.Transpose();
+			SceneUniformBuffer.ViewProjectionMatrix = ViewFamily.ViewProjectionMatrix.Transpose();
 			RHIUpdateUniformBuffer(SceneUniformBufferRHI, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
 			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
 

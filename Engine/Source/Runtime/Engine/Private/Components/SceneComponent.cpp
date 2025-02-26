@@ -137,6 +137,55 @@ void USceneComponent::SetWorldTransform(const FTransform& NewTransform)
     }
 }
 
+void USceneComponent::SetupAttachment(USceneComponent* InParent)
+{
+    if (InParent != AttachParent /*|| InSocketName != AttachSocketName*/)
+    {
+        // TEXT("SetupAttachment should only be used to initialize AttachParent and AttachSocketName for a future AttachToComponent. Once a component is registered you must use AttachToComponent. Owner [%s], InParent [%s], InSocketName [%s]"), *GetPathNameSafe(GetOwner()), *GetNameSafe(InParent), *InSocketName.ToString()
+        _ASSERT(!bRegistered);
+        if (!bRegistered)
+        {
+            _ASSERT(InParent != this, TEXT("Cannot attach a component to itself."));
+            if (InParent != this)
+            {
+                _ASSERT(InParent == nullptr || !InParent->IsAttachedTo(this),
+                    TEXT("Setting up attachment would create a cycle."));
+                if (InParent == nullptr || !InParent->IsAttachedTo(this))
+                {
+                    _ASSERT(AttachParent == nullptr || AttachParent->AttachChildren.end() == find(AttachParent->AttachChildren.begin(), AttachParent->AttachChildren.end(), this),
+                        TEXT("SetupAttachment cannot be used once a component has already had AttachTo used to connect it to a parent."));
+                    if (AttachParent == nullptr || AttachParent->AttachChildren.end() == find(AttachParent->AttachChildren.begin(), AttachParent->AttachChildren.end(), this))
+                    {
+                        SetAttachParent(InParent);
+                        /*SetAttachSocketName(InSocketName);
+                        SetShouldBeAttached(AttachParent != nullptr);*/
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool USceneComponent::IsAttachedTo(const USceneComponent* TestComp) const
+{
+    if (TestComp != nullptr)
+    {
+        for (const USceneComponent* Comp = this->GetAttachParent(); Comp != nullptr; Comp = Comp->GetAttachParent())
+        {
+            if (TestComp == Comp)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void USceneComponent::SetAttachParent(USceneComponent* NewAttachParent)
+{
+    AttachParent = NewAttachParent->As<USceneComponent>();
+}
+
 void USceneComponent::UpdateComponentToWorldWithParent(USceneComponent* Parent, const FQuat& RelativeRotationQuat)
 {// 부모가 이전에 업데이트되지 않았다면, 부모 연결 계층을 따라 올라가야 합니다.
     if (Parent && !Parent->bComponentToWorldUpdated)

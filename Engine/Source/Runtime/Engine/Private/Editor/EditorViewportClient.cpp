@@ -144,32 +144,8 @@ void UEditorViewportClient::UpdateCameraMovement(float DeltaTime)
     const bool bTransformDifferent = !NewViewLocation.Equals(GetViewLocation(), UE_SMALL_NUMBER) || NewViewRotation != GetViewRotation();
     if (bTransformDifferent)
     {
-        MoveViewportPerspectiveCamera(
-            NewViewLocation - GetViewLocation(),
-            NewViewRotation - GetViewRotation());
+        SetViewLocation(NewViewLocation);
     }
-}
-
-void UEditorViewportClient::MoveViewportPerspectiveCamera(const FVector& InDrag, const FRotator& InRot)
-{
-    FVector ViewLocation = GetViewLocation();
-    FRotator ViewRotation = GetViewRotation();
-
-    {
-        // 카메라 회전 업데이트
-        ViewRotation += FRotator(InRot.Pitch, InRot.Yaw, InRot.Roll);
-
-        // -180도에서 180도로 정규화
-        ViewRotation.Pitch = FRotator::NormalizeAxis(ViewRotation.Pitch);
-        // 나중에 카메라 방향 변환에서 발생할 수 있는 수치적 문제를 피하기 위해 피치를 ±90도 (작은 허용 오차를 포함하여) 이내로 유지
-        ViewRotation.Pitch = FMath::Clamp(ViewRotation.Pitch, -90.f + UE_SMALL_NUMBER, 90.f - UE_SMALL_NUMBER);
-    }
-
-    // Update camera Location
-    ViewLocation += InDrag;
-
-    SetViewLocation(ViewLocation);
-    SetViewRotation(ViewRotation);
 }
 
 void UEditorViewportClient::UpdateMouseDelta()
@@ -191,14 +167,16 @@ void UEditorViewportClient::UpdateMouseDelta()
     const bool LastRightMouseButtonDown = LastMouseState.rightButton;
     if (!RightMouseButtonDown)
     {
-        if (LastRightMouseButtonDown == true && RightMouseButtonDown == false)
+        // 우클릭이 끝난 시점
+        if (LastRightMouseButtonDown == true)
         {
             ShowCursor(TRUE);
         }
         return;
     }
 
-    if (LastRightMouseButtonDown == false && RightMouseButtonDown == true)
+    // 이전에는 우클릭 안했다가, 처음 우클릭을 한 경우
+    if (LastRightMouseButtonDown == false)
     {
         RightButtonStartMouseState = CurrentMouseState;
         ShowCursor(FALSE);
@@ -259,8 +237,8 @@ void UEditorViewportClient::CalcSceneView(FSceneViewFamily* ViewFamily)
 
     ViewFamily->ViewMatrix = ViewTranslationMatrix * ViewFamily->ViewRotationMatrix;
 
-    const float FOV = 90.0;
-    const float RadianFOV = DirectX::XMConvertToRadians(FOV);
+    constexpr float FOV = 90.0;
+    constexpr float RadianFOV = DirectX::XMConvertToRadians(FOV);
     const float HalfRadianFOV = RadianFOV / 2.f;
 
     float XAxisMultiplier;
@@ -277,5 +255,5 @@ void UEditorViewportClient::CalcSceneView(FSceneViewFamily* ViewFamily)
     }
 
     ViewFamily->ProjectionMatrix = FReversedZPerspectiveMatrix(HalfRadianFOV, HalfRadianFOV, XAxisMultiplier, YAxisMultiplier, 10.f, 10.f);
-
+    ViewFamily->ViewProjectionMatrix = ViewFamily->ViewMatrix * ViewFamily->ProjectionMatrix;
 }

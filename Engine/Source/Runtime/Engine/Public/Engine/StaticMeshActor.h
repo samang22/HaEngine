@@ -21,5 +21,6 @@ public:
     virtual void Tick(float DeltaSeconds) override;
 private:
     //UPROPERTY()
-    class UStaticMeshComponent* StaticMeshComponent;
+    UStaticMeshComponent* StaticMeshComponent;
+    UStaticMeshComponent* ChildStaticMeshComponent;
 };

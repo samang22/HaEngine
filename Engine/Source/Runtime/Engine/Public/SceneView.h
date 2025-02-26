@@ -71,6 +71,7 @@ public:
     Matrix ViewMatrix = Matrix::Identity;
     Matrix ViewRotationMatrix = Matrix::Identity;
     Matrix ProjectionMatrix = Matrix::Identity;
+    Matrix ViewProjectionMatrix = Matrix::Identity;
 
     /** Initialization constructor. */
     ENGINE_API FSceneViewFamily(const ConstructionValues& CVS);

@@ -21,6 +21,7 @@ public:
     {
         FMatrix ViewMatrix = FMatrix::Identity;
         FMatrix ProjectionMatrix = FMatrix::Identity;
+        FMatrix ViewProjectionMatrix = FMatrix::Identity;
     };
     FSceneUniformBuffer SceneUniformBuffer;
     FUniformBufferRHIRef SceneUniformBufferRHI;

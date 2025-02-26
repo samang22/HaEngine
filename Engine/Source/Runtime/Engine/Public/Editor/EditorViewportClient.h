@@ -92,9 +92,6 @@ protected:
      */
     void UpdateCameraMovement(float DeltaTime);
 
-    /** 원근 카메라를 이동시킵니다 */
-    void MoveViewportPerspectiveCamera(const FVector& InDrag, const FRotator& InRot);
-
     /**
      * 델타 마우스 움직임을 기반으로 뷰포트를 업데이트하기 위해 매 프레임마다 호출됩니다.
      */

@@ -174,6 +174,29 @@ protected:
         }
     }
 
+    public:
+        /**
+         * 컴포넌트가 등록될 때 연결될 Attach Parent와 SocketName을 초기화합니다.
+         * 일반적으로 Owning Actor의 생성자에서 호출되며, 컴포넌트가 등록되지 않은 상태에서 AttachToComponent보다 우선하여 사용해야 합니다.
+         * @param  InParent             연결될 부모 객체.
+         * @param  InSocketName         부모 객체의 소켓에 연결하기 위한 선택적 소켓 이름.
+         */
+        void SetupAttachment(USceneComponent* InParent/*, FName InSocketName = NAME_None*/);
+
+        /**
+         * 이 컴포넌트가 제공된 컴포넌트에 연결되어 있는지 확인하기 위해 첨부 체인을 따라 올라갑니다.
+         * 만약 TestComp가 이 컴포넌트와 동일한 경우, false를 반환합니다.
+        */
+        bool IsAttachedTo(const USceneComponent* TestComp) const;
+
+private:
+    /**
+     * 이 인스턴스에 다른 부작용을 일으키지 않고 AttachParent의 값을 설정합니다.
+     * 다른 시스템은 이 값을 변경할 때 알림을 받을 수 있습니다.
+     */
+    void SetAttachParent(USceneComponent* NewAttachParent);
+
+
 
 private:
     void UpdateComponentToWorldWithParent(USceneComponent* Parent, /*FName SocketName, */const FQuat& RelativeRotationQuat/*, ETeleportType Teleport = ETeleportType::None*/);
@@ -204,8 +227,14 @@ private:
     FRotationConversionCache RelativeRotationCache;
 
 	/** What we are currently attached to. If valid, RelativeLocation etc. are used relative to this object */
-	//UPROPERTY(ReplicatedUsing = OnRep_AttachParent)
+	//UPROPERTY()
 	TEnginePtr<USceneComponent> AttachParent;
+
+    /**
+     * 자식 SceneComponents의 목록입니다.
+    */
+    //UPROPERTY()
+    TArray<TEnginePtr<USceneComponent>> AttachChildren;
 
 private:
 	/** 현재 컴포넌트의 Transform, 월드 기준 */

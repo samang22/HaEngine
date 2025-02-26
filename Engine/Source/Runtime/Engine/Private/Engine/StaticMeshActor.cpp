@@ -17,6 +17,12 @@ AStaticMeshActor::AStaticMeshActor()
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	StaticMeshComponent->SetStaticMesh(StaticMesh);
 	StaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -200.f));
+
+	ChildStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ChildStaticMeshComponent"));
+	ChildStaticMeshComponent->SetStaticMesh(StaticMesh);
+	ChildStaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -200.f));
+	ChildStaticMeshComponent->SetupAttachment(StaticMeshComponent);
+
 	RootComponent = Cast<USceneComponent>(StaticMeshComponent);
 }
 
