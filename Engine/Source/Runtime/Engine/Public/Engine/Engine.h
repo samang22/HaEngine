@@ -6,6 +6,8 @@
 class UEditorViewportClient;
 class UViewportClient;
 
+class UGameInstance;
+
 UCLASS()
 class ENGINE_API UEngine : public UObject
 {
@@ -28,16 +30,34 @@ public:
 public:
     void WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 
+public:
+    virtual UWorld* GetEditorWorld() { return EditorWorld.get(); }
+    virtual UWorld* CreatePIEWorldByDuplication(UWorld* InWorld);
+
 protected:
     /** 틱 레이트 제한기를 가져옵니다. */
     double GetMaxTickRate(double DeltaTime);
+
+    /**
+    * 새로운 Play in Editor 인스턴스를 생성합니다 (하나의 프로세스에서 실행되지 않는 경우 새로운 프로세스에서 실행될 수 있습니다).
+    * 현재 세션 상태를 읽어 필요한 다음 인스턴스를 시작합니다.
+    * @param   InRequestParams         - 주로 글로벌 설정에 사용됩니다. 인스턴스별로 다르게 하지 말아야 합니다.
+    * @param   bInDedicatedInstance    - true인 경우, 전용 서버 인스턴스를 생성합니다. 여러 프로세스를 사용하는 경우, 사용하지 말아야 합니다.
+    * @param   InNetMode               - 이 인스턴스를 시작할 때 사용되는 네트 모드입니다. ListenServer와 같은 일부 네트 모드는 다음 인스턴스에 다른 네트 모드를 필요로 하기 때문에, RequestParams에서 가져오지 않습니다.
+    */
+    virtual void CreateNewPlayInEditorInstance();
+
 protected:
+    bool bPIE = false;
     HWND MainViewportHandle = NULL;
-    shared_ptr<UWorld> World;
+    TObjectPtr<UWorld> PlayWorld;
     shared_ptr<UWorld> EditorWorld;
 
     TObjectPtr<UEditorViewportClient> EditorViewportClient;
     TEnginePtr<UViewportClient> CurrentViewportClient;
+
+protected: // PIE
+    TObjectPtr<UGameInstance> GameInstance;
 };
 
 extern ENGINE_API UWorld* GWorld;

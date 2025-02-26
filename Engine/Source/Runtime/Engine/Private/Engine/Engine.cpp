@@ -1,6 +1,8 @@
 #include "Engine/Engine.h"
+#include "Engine/GameInstance.h"
 #include "Editor/EditorViewportClient.h"
 #include "EngineModule.h"
+#include "GameMapsSettings.h"
 
 
 IMPLEMENT_MODULE(FEngineModule, Engine);
@@ -34,10 +36,10 @@ void UEngine::Init(HWND hViewportHandle)
 {
 	MainViewportHandle = hViewportHandle;
 
-	World = NewObject<UWorld>(this, UWorld::StaticClass(), TEXT("Editor World"));
-	World->WorldType - EWorldType::Editor;
-	EditorWorld = World;
-	GWorld = World.get();
+    PlayWorld = NewObject<UWorld>(this, UWorld::StaticClass(), TEXT("Editor World"));
+    PlayWorld->WorldType = EWorldType::Editor;
+    EditorWorld = PlayWorld;
+    GWorld = PlayWorld.get();
 
 	GWorld->InitalizeNewWorld();
 
@@ -49,6 +51,20 @@ void UEngine::Init(HWND hViewportHandle)
 void UEngine::Tick(float DeltaSeconds)
 {
     GWorld->Tick(DeltaSeconds);
+
+    DirectX::Keyboard::State KeyboardState = DirectX::Keyboard::Get().GetState();
+    const bool bLeftAltKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::LeftAlt);
+    const bool bPKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::P);
+    const bool bESCKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::Escape);
+    if (bLeftAltKeyDown && bPKeyDown)
+    {
+        CreateNewPlayInEditorInstance();
+    }
+    else if (bESCKeyDown)
+    {
+        // PIE -> SIE
+    }
+
     EditorViewportClient->Tick(DeltaSeconds);
     EditorViewportClient->Draw();
 }
@@ -114,11 +130,11 @@ void UEngine::UpdateTimeAndHandleMaxTickRate()
         // 한 프레임이 튀어서 텔타 타임이 너무 큰 경우(Ex. 5초가 지남) 강제로 줄입니다
         const float MaxDeltaTime = 1.f / 5.f;
         // 호스트 또는 클라이언트로서 네트워크 클라이언트를 다루는 경우 델타 시간을 수정하고 싶지 않습니다.
-        //if (World != NULL
+        //if (PlayWorld != NULL
         //    // 게임 정보가 없는 것은 클라이언트를 의미합니다.
-        //    && ((World->GetAuthGameMode() != NULL
+        //    && ((PlayWorld->GetAuthGameMode() != NULL
         //        // NumPlayers와 GamePlayer는 스탠드얼론 게임 유형에서만 일치하며, 스플릿스크린의 경우를 처리합니다.
-        //        && World->GetAuthGameMode()->GetNumPlayers() == NumGamePlayers)))
+        //        && PlayWorld->GetAuthGameMode()->GetNumPlayers() == NumGamePlayers)))
         if (MaxDeltaTime > 0.f)
         {
             FApp::SetDeltaTime(FMath::Min<double>(FApp::GetDeltaTime(), MaxDeltaTime));
@@ -145,12 +161,12 @@ void UEngine::UpdateTimeAndHandleMaxTickRate()
 
 string UEngine::Save()
 {
-    return World->Save();
+    return PlayWorld->Save();
 }
 
 void UEngine::Load(const string& InLoadString)
 {
-    World->Load(InLoadString);
+    PlayWorld->Load(InLoadString);
 }
 
 void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
@@ -204,10 +220,42 @@ void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResu
     }
 }
 
+UWorld* UEngine::CreatePIEWorldByDuplication(UWorld* InWorld)
+{
+    UWorld* NewPIEWorld = NULL;
+    FString WorldName = TEXT("PIE World");
+
+    GWorld = NULL;
+
+    return nullptr;
+}
+
 double UEngine::GetMaxTickRate(double DeltaTime)
 {
     double MaxTickRate = 0.0;
     MaxTickRate = 1.0 / DeltaTime;
     MaxTickRate = FMath::Min(MaxTickRate, 120.0);
     return MaxTickRate;
+}
+
+void UEngine::CreateNewPlayInEditorInstance()
+{
+    if (bPIE) { return; }
+    bPIE = true;
+
+    // CreateInnerProcessPIEGameInstance
+    {
+        const UGameMapsSettings* GameMapsSettings = GetDefault<UGameMapsSettings>();
+        UClass* GameInstanceClass = GameMapsSettings->GameInstanceClass;
+        // 잘못된 클래스 타입이 지정된 경우, 기본 값으로 되돌아갑니다.
+        if (!GameInstanceClass)
+        {
+            GameInstanceClass = UGameInstance::StaticClass();
+        }
+
+        GameInstance = NewObject<UGameInstance>(this, GameInstanceClass);
+
+        // GameInstance를 초기화하려고 시도합니다. 이것은 월드를 생성할 것입니다.
+        GameInstance->InitializeForPlayInEditor();
+    }
 }

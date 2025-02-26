@@ -1,6 +1,6 @@
-#include "GameMapSettings.h"
+#include "GameMapsSettings.h"
 
-UGameMapSettings::UGameMapSettings()
+UGameMapsSettings::UGameMapsSettings()
 {
 	if (!HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
 

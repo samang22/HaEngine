@@ -1,13 +1,13 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "GameMapSettings.generated.h"
+#include "GameMapsSettings.generated.h"
 
 UCLASS()
-class ENGINE_API UGameMapSettings : public UObject {
+class ENGINE_API UGameMapsSettings : public UObject {
 	GENERATED_BODY()
 
 public:
-	UGameMapSettings();
+	UGameMapsSettings();
 
 	UClass* GameInstanceClass = nullptr;
 	UClass* GameModeClass = nullptr;

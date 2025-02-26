@@ -307,3 +307,46 @@ shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NA
 }
 
 TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FString& InObjectName);
+
+/**
+ * 클래스의 기본 오브젝트를 가져옵니다.
+ * @see UClass::GetDefaultObject()
+ */
+template< class T >
+inline const T* GetDefault()
+{
+	return (const T*)T::StaticClass()->GetDefaultObject();
+}
+
+/** StaticDuplicateObject() 및 관련 함수에서 사용되어 객체가 복제되는 이유를 설명하는 열거형 */
+namespace EDuplicateMode
+{
+	enum Type
+	{
+		/** 복제 이유에 대한 구체적인 정보 없음 */
+		Normal,
+		/** 월드 복제의 일환으로 객체가 복제됨 */
+		World,
+		/** Play In Editor 단계의 일환으로 객체가 복제됨 */
+		PIE
+	};
+};
+
+
+/**
+ * SourceObject를 주어진 Outer 및 Name을 사용하여 복사본을 생성하고, SourceObject에 포함된 모든 객체의 복사본도 생성합니다.
+ * SourceOuter 또는 RootObject가 참조하고 SourceOuter에 포함된 모든 객체도 복사하고, SourceOuter에 상대적인 이름을 유지합니다.
+ * 복제된 객체에 대한 모든 참조는 자동으로 객체의 복사본으로 대체됩니다.
+ *
+ * @param   SourceObject    복제할 객체
+ * @param   DestOuter       SourceObject의 복사본에 대해 Outer로 사용할 객체
+ * @param   DestName        SourceObject의 복사본에 사용할 이름, 없다면 자동으로 생성됩니다
+ * @param   FlagMask        객체 복사본에 전파해야 할 EObjectFlags의 비트 마스크. 결과 객체 복사본은 해당 객체 플래그들만 복사됩니다.
+ * @param   DestClass       대상 객체에 지정할 선택적 클래스. SOURCE OBJECT와 직렬화 호환되어야 합니다!!!
+ * @param   InternalFlagsMask  객체 복사본에 전파해야 할 EInternalObjectFlags의 비트 마스크.
+ *
+ * @return  SourceObject의 복사본.
+ *
+ * @deprecated 이 버전은 StaticDuplicateObjectEx를 권장하므로 더 이상 사용되지 않습니다.
+ */
+CORE_API UObject* StaticDuplicateObject(UObject* SourceObject, UObject* DestOuter, const FName DestName = NAME_None, EDuplicateMode::Type DuplicateMode = EDuplicateMode::Normal/*, EInternalObjectFlags InternalFlagsMask = EInternalObjectFlags_AllFlags*/);

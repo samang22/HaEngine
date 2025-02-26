@@ -3,6 +3,6 @@
 #include "Engine/AssetManager.h"
 #include "Engine/GameInstance.h"
 #include "Engine/StaticMesh.h"
-#include "GameMapSettings.h"
+#include "GameMapsSettings.h"
 
 #include "GameFramework/GameModeBase.h"

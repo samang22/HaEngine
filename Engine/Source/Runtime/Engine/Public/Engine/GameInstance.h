@@ -15,4 +15,11 @@ class ENGINE_API UGameInstance : public UObject
     GENERATED_BODY()
 public:
     UGameInstance();
+
+    class UEngine* GetEngine() const;
+
+#if WITH_EDITOR
+    /* 게임의 PIE 인스턴스를 위해 게임 인스턴스를 초기화하는데 호출됩니다 */
+    virtual void InitializeForPlayInEditor();
+#endif
 };

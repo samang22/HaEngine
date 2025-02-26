@@ -121,6 +121,11 @@ void UWorld::Load(const string& InLoadString)
 	}
 }
 
+UWorld* UWorld::GetDuplicatedWorldForPIE(UWorld* InWorld)
+{
+	return nullptr;
+}
+
 AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, const FActorSpawnParameters& SpawnParameters)
 {
 	_ASSERT(PersistentLevel.get());

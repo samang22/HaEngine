@@ -65,6 +65,12 @@ public:
 
 public:
 	/**
+	 * 에디터 월드를 복제하여 PIE 월드를 생성합니다.
+	 */
+	static UWorld* GetDuplicatedWorldForPIE(UWorld* InWorld);
+
+public:
+	/**
 	 * 주어진 Transform과 스폰 파라미터를 사용하여 액터를 스폰합니다.
 	 *
 	 * @param   Class                   스폰할 클래스
