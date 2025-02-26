@@ -54,6 +54,16 @@ public:
         DeltaTime = Seconds;
     }
 
+    static uint32 GetFPS()
+    {
+        return FPS;
+    }
+
+    static void SetFPS(uint32 InFPS)
+    {
+        FPS = InFPS;
+    }
+
 private:
     /** 현재 시간을 보유합니다. */
     static inline CORE_API double CurrentTime = 0.0;
@@ -63,4 +73,6 @@ private:
 
     /** 현재 델타 시간을 초 단위로 보유합니다. */
     static inline CORE_API double DeltaTime = 1.0 / 30.0;
+
+    static inline CORE_API uint32 FPS = 0;
 };

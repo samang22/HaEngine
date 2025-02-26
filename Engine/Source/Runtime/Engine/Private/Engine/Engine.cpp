@@ -70,16 +70,16 @@ void UEngine::UpdateTimeAndHandleMaxTickRate()
         FApp::SetCurrentTime(CurrentRealTime);
 
         // 델타 시간을 계산합니다. 이는 실시간 초 단위입니다.
-        float DeltaRealTime = CurrentRealTime - LastRealTime;
+        double DeltaRealTime = CurrentRealTime - LastRealTime;
 
         // 델타 타임이 너무 낮은 경우 또는 높은 경우 보정을 한다
-        const float MaxTickRate = GetMaxTickRate(DeltaRealTime);
+        const double MaxTickRate = GetMaxTickRate(DeltaRealTime);
 
-        float WaitTime = 0.f;
+        double WaitTime = 0.f;
         // 최대 FPS에서 대기 시간으로 변환합니다.
         if (MaxTickRate > 0)
         {
-            WaitTime = FMath::Max(1.f / MaxTickRate - DeltaRealTime, 0.f);
+            WaitTime = FMath::Max(1.0 / MaxTickRate - DeltaRealTime, 0.0);
         }
 
         // 최대 프레임 속도와 부드러운 프레임 속도를 적용하기 위해 대기합니다.
@@ -91,8 +91,7 @@ void UEngine::UpdateTimeAndHandleMaxTickRate()
             // 2ms의 여유 시간을 예약하고, 이를 대기하기 위해 타임슬라이스를 포기합니다.
             if (WaitTime > 5.f / 1000.f)
             {
-                uint32 Milliseconds = (uint32)((WaitTime - 0.002f) * 1000.0);
-                Sleep(Milliseconds);
+                uint32 Milliseconds = (uint32)((WaitTime - 0.005f) * 1000.0);
             }
 
             while (FPlatformTime::Seconds() < WaitEndTime)
@@ -107,6 +106,37 @@ void UEngine::UpdateTimeAndHandleMaxTickRate()
         FApp::SetDeltaTime(FApp::GetCurrentTime() - LastRealTime);
 
         LastRealTime = CurrentRealTime;
+
+        // 원하는 경우 최대 델타 시간을 적용합니다.
+        // 한 프레임이 튀어서 텔타 타임이 너무 큰 경우(Ex. 5초가 지남) 강제로 줄입니다
+        const float MaxDeltaTime = 1.f / 5.f;
+        // 호스트 또는 클라이언트로서 네트워크 클라이언트를 다루는 경우 델타 시간을 수정하고 싶지 않습니다.
+        //if (World != NULL
+        //    // 게임 정보가 없는 것은 클라이언트를 의미합니다.
+        //    && ((World->GetAuthGameMode() != NULL
+        //        // NumPlayers와 GamePlayer는 스탠드얼론 게임 유형에서만 일치하며, 스플릿스크린의 경우를 처리합니다.
+        //        && World->GetAuthGameMode()->GetNumPlayers() == NumGamePlayers)))
+        if (MaxDeltaTime > 0.f)
+        {
+            FApp::SetDeltaTime(FMath::Min<double>(FApp::GetDeltaTime(), MaxDeltaTime));
+        }
+
+        // FPS 계산
+        {
+            static float ElapsedTime = 0.f;
+            static int FrameCount = 0;
+            ElapsedTime += FApp::GetDeltaTime();
+            FrameCount++;
+            if (ElapsedTime > 1.f)
+            {
+                const float FPS = FrameCount / ElapsedTime;
+                FApp::SetFPS(FPS);
+                //E_LOG(Warning, TEXT("FPS: {}"), FPS);
+
+                ElapsedTime -= 1.f;
+                FrameCount = 0;
+            }
+        }
     }
 }
 
@@ -171,7 +201,10 @@ void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResu
     }
 }
 
-float UEngine::GetMaxTickRate(float DeltaTime)
+double UEngine::GetMaxTickRate(double DeltaTime)
 {
-    return 0.0f;
+    double MaxTickRate = 0.0;
+    MaxTickRate = 1.0 / DeltaTime;
+    MaxTickRate = FMath::Min(MaxTickRate, 120.0);
+    return MaxTickRate;
 }

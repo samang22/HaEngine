@@ -30,8 +30,7 @@ public:
 
 protected:
     /** 틱 레이트 제한기를 가져옵니다. */
-    float GetMaxTickRate(float DeltaTime);
-
+    double GetMaxTickRate(double DeltaTime);
 protected:
     HWND MainViewportHandle = NULL;
     shared_ptr<UWorld> World;
