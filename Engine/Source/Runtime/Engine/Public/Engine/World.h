@@ -60,6 +60,7 @@ public:
 	void Tick(float DeltaSeconds);
 
 public:
+	virtual void Serialize(FArchive& Ar) override;
 	string Save();
 	void Load(const string& InLoadString);
 
@@ -67,7 +68,7 @@ public:
 	/**
 	 * 에디터 월드를 복제하여 PIE 월드를 생성합니다.
 	 */
-	static UWorld* GetDuplicatedWorldForPIE(UWorld* InWorld);
+	static TObjectPtr<UWorld> GetDuplicatedWorldForPIE(UWorld* InWorld);
 
 public:
 	/**

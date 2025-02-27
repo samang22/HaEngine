@@ -74,6 +74,13 @@ void UWorld::Tick(float DeltaSeconds)
 	}*/
 }
 
+void UWorld::Serialize(FArchive& Ar)
+{
+	//Super::Serialize(Ar);
+
+	Ar << PersistentLevel;
+}
+
 string UWorld::Save()
 {
 	std::stringstream Buffer;
@@ -121,9 +128,11 @@ void UWorld::Load(const string& InLoadString)
 	}
 }
 
-UWorld* UWorld::GetDuplicatedWorldForPIE(UWorld* InWorld)
+TObjectPtr<UWorld> UWorld::GetDuplicatedWorldForPIE(UWorld* InWorld)
 {
-	return nullptr;
+	TObjectPtr<UWorld> NewWorld = Cast<UWorld>(StaticDuplicateObject(InWorld, nullptr, TEXT("PIE World"), EDuplicateMode::PIE));
+	NewWorld->WorldType = EWorldType::PIE;
+	return NewWorld;
 }
 
 AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, const FActorSpawnParameters& SpawnParameters)

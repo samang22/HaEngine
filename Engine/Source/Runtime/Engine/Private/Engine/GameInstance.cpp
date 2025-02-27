@@ -16,5 +16,5 @@ void UGameInstance::InitializeForPlayInEditor()
     UWorld* EditorWorld = EditorEngine->GetEditorWorld();
 
     // 표준 PIE path: 에디터 월드를 단순히 복제합니다.
-    UWorld* NewWorld = EditorEngine->CreatePIEWorldByDuplication(EditorWorld);
+    TObjectPtr<UWorld> NewWorld = EditorEngine->CreatePIEWorldByDuplication(EditorWorld);
 }

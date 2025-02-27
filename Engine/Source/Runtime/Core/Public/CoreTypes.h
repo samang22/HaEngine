@@ -23,6 +23,7 @@
 #include <unordered_map>
 #include <queue>
 #include <set>
+#include <stack>
 // Containers End --------------
 
 #include "UObject/UObjectMacros.h"

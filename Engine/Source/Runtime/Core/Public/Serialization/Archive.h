@@ -21,7 +21,11 @@ public:
     enum class EMode { Save, Load };
 
     FArchive(boost::archive::text_oarchive& OutputArchive);
+    FArchive(boost::archive::text_oarchive& OutputArchive,
+        map<UObject*, TObjectPtr<UObject>>& InDuplicatedObjects, TObjectPtr<UObject> SourceObject, TObjectPtr<UObject> DestObject);
     FArchive(boost::archive::text_iarchive& InputArchive);
+    FArchive(boost::archive::text_iarchive& InputArchive,
+        map<UObject*, TObjectPtr<UObject>>& InDuplicatedObjects);
 
     FArchive& operator<<(bool& InOutData);
     FArchive& operator<<(int32& InOutData);
@@ -32,12 +36,55 @@ public:
     FArchive& operator<<(uint64& InOutData);
     FArchive& operator<<(FString& InString);
     FArchive& operator<<(string& InString);
+    FArchive& operator<<(UObject*& InOutObjectPtr);
+
+    template<typename T>
+    FArchive& operator<<(TObjectPtr<T>& InOutData)
+    {
+        static_assert(is_base_of<UObject, T>::value, "T must be derived from UObject");
+
+        UObject* Object = InOutData.get();
+        *this << Object;
+
+        if (IsLoading())
+        {
+            shared_ptr<UObject> ObjectData;
+            Convert(ObjectData, Object);
+            InOutData = dynamic_pointer_cast<T>(ObjectData);
+        }
+        return *this;
+    }
+
 
     inline bool IsSaving() const { return Mode == EMode::Save; }
     inline bool IsLoading() const { return Mode == EMode::Load; }
 
+    /**
+     * 새로운 복제본을 DuplicatedObjects 맵과 UnserializedObjects 목록에 추가합니다.
+     *
+     * @param   SourceObject    원본 객체
+     * @param   DuplicateObject 객체의 복사본
+     */
+    void AddDuplicate(TObjectPtr<UObject> SourceObject, TObjectPtr<UObject> DuplicateObject);
+
+    /**
+     * 주어진 객체의 복제본에 대한 포인터를 반환하며, 필요에 따라 복제 객체를 생성합니다.
+     *
+     * @param   Object  복제본을 찾아야 하는 객체
+     * @param   bCreateIfMissing    복제본이 없는 경우 복제 객체를 생성할지 여부
+     *
+     * @return  지정된 객체의 복제본에 대한 포인터
+     */
+    UObject* GetDuplicatedObject(UObject* Object, bool bCreateIfMissing = true);
+
+    std::stack<TObjectPtr<UObject>>    UnserializedObjects;
+
+protected:
+    void Convert(TObjectPtr<UObject>& InOutSharedObject, UObject* InObject);
+
 private:
     EMode Mode;
+    map<UObject*, TObjectPtr<UObject>>* DuplicatedObjectAnnotation; // Key: Src, Val: Dup
     boost::archive::text_oarchive* SaveArchive = nullptr;
     boost::archive::text_iarchive* LoadArchive = nullptr;
 };

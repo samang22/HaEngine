@@ -32,7 +32,7 @@ public:
 
 public:
     virtual UWorld* GetEditorWorld() { return EditorWorld.get(); }
-    virtual UWorld* CreatePIEWorldByDuplication(UWorld* InWorld);
+    virtual TObjectPtr<UWorld> CreatePIEWorldByDuplication(UWorld* InWorld);
 
 protected:
     /** 틱 레이트 제한기를 가져옵니다. */
@@ -51,7 +51,7 @@ protected:
     bool bPIE = false;
     HWND MainViewportHandle = NULL;
     TObjectPtr<UWorld> PlayWorld;
-    shared_ptr<UWorld> EditorWorld;
+    TObjectPtr<UWorld> EditorWorld;
 
     TObjectPtr<UEditorViewportClient> EditorViewportClient;
     TEnginePtr<UViewportClient> CurrentViewportClient;

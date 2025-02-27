@@ -2,6 +2,9 @@
 #include "UObject/Class.h"
 #include "UObject/Object.h"
 #include "Logging/Logger.h"
+#include "Serialization/Archive.h"
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 bool GIsRequestingExit = false;
 
@@ -19,6 +22,44 @@ TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FStrin
 	if (!ObjectMap[Class].contains(InObjectName)) { return nullptr; }
 
 	return ObjectMap[Class][InObjectName];
+}
+
+CORE_API UObject* StaticDuplicateObject(UObject* SourceObject, UObject* DestOuter, const FName DestName, EDuplicateMode::Type DuplicateMode)
+{
+	FStaticConstructObjectParameters Param(SourceObject->GetClass());
+	Param.Outer = DestOuter;
+	Param.Name = DestName;
+	Param.SetFlags = SourceObject->GetFlags();
+	Param.Template = SourceObject;
+
+	TObjectPtr<UObject> DupRootObject = StaticConstructObject_Internal(Param);
+
+	map<UObject*, TObjectPtr<UObject>> DuplicatedObjectAnnotation;
+
+	std::stringstream Buffer;
+	boost::archive::text_oarchive WriteArchive = boost::archive::text_oarchive(Buffer);
+	FArchive Writer = FArchive(WriteArchive, DuplicatedObjectAnnotation, SourceObject->As<UObject>(), DupRootObject);
+
+	TArray<TObjectPtr<UObject>> SerializedObjects;
+	SerializedObjects.reserve(Writer.UnserializedObjects.size());
+
+	while (Writer.UnserializedObjects.size())
+	{
+		TObjectPtr<UObject> Object = Writer.UnserializedObjects.top();
+		Writer.UnserializedObjects.pop();
+
+		Object->Serialize(Writer);
+		SerializedObjects.push_back(Object);
+	};
+
+	boost::archive::text_iarchive ReadArchive = boost::archive::text_iarchive(Buffer);
+	FArchive Reader = FArchive(ReadArchive, DuplicatedObjectAnnotation);
+	for (uint32 ObjectIndex = 0; ObjectIndex < SerializedObjects.size(); ++ObjectIndex)
+	{
+		TObjectPtr<UObject> SerializedObject = SerializedObjects[ObjectIndex];
+		TObjectPtr<UObject> DuplicatedObject = DuplicatedObjectAnnotation[SerializedObject.get()];
+	}
+	return nullptr;
 }
 
 //void CORE_API RequestEngineExit(const FString ReasonString)

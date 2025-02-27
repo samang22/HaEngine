@@ -7,7 +7,7 @@ class FObjectInitializer;
 class CORE_API UObject : public UObjectBase
 {
 public:
-	void Serialize(FArchive& Ar);
+	virtual void Serialize(FArchive& Ar);
 
 public:
 	/** 아래 템플릿을 위한 유틸리티 함수 */

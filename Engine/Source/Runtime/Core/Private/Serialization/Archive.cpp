@@ -1,6 +1,7 @@
 #include "Serialization/Archive.h"
 #include "UObject/UObjectGlobals.h"
 #include "UObject/Class.h"
+#include "UObject/Object.h"
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include "Math/Rotator.h"
@@ -10,8 +11,20 @@ FArchive::FArchive(boost::archive::text_oarchive& OutputArchive)
 {
 }
 
+FArchive::FArchive(boost::archive::text_oarchive& OutputArchive, map<UObject*, TObjectPtr<UObject>>& InDuplicatedObjects,
+    TObjectPtr<UObject> SourceObject, TObjectPtr<UObject> DestObject)
+    : Mode(EMode::Save), SaveArchive(&OutputArchive), DuplicatedObjectAnnotation(&InDuplicatedObjects)
+{
+    AddDuplicate(SourceObject, DestObject);
+}
+
 FArchive::FArchive(boost::archive::text_iarchive& InputArchive)
     : Mode(EMode::Load), LoadArchive(&InputArchive)
+{
+}
+
+FArchive::FArchive(boost::archive::text_iarchive& InputArchive, map<UObject*, TObjectPtr<UObject>>& InDuplicatedObjects)
+    : Mode(EMode::Load), LoadArchive(&InputArchive), DuplicatedObjectAnnotation(&InDuplicatedObjects)
 {
 }
 
@@ -148,4 +161,71 @@ FArchive& FArchive::operator<<(string& InString)
         (*LoadArchive)& InString;
     }
     return *this;
+}
+
+FArchive& FArchive::operator<<(UObject*& InOutObjectPtr)
+{
+    intptr_t Pointer = (intptr_t)InOutObjectPtr;
+    if (IsSaving())
+    {
+        GetDuplicatedObject(InOutObjectPtr);
+        (*SaveArchive)& Pointer;
+    }
+    else
+    {
+        (*LoadArchive)& Pointer;
+        UObject* SourceObject = (UObject*)Pointer;
+        TObjectPtr<UObject> DuplicatedObject = (*DuplicatedObjectAnnotation)[SourceObject];
+        InOutObjectPtr = DuplicatedObject.get();
+    }
+    return *this;
+}
+
+void FArchive::AddDuplicate(TObjectPtr<UObject> SourceObject, TObjectPtr<UObject> DuplicateObject)
+{
+    // 기존의 객체 복제본이 있는지 확인합니다. 발견되면 새로운 객체를 생성하는 대신 해당 복제본을 사용합니다.
+    if (!DuplicatedObjectAnnotation->contains(SourceObject.get()))
+    {
+        DuplicatedObjectAnnotation->emplace(SourceObject.get(), DuplicateObject);
+    }
+    else
+    {
+        _ASSERT(false);
+    }
+
+    UnserializedObjects.push(SourceObject);
+}
+
+UObject* FArchive::GetDuplicatedObject(UObject* Object, bool bCreateIfMissing)
+{
+    TObjectPtr<UObject> Result;
+    if (Object)
+    {
+        if (DuplicatedObjectAnnotation->contains(Object))
+        {
+            Result = (*DuplicatedObjectAnnotation)[Object];
+        }
+        else if (bCreateIfMissing)
+        {
+            UObject* DupOuter = GetDuplicatedObject(Object->GetOuter());
+            if (DupOuter != nullptr)
+            {
+                FStaticConstructObjectParameters Param(Object->GetClass());
+                Param.Outer = DupOuter;
+                Param.Name = Object->GetName();
+                Param.SetFlags = Object->GetFlags();
+                Param.Template = Object->GetClass()->GetDefaultObject();
+                Result = StaticConstructObject_Internal(Param);
+
+                AddDuplicate(Object->As<UObject>(), Result);
+            }
+        }
+    }
+
+    return Result.get();
+}
+
+void FArchive::Convert(TObjectPtr<UObject>& InOutSharedObject, UObject* InObject)
+{
+    InOutSharedObject = InObject->As<UObject>();
 }
