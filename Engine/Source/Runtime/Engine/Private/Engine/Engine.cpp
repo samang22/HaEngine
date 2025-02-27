@@ -220,7 +220,7 @@ void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResu
     }
 }
 
-UWorld* UEngine::CreatePIEWorldByDuplication(UWorld* InWorld)
+TObjectPtr<UWorld> UEngine::CreatePIEWorldByDuplication(UWorld* InWorld)
 {
     UWorld* NewPIEWorld = NULL;
     FString WorldName = TEXT("PIE World");
