@@ -40,6 +40,7 @@ class ENGINE_API UEditorViewportClient : public UViewportClient
 {
     GENERATED_BODY()
 public:
+    UEditorViewportClient();
     ~UEditorViewportClient();
     virtual void Init(HWND hInViewportHandle, UWorld* InWorld) override;
     virtual void Tick(float DeltaTime) override;

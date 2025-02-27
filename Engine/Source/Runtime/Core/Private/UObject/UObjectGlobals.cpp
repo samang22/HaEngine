@@ -24,7 +24,7 @@ TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FStrin
 	return ObjectMap[Class][InObjectName];
 }
 
-CORE_API UObject* StaticDuplicateObject(UObject* SourceObject, UObject* DestOuter, const FName DestName, EDuplicateMode::Type DuplicateMode)
+CORE_API TObjectPtr<UObject> StaticDuplicateObject(UObject* SourceObject, UObject* DestOuter, const FName DestName, EDuplicateMode::Type DuplicateMode)
 {
 	FStaticConstructObjectParameters Param(SourceObject->GetClass());
 	Param.Outer = DestOuter;
@@ -58,8 +58,17 @@ CORE_API UObject* StaticDuplicateObject(UObject* SourceObject, UObject* DestOute
 	{
 		TObjectPtr<UObject> SerializedObject = SerializedObjects[ObjectIndex];
 		TObjectPtr<UObject> DuplicatedObject = DuplicatedObjectAnnotation[SerializedObject.get()];
+
+		if (!DuplicatedObject->HasAnyFlags(RF_ClassDefaultObject))
+		{
+			DuplicatedObject->Serialize(Reader);
+		}
+		else
+		{
+			_ASSERT(false);
+		}
 	}
-	return nullptr;
+	return DupRootObject;
 }
 
 //void CORE_API RequestEngineExit(const FString ReasonString)

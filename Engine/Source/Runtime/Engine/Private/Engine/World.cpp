@@ -61,6 +61,16 @@ void UWorld::InitalizeNewWorld()
 
 }
 
+void UWorld::InitializeActorsForPlay(FRegisterComponentContext* Context)
+{
+	UpdateWorldComponents(Context);
+}
+
+void UWorld::UpdateWorldComponents(FRegisterComponentContext* Context)
+{
+	//PersistentLevel->UpdateLevelComponents(Context);
+}
+
 void UWorld::InitWorld()
 {
 	GetRendererModule().AllocateScene(this, ERHIFeatureLevel::SM5);
@@ -68,10 +78,13 @@ void UWorld::InitWorld()
 
 void UWorld::Tick(float DeltaSeconds)
 {
-	/*for (TObjectPtr<AActor> Actor : PersistentLevel->Actors)
+	if (WorldType == EWorldType::PIE)
 	{
-		Actor->Tick(DeltaSeconds);
-	}*/
+		for (TObjectPtr<AActor> Actor : PersistentLevel->Actors)
+		{
+			Actor->Tick(DeltaSeconds);
+		}
+	}
 }
 
 void UWorld::Serialize(FArchive& Ar)

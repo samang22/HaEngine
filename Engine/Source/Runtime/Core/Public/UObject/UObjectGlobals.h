@@ -349,4 +349,4 @@ namespace EDuplicateMode
  *
  * @deprecated 이 버전은 StaticDuplicateObjectEx를 권장하므로 더 이상 사용되지 않습니다.
  */
-CORE_API UObject* StaticDuplicateObject(UObject* SourceObject, UObject* DestOuter, const FName DestName = NAME_None, EDuplicateMode::Type DuplicateMode = EDuplicateMode::Normal/*, EInternalObjectFlags InternalFlagsMask = EInternalObjectFlags_AllFlags*/);
+CORE_API TObjectPtr<UObject> StaticDuplicateObject(UObject* SourceObject, UObject* DestOuter, const FName DestName = NAME_None, EDuplicateMode::Type DuplicateMode = EDuplicateMode::Normal/*, EInternalObjectFlags InternalFlagsMask = EInternalObjectFlags_AllFlags*/);

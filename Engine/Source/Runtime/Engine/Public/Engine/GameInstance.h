@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "GameInstance.generated.h"
 
+class ULocalPlayer;
 /**
  * GameInstance: 실행 중인 게임의 인스턴스를 위한 고수준 관리자 객체.
  * 게임 생성 시 생성되며, 게임 인스턴스가 종료될 때까지 파괴되지 않습니다.
@@ -21,5 +22,11 @@ public:
 #if WITH_EDITOR
     /* 게임의 PIE 인스턴스를 위해 게임 인스턴스를 초기화하는데 호출됩니다 */
     virtual void InitializeForPlayInEditor();
+
+    /* 에디터에서 Play/Simulate 실행 시 실제로 게임을 시작하는 함수입니다 */
+    virtual void StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer);
 #endif
+
+protected:
+    UWorld* World = nullptr;
 };

@@ -11,6 +11,7 @@ class UGameInstance;
 UCLASS()
 class ENGINE_API UEngine : public UObject
 {
+    friend class UGameInstance;
     GENERATED_BODY()
 public:
     UEngine();
@@ -33,6 +34,7 @@ public:
 public:
     virtual UWorld* GetEditorWorld() { return EditorWorld.get(); }
     virtual TObjectPtr<UWorld> CreatePIEWorldByDuplication(UWorld* InWorld);
+    virtual void PostCreatePIEWorld(UWorld* InWorld);
 
 protected:
     /** 틱 레이트 제한기를 가져옵니다. */
@@ -54,6 +56,7 @@ protected:
     TObjectPtr<UWorld> EditorWorld;
 
     TObjectPtr<UEditorViewportClient> EditorViewportClient;
+    TObjectPtr<UEditorViewportClient> GameViewportClient;
     TEnginePtr<UViewportClient> CurrentViewportClient;
 
 protected: // PIE

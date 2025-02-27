@@ -43,6 +43,39 @@ AActor::AActor()
 
 }
 
+void AActor::Save(FArchive& Ar)
+{
+	uint64 ComponentSize = OwnedComponents.size();
+	Ar << ComponentSize;
+
+	for (TEnginePtr<UActorComponent> It : OwnedComponents)
+	{
+		It->Serialize(Ar);
+	}
+}
+
+void AActor::Load(FArchive& Ar)
+{
+	uint64 ComponentSize = 0;
+	Ar << ComponentSize;
+
+	for (uint64 i = 0; i < ComponentSize; ++i)
+	{
+		FString ComponentName;
+		Ar << ComponentName;
+
+		auto It = find_if(OwnedComponents.begin(), OwnedComponents.end(),
+			[&ComponentName](TEnginePtr<UActorComponent> InComponent)
+			{
+				return InComponent->GetName() == ComponentName;
+			});
+		if (It != OwnedComponents.end())
+		{
+			It->get()->Serialize(Ar);
+		}
+	}
+}
+
 void AActor::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
@@ -62,22 +95,33 @@ void AActor::Serialize(FArchive& Ar)
 		uint64 ComponentSize = 0;
 		Ar << ComponentSize;
 
-
-		for (uint64 i = 0; i < ComponentSize; ++i)
+		if (Ar.IsPersistent())
 		{
-			FString ComponentName;
-			Ar << ComponentName;
-			auto It = find_if(OwnedComponents.begin(), OwnedComponents.end(),
-				[&ComponentName](TEnginePtr<UActorComponent> InComponent)
-				{
-					return InComponent->GetName() == ComponentName;
-				});
-			if (It != OwnedComponents.end())
+			for (uint64 i = 0; i < ComponentSize; ++i)
 			{
-				It->get()->Serialize(Ar);
+				FString ComponentName;
+				Ar << ComponentName;
+
+				auto It = find_if(OwnedComponents.begin(), OwnedComponents.end(),
+					[&ComponentName](TEnginePtr<UActorComponent> InComponent)
+					{
+						return InComponent->GetName() == ComponentName;
+					});
+				if (It != OwnedComponents.end())
+				{
+					It->get()->Serialize(Ar);
+				}
+			}
+		}
+		else
+		{
+			for (TObjectPtr<UActorComponent> It : OwnedComponents)
+			{
+				It->Serialize(Ar);
 			}
 		}
 	}
+
 }
 
 void AActor::PostSpawnInitialize(FTransform const& UserSpawnTransform, AActor* InOwner, APawn* InInstigator, ESpawnActorScaleMethod TransformScaleMethod)

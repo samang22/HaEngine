@@ -29,4 +29,9 @@ AStaticMeshActor::AStaticMeshActor()
 void AStaticMeshActor::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
+
+	FRotator Rotator = ChildStaticMeshComponent->GetRelativeRotation();
+	Rotator.Yaw += 360.f * DeltaSeconds;
+	Rotator.Normalize();
+	ChildStaticMeshComponent->SetRelativeRotation(Rotator);
 }

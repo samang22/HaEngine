@@ -24,6 +24,8 @@ public:
 	AActor();
 
 public:
+	virtual void Save(FArchive& Ar);
+	virtual void Load(FArchive& Ar);
 	virtual void Serialize(FArchive& Ar);
 
 	/** 액터가 월드에 스폰된 후 호출됩니다. 플레이를 위한 액터 설정을 담당합니다. */

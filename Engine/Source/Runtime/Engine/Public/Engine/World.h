@@ -6,6 +6,7 @@
 
 class ULevel;
 class APawn;
+class UGameInstance;
 
 struct ENGINE_API FActorSpawnParameters
 {
@@ -49,10 +50,39 @@ public:
 	~UWorld();
 
 public:
+	/** Sets the owning game instance for this world */
+	inline void SetGameInstance(UGameInstance* NewGI)
+	{
+		OwningGameInstance = NewGI;
+	}
+
+	/** Returns the owning game instance for this world */
+	inline UGameInstance* GetGameInstance() const
+	{
+		return OwningGameInstance;
+	}
+
+
 	/**
 	 * 새로 생성된 월드를 초기화합니다.
 	 */
 	void InitalizeNewWorld();
+	
+	/**
+	 * 모든 액터를 초기화하고 게임플레이를 시작할 준비를 합니다
+	 * @param InURL 명령줄 URL
+	 * @param bResetTime (선택 사항) WorldSettings의 TimeSeconds를 0으로 초기화할지 여부
+	 */
+	void InitializeActorsForPlay(/*const FURL& InURL, bool bResetTime = true,*/ FRegisterComponentContext* Context = nullptr);
+
+	/**
+	 * 선 그리기 배치기(line batcher) 및 모든 레벨 구성 요소와 같은 월드 구성 요소를 업데이트합니다.
+	 *
+	 * @param   bRerunConstructionScripts   액터의 구축 스크립트를 다시 실행할지 여부
+	 * @param   bCurrentLevelOnly           참일 경우, 현재 레벨에만 영향을 미칩니다.
+	 */
+	void UpdateWorldComponents(/*bool bRerunConstructionScripts, *//*bool bCurrentLevelOnly,*/ FRegisterComponentContext* Context = nullptr);
+
 	/**
 	 * 월드를 초기화하고, 지속적인 레벨을 연결하며, 적절한 영역을 설정합니다.
 	 */
@@ -114,6 +144,8 @@ private:
 	shared_ptr<ULevel> PersistentLevel;
 	FTransform Transform;
 
+	//UPROPERTY(Transient)
+	UGameInstance* OwningGameInstance;
 public:
 	/**
 	 * 액터가 스폰될 때마다 알림을 브로드캐스트합니다.

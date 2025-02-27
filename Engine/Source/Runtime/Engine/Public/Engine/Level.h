@@ -24,6 +24,9 @@ class ENGINE_API ULevel : public UObject
 	GENERATED_BODY()
 public:
 	ULevel();
+
+	virtual void Serialize(FArchive& Ar) override;
+
 public:
 	/** 이 레벨의 모든 액터 배열 */
 	TArray<TObjectPtr<AActor>> Actors;

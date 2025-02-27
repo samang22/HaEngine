@@ -5,6 +5,7 @@
 
 class UWorld;
 class FSceneInterface;
+class UGameInstance;
 
 // Unreal 에서는 FViewport 에서 다양한 ViewportClient(Ex. UGameViewportClient, FEditorViewportClient 등)를 대상으로
 // 입력 정보와 렌더링 요청을 전달하고 있는 것으로 보입니다.
@@ -12,9 +13,11 @@ class FSceneInterface;
 UCLASS()
 class ENGINE_API UViewportClient : public UObject 
 {
+    friend class UEngine;
     GENERATED_BODY()
 public:
     virtual void Init(HWND hInViewportHandle, UWorld* InWorld);
+    virtual void InitPIE(HWND hInViewportHandle, UWorld* InWorld, TEnginePtr<UGameInstance> OwningGameInstance, FViewportRHIRef InViewport);
     virtual void Tick(float DeltaTime);
     virtual void Draw();
     virtual void RequestResize(const uint32 NewSizeX, const uint32 NewSizeY);

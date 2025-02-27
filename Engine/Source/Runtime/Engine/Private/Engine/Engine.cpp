@@ -65,8 +65,8 @@ void UEngine::Tick(float DeltaSeconds)
         // PIE -> SIE
     }
 
-    EditorViewportClient->Tick(DeltaSeconds);
-    EditorViewportClient->Draw();
+    CurrentViewportClient->Tick(DeltaSeconds);
+    CurrentViewportClient->Draw();
 }
   
 void UEngine::PreExit()
@@ -222,12 +222,22 @@ void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResu
 
 TObjectPtr<UWorld> UEngine::CreatePIEWorldByDuplication(UWorld* InWorld)
 {
-    UWorld* NewPIEWorld = NULL;
+    TObjectPtr<UWorld> NewPIEWorld = NULL;
     FString WorldName = TEXT("PIE World");
 
     GWorld = NULL;
 
-    return nullptr;
+    // Duplicate the editor world to create the PIE world
+    NewPIEWorld = UWorld::GetDuplicatedWorldForPIE(InWorld);
+
+    GWorld = NewPIEWorld.get();
+
+    return NewPIEWorld;
+}
+
+void UEngine::PostCreatePIEWorld(UWorld* InWorld)
+{
+    InWorld->InitWorld();
 }
 
 double UEngine::GetMaxTickRate(double DeltaTime)
@@ -257,5 +267,18 @@ void UEngine::CreateNewPlayInEditorInstance()
 
         // GameInstance를 초기화하려고 시도합니다. 이것은 월드를 생성할 것입니다.
         GameInstance->InitializeForPlayInEditor();
+
+        GameViewportClient = NewObject<UEditorViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
+        GameViewportClient->InitPIE(EditorViewportClient->hViewportHandle, GWorld, GameInstance, EditorViewportClient->Viewport);
+        CurrentViewportClient = GameViewportClient;
+
+        {
+            // LocalPlayer
+            {
+
+            }
+
+            GameInstance->StartPlayInEditorGameInstance(nullptr);
+        }
     }
 }

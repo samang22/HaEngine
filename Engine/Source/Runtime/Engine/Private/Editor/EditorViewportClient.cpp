@@ -6,6 +6,15 @@
 #include "EngineModule.h"
 #include "Engine/World.h"
 
+UEditorViewportClient::UEditorViewportClient()
+{
+    if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
+
+    CameraUserImpulseData = new FCameraControllerUserImpulseData();
+    CameraController = new FEditorCameraController();
+    LastMouseState = DirectX::Mouse::Get().GetState();
+}
+
 UEditorViewportClient::~UEditorViewportClient()
 {
     if (CameraUserImpulseData)
@@ -24,10 +33,6 @@ UEditorViewportClient::~UEditorViewportClient()
 void UEditorViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 {
     Super::Init(hInViewportHandle, InWorld);
-    LastMouseState = DirectX::Mouse::Get().GetState();
-
-    CameraUserImpulseData = new FCameraControllerUserImpulseData();
-    CameraController = new FEditorCameraController();
 }
 
 void UEditorViewportClient::Tick(float DeltaTime)

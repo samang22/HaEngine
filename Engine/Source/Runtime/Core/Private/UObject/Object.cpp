@@ -133,8 +133,14 @@ void UObject::Serialize(FArchive& Ar)
             }
         }
     }
-    else
+    else if (Ar.IsLoading())
     {
+        if (!Ar.IsPersistent())
+        {
+            FString ObjectName;
+            Ar << ObjectName;
+            // 불러온 이름으로 덮어쓸껀지 고민
+        }
         uint64 PropSize = 0;
         Ar << PropSize;
         for (uint64 i = 0; i < PropSize; ++i)
