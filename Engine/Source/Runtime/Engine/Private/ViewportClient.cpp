@@ -17,13 +17,15 @@ void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 		ViewportSize.y = WindowRect.bottom;
 	}
 
-	Viewport = GDynamicRHI->RHICreateViewport(hInViewportHandle, ViewportSize.x, ViewportSize.y, false, PF_A2B10G10R10);
+	if (!Viewport)
+	{
+		Viewport = GDynamicRHI->RHICreateViewport(hInViewportHandle, ViewportSize.x, ViewportSize.y, false, PF_A2B10G10R10);
+	}
 }
 
 void UViewportClient::InitPIE(HWND hInViewportHandle, UWorld* InWorld, TEnginePtr<UGameInstance> OwningGameInstance, FViewportRHIRef InViewport)
 {
-	hViewportHandle = hInViewportHandle;
-	World = InWorld;
+	Init(hInViewportHandle, InWorld);
 	Viewport = InViewport;
 }
 

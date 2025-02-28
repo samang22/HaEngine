@@ -128,6 +128,20 @@ public:
         }
     }
 
+    template <EShaderFrequency ShaderFrequency>
+    inline void ClearConstantBuffers()
+    {
+        ZeroMemory(CurrentConstantBuffers[ShaderFrequency], sizeof(CurrentConstantBuffers[ShaderFrequency]));
+        ID3D11Buffer* Empty[D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT] = { 0 };
+        switch (ShaderFrequency)
+        {
+        case SF_Vertex:        Direct3DDeviceIMContext->VSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, Empty); break;
+        case SF_Geometry:    Direct3DDeviceIMContext->GSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, Empty); break;
+        case SF_Pixel:        Direct3DDeviceIMContext->PSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, Empty); break;
+        case SF_Compute:    Direct3DDeviceIMContext->CSSetConstantBuffers(0, D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT, Empty); break;
+        }
+    }
+
 
 protected:
 	ID3D11DeviceContext* Direct3DDeviceIMContext = nullptr;

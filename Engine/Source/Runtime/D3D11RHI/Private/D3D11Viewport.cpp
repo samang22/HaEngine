@@ -62,26 +62,26 @@ void FD3D11DynamicRHI::RHIEndDrawingViewport(FRHIViewport* ViewportRHI, bool bPr
 		CurrentRenderTargets[RenderTargetIndex] = NULL;
 	}
 
-	//ClearAllShaderResources();
+	ClearAllShaderResources();
 
-	//CommitRenderTargetsAndUAVs();
+	CommitRenderTargets(false);
+
+	StateCache.SetVertexShader(nullptr);
+
+	uint16 NullStreamStrides[MaxVertexElementCount] = { 0 };
+	StateCache.SetStreamStrides(NullStreamStrides);
+	for (uint32 StreamIndex = 0; StreamIndex < MaxVertexElementCount; ++StreamIndex)
+	{
+		StateCache.SetStreamSource(nullptr, StreamIndex, 0, 0);
+	}
 	
-	//StateCache.SetVertexShader(nullptr);
+	StateCache.SetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
+
+	CurrentResourceBoundAsIB = nullptr;
+	ZeroMemory(CurrentResourcesBoundAsVBs, sizeof(CurrentResourcesBoundAsVBs));
+	MaxBoundVertexBufferIndex = INDEX_NONE;
 	
-	//uint16 NullStreamStrides[MaxVertexElementCount] = { 0 };
-	//StateCache.SetStreamStrides(NullStreamStrides);
-	//for (uint32 StreamIndex = 0; StreamIndex < MaxVertexElementCount; ++StreamIndex)
-	//{
-	//	StateCache.SetStreamSource(nullptr, StreamIndex, 0, 0);
-	//}
-	
-	//StateCache.SetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
-	
-	//CurrentResourceBoundAsIB = nullptr;
-	//FMemory::Memzero(CurrentResourcesBoundAsVBs, sizeof(CurrentResourcesBoundAsVBs));
-	//MaxBoundVertexBufferIndex = INDEX_NONE;
-	
-	//StateCache.SetPixelShader(nullptr);
+	StateCache.SetPixelShader(nullptr);
 	//StateCache.SetGeometryShader(nullptr);
 	//// Compute Shader is set to NULL after each Dispatch call, so no need to clear it here
 

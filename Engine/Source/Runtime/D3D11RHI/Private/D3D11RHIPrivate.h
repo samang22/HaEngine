@@ -165,6 +165,12 @@ public:
     virtual void Init() override;
     virtual void Shutdown() override;
 
+    //void ConditionalClearShaderResource(FD3D11ViewableResource* Resource, bool bCheckBoundInputAssembler);
+    void ClearAllShaderResources();
+
+    template <EShaderFrequency ShaderFrequency>
+    void ClearAllShaderResourcesForFrequency();
+
 public:
     void ClearState();
 

@@ -5,6 +5,29 @@ void FD3D11DynamicRHI::ClearState()
     StateCache.ClearState();
 }
 
+template <EShaderFrequency ShaderFrequency>
+void FD3D11DynamicRHI::ClearAllShaderResourcesForFrequency()
+{
+    //int32 MaxIndex = MaxBoundShaderResourcesIndex[ShaderFrequency];
+    //for (int32 ResourceIndex = MaxIndex; ResourceIndex >= 0; --ResourceIndex)
+    //{
+    //    if (CurrentResourcesBoundAsSRVs[ShaderFrequency][ResourceIndex] != nullptr)
+    //    {
+    //        // Unset the SRV from the device context
+    //        //SetShaderResourceView<ShaderFrequency>(nullptr, nullptr, ResourceIndex);
+    //    }
+    //}
+    StateCache.ClearConstantBuffers<ShaderFrequency>();
+}
+
+void FD3D11DynamicRHI::ClearAllShaderResources()
+{
+    ClearAllShaderResourcesForFrequency<SF_Vertex>();
+    //ClearAllShaderResourcesForFrequency<SF_Geometry>();
+    ClearAllShaderResourcesForFrequency<SF_Pixel>();
+    //ClearAllShaderResourcesForFrequency<SF_Compute>();
+}
+
 void FD3D11DynamicRHI::TrackResourceBoundAsVB(FD3D11ViewableResource* Resource, int32 StreamIndex)
 {
     _ASSERT(StreamIndex >= 0 && StreamIndex < D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT);
