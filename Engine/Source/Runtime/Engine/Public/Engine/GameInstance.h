@@ -3,6 +3,8 @@
 #include "GameInstance.generated.h"
 
 class ULocalPlayer;
+class UWorld;
+
 /**
  * GameInstance: 실행 중인 게임의 인스턴스를 위한 고수준 관리자 객체.
  * 게임 생성 시 생성되며, 게임 인스턴스가 종료될 때까지 파괴되지 않습니다.
@@ -18,6 +20,7 @@ public:
     UGameInstance();
 
     class UEngine* GetEngine() const;
+    virtual UWorld* GetWorld() const override { return World; }
 
 #if WITH_EDITOR
     /* 게임의 PIE 인스턴스를 위해 게임 인스턴스를 초기화하는데 호출됩니다 */

@@ -52,5 +52,7 @@ FPrimitiveSceneProxy* UStaticMeshComponent::CreateSceneProxy()
 
     FStaticMeshSceneProxy* Proxy = new FStaticMeshSceneProxy(this);
 
+    SceneProxy = Proxy;
+
     return Proxy;
 }

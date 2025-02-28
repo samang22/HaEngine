@@ -63,12 +63,15 @@ void UWorld::InitalizeNewWorld()
 
 void UWorld::InitializeActorsForPlay(FRegisterComponentContext* Context)
 {
+	// 한 그룹의 업데이트와 모든 레벨의 구성 요소를 업데이트합니다.
+	// 쿠킹된 데이터가 있거나 편집기에서 플레이 중이라면, 빈번히 콜드 데이터를 다시 실행할 필요가 없습니다.
+	// 디스크에서 로드되었는지 아니면 복제되었는지에 따라 PIE 세계가 업데이트되었는지 여부를 확인합니다.
 	UpdateWorldComponents(Context);
 }
 
 void UWorld::UpdateWorldComponents(FRegisterComponentContext* Context)
 {
-	//PersistentLevel->UpdateLevelComponents(Context);
+	PersistentLevel->UpdateLevelComponents(Context);
 }
 
 void UWorld::InitWorld()

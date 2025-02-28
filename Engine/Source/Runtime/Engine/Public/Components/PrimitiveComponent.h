@@ -20,7 +20,10 @@ public:
 
     FMatrix GetRenderMatrix() const;
 
-protected:
+public:
+    /** 이전 프리미티브의 Scene Info 포인터, 이제 SceneData에 있는 포인터로 대체되었지만, 여전히 사용되기 때문에 여기에 남아 있습니다. */
+    FPrimitiveSceneProxy* SceneProxy = nullptr;
+
     /**
      * 이 컴포넌트의 렌더링 스레드 정보를 생성하는 데 사용됩니다.
      * @warning 여러 스레드에서 동시에 호출됩니다(그러나 동일한 컴포넌트는 동시에 호출되지 않습니다).

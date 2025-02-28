@@ -24,6 +24,12 @@ public:
 	AActor();
 
 public:
+	/** bHasRegisteredAllComponents를 반환합니다. 이 값은 이 액터가 모든 컴포넌트를 등록했는지 여부를 나타냅니다.
+	 * bHasRegisteredAllComponents는 PostRegisterAllComponents()가 호출되기 전에 true로 설정되고, PostUnregisterAllComponents()가 호출되기 전에 false로 설정됩니다.
+	 */
+	bool HasActorRegisteredAllComponents() const { return bHasRegisteredAllComponents; }
+
+public:
 	virtual void Save(FArchive& Ar);
 	virtual void Load(FArchive& Ar);
 	virtual void Serialize(FArchive& Ar);

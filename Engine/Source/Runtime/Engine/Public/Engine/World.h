@@ -145,7 +145,7 @@ private:
 	FTransform Transform;
 
 	//UPROPERTY(Transient)
-	UGameInstance* OwningGameInstance;
+	UGameInstance* OwningGameInstance = nullptr;
 public:
 	/**
 	 * 액터가 스폰될 때마다 알림을 브로드캐스트합니다.

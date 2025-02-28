@@ -56,6 +56,13 @@ public:
 	virtual void PostInitProperties();
 
 public:
+	/** 이 컴포넌트에 대한 렌더 '상태' (예: Scene Proxy)가 생성되었는지 여부를 반환합니다. */
+	bool IsRenderStateCreated() const
+	{
+		return bRenderStateCreated;
+	}
+
+public:
 	/** Outer 체인을 따라 이 컴포넌트를 '소유'하는 AActor를 가져옵니다. */
 	//UFUNCTION(BlueprintCallable, Category = "Components", meta = (Keywords = "Actor Owning Parent"))
 	AActor* GetOwner() const;

@@ -2,6 +2,8 @@
 #include "CoreMinimal.h"
 #include "Level.generated.h"
 
+class FRegisterComponentContext;
+
 //
 // 레벨 객체. 레벨의 액터 목록, BSP 정보 및 브러시 목록을 포함합니다.
 // 모든 레벨은 World를 Outer로 가지고 있으며 PersistentLevel로 사용할 수 있습니다.
@@ -25,6 +27,22 @@ class ENGINE_API ULevel : public UObject
 public:
 	ULevel();
 
+	/**
+	 * 이 레벨과 관련된 모든 액터의 컴포넌트를 업데이트하고 BSP 모델 컴포넌트를 생성합니다.
+	 * @param bRerunConstructionScripts 레벨의 액터에 대해 콜드 데이터를 다시 실행하려면 사용합니다.
+	 */
+	void UpdateLevelComponents(FRegisterComponentContext* Context = nullptr);
+
+	/**
+	 * 점진적으로 이 레벨과 관련된 모든 액터의 컴포넌트를 업데이트합니다.
+	 *
+	 * @param NumComponentsToUpdate     이 실행에서 업데이트할 컴포넌트 수, 모든 것을 업데이트하려면 0
+	 * @param bRerunConstructionScripts 레벨의 액터에 대해 콜드 데이터를 다시 실행하려면 사용합니다.
+	 */
+	void IncrementalUpdateComponents(int32 NumComponentsToUpdate, FRegisterComponentContext* Context = nullptr);
+
+	bool IncrementalRegisterComponents(bool bPreRegisterComponents, int32 NumComponentsToUpdate, FRegisterComponentContext* Context);
+
 	virtual void Serialize(FArchive& Ar) override;
 
 public:
@@ -38,4 +56,29 @@ public:
 	 */
 	//UPROPERTY(Transient)
 	TEnginePtr<UWorld> OwningWorld;
+
+
+public:
+	enum class EIncrementalComponentState : uint8
+	{
+		Init,
+		RegisterInitialComponents,
+#if WITH_EDITOR
+		RunConstructionScripts,
+#endif
+		Finalize
+	};
+	/** 레벨에서 액터 컴포넌트를 점진적으로 업데이트하는 데 사용되는 현재 단계 */
+	EIncrementalComponentState IncrementalComponentState = EIncrementalComponentState::Init;
+
+	/** 레벨의 액터 배열에서 컴포넌트를 업데이트하는 데 사용되는 현재 인덱스입니다. */
+	int32 CurrentActorIndexForIncrementalUpdate = 0;
+
+	/** CurrentActorIndexForUpdateComponents가 가리키는 액터가 PreRegisterAllComponents를 호출했는지 여부 */
+	uint8 bHasCurrentActorCalledPreRegister : 1 = false;
+
+	/** 컴포넌트가 현재 등록되어 있는지 여부. */
+	uint8 bAreComponentsCurrentlyRegistered : 1 = false;
+
+
 };

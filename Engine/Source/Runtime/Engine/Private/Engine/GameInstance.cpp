@@ -40,6 +40,7 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
     }
 
     // GameMode 생성 및 세팅
+    // PlayWorld->SetGameMode
     {
 
     }
@@ -47,7 +48,7 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
     // InitializeActorsForPlay
     {
         FRegisterComponentContext Context(PlayWorld);
-        World->InitializeActorsForPlay(&Context);
+        PlayWorld->InitializeActorsForPlay(&Context);
     }
 }
 #endif

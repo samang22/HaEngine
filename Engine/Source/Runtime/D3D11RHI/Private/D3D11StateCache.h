@@ -130,15 +130,15 @@ public:
 
 
 protected:
-	ID3D11DeviceContext* Direct3DDeviceIMContext;
+	ID3D11DeviceContext* Direct3DDeviceIMContext = nullptr;
 
     // Input Layout State
-    ID3D11InputLayout* CurrentInputLayout;
+    ID3D11InputLayout* CurrentInputLayout = nullptr;
 
     // Shader Cache
-    ID3D11VertexShader* CurrentVertexShader;
+    ID3D11VertexShader* CurrentVertexShader = nullptr;
     //ID3D11GeometryShader* CurrentGeometryShader;
-    ID3D11PixelShader* CurrentPixelShader;
+    ID3D11PixelShader* CurrentPixelShader = nullptr;
     //ID3D11ComputeShader* CurrentComputeShader;
 
     // Vertex Buffer State
@@ -147,17 +147,17 @@ protected:
         ID3D11Buffer* VertexBuffer;
         uint32 Stride;
         uint32 Offset;
-    } CurrentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+    } CurrentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
 
     // Index Buffer State
-    ID3D11Buffer* CurrentIndexBuffer;
-    DXGI_FORMAT CurrentIndexFormat;
-    uint32 CurrentIndexOffset;
+    ID3D11Buffer* CurrentIndexBuffer = nullptr;
+    DXGI_FORMAT CurrentIndexFormat = {};
+    uint32 CurrentIndexOffset = 0;
 
     // Primitive Topology State
-    D3D11_PRIMITIVE_TOPOLOGY CurrentPrimitiveTopology;
+    D3D11_PRIMITIVE_TOPOLOGY CurrentPrimitiveTopology = {};
 
-    uint16 StreamStrides[MaxVertexElementCount];
+    uint16 StreamStrides[MaxVertexElementCount] = {};
 
     ID3D11Buffer* CurrentConstantBuffers[EShaderFrequency::SF_NumStandardFrequencies][D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT] = {};
 };

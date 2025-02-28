@@ -2,6 +2,7 @@
 
 void FD3D11DynamicRHI::ClearState()
 {
+    StateCache.ClearState();
 }
 
 void FD3D11DynamicRHI::TrackResourceBoundAsVB(FD3D11ViewableResource* Resource, int32 StreamIndex)

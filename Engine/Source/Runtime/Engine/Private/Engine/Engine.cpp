@@ -50,8 +50,6 @@ void UEngine::Init(HWND hViewportHandle)
 
 void UEngine::Tick(float DeltaSeconds)
 {
-    GWorld->Tick(DeltaSeconds);
-
     DirectX::Keyboard::State KeyboardState = DirectX::Keyboard::Get().GetState();
     const bool bLeftAltKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::LeftAlt);
     const bool bPKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::P);
@@ -64,6 +62,8 @@ void UEngine::Tick(float DeltaSeconds)
     {
         // PIE -> SIE
     }
+
+    GWorld->Tick(DeltaSeconds);
 
     CurrentViewportClient->Tick(DeltaSeconds);
     CurrentViewportClient->Draw();
