@@ -139,10 +139,24 @@ public:
 	/** 이 월드의 타입입니다. 사용되는 Context을 설명합니다(에디터, 게임, 프리뷰 등). */
 	EWorldType::Type WorldType = EWorldType::Type::None;
 
+public:
+	void OnWorldChanged();
+
+	/** 액터에 대해 BeginPlay를 호출했는지 설정합니다. */
+	void SetBegunPlay(bool bHasBegunPlay);
+
+	/** 액터에 대해 BeginPlay가 호출되었는지 가져옵니다. */
+	bool GetBegunPlay() const;
+
+	/** 게임 플레이가 이미 시작되었는지 여부를 반환합니다. */
+	bool HasBegunPlay() const;
+
+
 private:
 	/** 월드 정보, 기본 브러시 및 게임 플레이 중 스폰된 액터 등을 포함하는 PersistentLevel */
 	shared_ptr<ULevel> PersistentLevel;
 	FTransform Transform;
+
 
 	//UPROPERTY(Transient)
 	UGameInstance* OwningGameInstance = nullptr;
@@ -153,12 +167,18 @@ public:
 	 */
 	FDelegate<AActor*> OnActorSpawned;
 
+	// PIE에서 Actor들이 복제되고 호출됩니다
+	FDelegate<UWorld*, TArray<TObjectPtr<AActor>>&> WorldChangedDelegate;
+
 public:
 	/** 이 월드의 씬 매니저에 대한 인터페이스. */
 	class FSceneInterface* Scene = nullptr;
 
 	/** 액터가 게임을 위해 초기화되었는지 여부 */
 	uint8 bActorsInitialized : 1 = false;
+
+	/** 액터에 대해 BeginPlay가 호출되었는지 여부 */
+	uint8 bBegunPlay : 1 = false;
 
 };
 extern ENGINE_API FDelegate<UWorld*> WorldCreatedDelegate;

@@ -48,6 +48,8 @@ protected:
     * @param   InNetMode               - 이 인스턴스를 시작할 때 사용되는 네트 모드입니다. ListenServer와 같은 일부 네트 모드는 다음 인스턴스에 다른 네트 모드를 필요로 하기 때문에, RequestParams에서 가져오지 않습니다.
     */
     virtual void CreateNewPlayInEditorInstance();
+    // PIE에서 SIE로 전환
+    void PIEtoSIE();
 
 protected:
     bool bPIE = false;

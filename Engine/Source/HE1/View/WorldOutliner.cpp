@@ -197,8 +197,10 @@ void CWorldOutliner::OnWorldCreated(UWorld* NewWorld)
 {
 	DeleteAllItems();
 	InsertRootItem(NewWorld->GetName().c_str());
-	// NewWorld->WorldType;
+	OnSelectedItemChanged(hClassViewRoot);
+
 	NewWorld->OnActorSpawned.AddRow(this, &CWorldOutliner::OnActorSpawned);
+	NewWorld->WorldChangedDelegate.AddRow(this, &CWorldOutliner::OnWorldChanged);
 }
 
 void CWorldOutliner::OnWorldDestroyed(UWorld* NewWorld)
@@ -210,6 +212,10 @@ void CWorldOutliner::OnActorSpawned(AActor* NewActor)
 	const FString NewName = NewActor->GetName() + TEXT(" (") + NewActor->GetClass()->GetName() + TEXT(")");
 	//// TODO Parent
 	InsertItem(NewActor, NewName.c_str(), 1, 1, NULL);
+}
+
+void CWorldOutliner::OnWorldChanged(UWorld* NewWorld, TArray<TObjectPtr<AActor>>& NewActors)
+{
 }
 
 void CWorldOutliner::OnSort(UINT id)

@@ -43,6 +43,14 @@ public:
 
 	bool IncrementalRegisterComponents(bool bPreRegisterComponents, int32 NumComponentsToUpdate, FRegisterComponentContext* Context);
 
+	/**
+	 * 액터에게 사전 초기화 및 후 초기화를 라우팅하고 볼륨을 설정합니다.
+	 *
+	 * @param NumActorsToProcess    이 실행에서 업데이트할 액터 수의 최대값, 모든 액터를 처리하려면 0을 사용합니다.
+	 * @todo seamless worlds: 이는 다중 레벨의 경우 볼륨을 올바르게 처리하지 않습니다.
+	 */
+	void RouteActorInitialize(int32 NumActorsToProcess);
+
 	virtual void Serialize(FArchive& Ar) override;
 
 public:
@@ -80,5 +88,14 @@ public:
 	/** 컴포넌트가 현재 등록되어 있는지 여부. */
 	uint8 bAreComponentsCurrentlyRegistered : 1 = false;
 
-
+private:
+	enum class ERouteActorInitializationState : uint8
+	{
+		Preinitialize,
+		Initialize,
+		BeginPlay,
+		Finished
+	};
+	ERouteActorInitializationState RouteActorInitializationState = ERouteActorInitializationState::Preinitialize;
+	int32 RouteActorInitializationIndex = 0;
 };

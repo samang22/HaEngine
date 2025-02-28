@@ -121,6 +121,96 @@ bool ULevel::IncrementalRegisterComponents(bool bPreRegisterComponents, int32 Nu
     return false;
 }
 
+void ULevel::RouteActorInitialize(int32 NumActorsToProcess)
+{
+    const bool bFullProcessing = (NumActorsToProcess <= 0);
+    switch (RouteActorInitializationState)
+    {
+    case ERouteActorInitializationState::Preinitialize:
+    {
+        // 액터의 사전 초기화는 새로운 액터를 생성할 수 있으므로, 액터 수가 안정되도록 점진적으로 처리해야 합니다.
+        while (RouteActorInitializationIndex < Actors.size())
+        {
+            AActor* const Actor = Actors[RouteActorInitializationIndex].get();
+            if (Actor && !Actor->IsActorInitialized())
+            {
+                Actor->PreInitializeComponents();
+            }
+
+            ++RouteActorInitializationIndex;
+            if (!bFullProcessing && (--NumActorsToProcess == 0))
+            {
+                return;
+            }
+        }
+
+        RouteActorInitializationIndex = 0;
+        RouteActorInitializationState = ERouteActorInitializationState::Initialize;
+    }
+
+    // 의도적인 fall-through, 우리의 액터 카운트 예산을 초과하지 않았다면 계속 진행합니다.
+    case ERouteActorInitializationState::Initialize:
+    {
+        while (RouteActorInitializationIndex < Actors.size())
+        {
+            AActor* const Actor = Actors[RouteActorInitializationIndex].get();
+            if (Actor)
+            {
+                if (!Actor->IsActorInitialized())
+                {
+                    Actor->InitializeComponents();
+                    Actor->PostInitializeComponents();
+                    if (!Actor->IsActorInitialized() /*&& IsValidChecked(Actor)*/)
+                    {
+                        E_LOG(Fatal, TEXT("{} failed to route PostInitializeComponents. Please call Super::PostInitializeComponents() in your <className>::PostInitializeComponents() function."), Actor->GetName());
+                    }
+                }
+            }
+
+            ++RouteActorInitializationIndex;
+            if (!bFullProcessing && (--NumActorsToProcess == 0))
+            {
+                return;
+            }
+        }
+
+        RouteActorInitializationIndex = 0;
+        RouteActorInitializationState = ERouteActorInitializationState::BeginPlay;
+    }
+
+    // 의도적인 fall-through, 우리의 액터 카운트 예산을 초과하지 않았다면 계속 진행합니다.
+    case ERouteActorInitializationState::BeginPlay:
+    {
+        if (OwningWorld->HasBegunPlay())
+        {
+            while (RouteActorInitializationIndex < Actors.size())
+            {
+                // 자식 액터는 부모가 명시적으로 플레이를 시작했습니다.
+                AActor* const Actor = Actors[RouteActorInitializationIndex].get();
+                if (Actor /*&& !Actor->IsChildActor()*/)
+                {
+                    Actor->DispatchBeginPlay();
+                }
+
+                ++RouteActorInitializationIndex;
+                if (!bFullProcessing && (--NumActorsToProcess == 0))
+                {
+                    return;
+                }
+            }
+        }
+
+        RouteActorInitializationState = ERouteActorInitializationState::Finished;
+    }
+
+    // 우리가 끝났다면 의도적인 fall-through
+    case ERouteActorInitializationState::Finished:
+    {
+        break;
+    }
+    }
+}
+
 void ULevel::Serialize(FArchive& Ar)
 {
     Super::Serialize(Ar);

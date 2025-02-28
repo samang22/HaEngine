@@ -65,6 +65,7 @@ protected:
 	void OnWorldCreated(UWorld* NewWorld);
 	void OnWorldDestroyed(UWorld* NewWorld);
 	void OnActorSpawned(AActor* NewActor);
+	void OnWorldChanged(UWorld* NewWorld, TArray<TObjectPtr<AActor>>& NewActors);
 
 protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

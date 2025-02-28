@@ -26,6 +26,11 @@ AStaticMeshActor::AStaticMeshActor()
 	RootComponent = Cast<USceneComponent>(StaticMeshComponent);
 }
 
+void AStaticMeshActor::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 void AStaticMeshActor::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);

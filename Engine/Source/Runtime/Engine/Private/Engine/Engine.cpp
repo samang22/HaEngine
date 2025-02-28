@@ -54,13 +54,14 @@ void UEngine::Tick(float DeltaSeconds)
     const bool bLeftAltKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::LeftAlt);
     const bool bPKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::P);
     const bool bESCKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::Escape);
-    if (bLeftAltKeyDown && bPKeyDown)
+    if (bLeftAltKeyDown && bPKeyDown) // SIE -> PIE
     {
         CreateNewPlayInEditorInstance();
     }
     else if (bESCKeyDown)
     {
         // PIE -> SIE
+        PIEtoSIE();
     }
 
     GWorld->Tick(DeltaSeconds);
@@ -281,4 +282,21 @@ void UEngine::CreateNewPlayInEditorInstance()
             GameInstance->StartPlayInEditorGameInstance(nullptr);
         }
     }
+
+    PlayWorld->OnWorldChanged();
+}
+
+void UEngine::PIEtoSIE()
+{
+    if (!bPIE) { return; }
+    bPIE = false;
+
+    GameInstance = nullptr;
+    GameViewportClient = nullptr;
+    CurrentViewportClient = EditorViewportClient;
+
+    GWorld = EditorWorld.get();
+    PlayWorld = EditorWorld;
+
+    PlayWorld->OnWorldChanged();
 }

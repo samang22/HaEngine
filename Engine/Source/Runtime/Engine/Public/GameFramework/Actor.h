@@ -184,6 +184,25 @@ public:
 	*/
 	virtual void Tick(float DeltaSeconds);
 
+public:
+	/** 이 액터에 대해 BeginPlay 호출을 시작합니다. 올바른 순서로 호출할 것을 처리합니다. */
+	void DispatchBeginPlay();
+	
+	/** 액터에 대해 BeginPlay가 호출되었는지 (그리고 EndPlay이 호출되지 않았는지)를 반환합니다. */
+	bool HasActorBegunPlay() const { return ActorHasBegunPlay == EActorBeginPlayState::HasBegunPlay; }
+	
+	/** 게임 플레이를 위해 액터가 초기화되었는지 여부를 반환합니다. */
+	bool IsActorInitialized() const { return bActorInitialized; }
+	
+	/** 컴포넌트 배열을 반복하고 InitializeComponent를 호출합니다. 이는 한 번에 한 액터에 대해 발생합니다. */
+	void InitializeComponents();
+	
+	/** 게임 플레이 중에만 호출되며, 모든 컴포넌트가 초기화된 후 C++ 쪽에서 액터가 자신을 초기화할 수 있도록 합니다. */
+	virtual void PostInitializeComponents();
+
+protected:
+	/** 이 액터의 플레이가 시작될 때 발생하는 가상 네이티브 이벤트입니다. */
+	virtual void BeginPlay();
 
 public:
 	/**
@@ -230,6 +249,26 @@ private:
 
 	/** 이 액터에 대해 FinishSpawning이 호출되었는지 여부. 호출되지 않은 경우, 액터는 잘못된 상태에 있습니다. */
 	uint8 bHasFinishedSpawning : 1 = false;
+
+	/**
+	 * PreInitializeComponents/PostInitializeComponents가 이 액터에 대해 호출되었음을 나타냅니다.
+	 * 레벨 시작 시 생성된 액터의 재초기화를 방지합니다.
+	 */
+	uint8 bActorInitialized : 1 = false;
+
+	/** BeginPlay가 시작되었거나 완료되었는지를 나타내는 Enum */
+	enum class EActorBeginPlayState : uint8
+	{
+		HasNotBegunPlay,
+		BeginningPlay,
+		HasBegunPlay,
+	};
+
+	/**
+	 * 이 액터에 대해 BeginPlay가 호출되었음을 나타냅니다.
+	 * EndPlay이 호출되면 HasNotBegunPlay로 다시 설정됩니다.
+	 */
+	EActorBeginPlayState ActorHasBegunPlay : 2 = EActorBeginPlayState::HasNotBegunPlay;
 
 public:
 	//UPROPERTY(VisibleAnywhere)

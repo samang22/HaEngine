@@ -120,6 +120,26 @@ public:
 	 //UFUNCTION(BlueprintCallable, Category = "Components|Tick")
 	virtual void SetComponentTickEnabled(bool bEnabled);
 
+	/** InitializeComponent가 호출되었지만 UninitializeComponent가 아직 호출되지 않음을 나타냅니다. */
+	bool HasBeenInitialized() const { return bHasBeenInitialized; }
+
+	/**
+	 * 컴포넌트를 초기화합니다. 레벨 시작 또는 액터 스폰 시 발생합니다. 이는 BeginPlay(Actor 또는 Component)보다 이전입니다.
+	 * 레벨에 있는 모든 컴포넌트는 로드 시 초기화되며, 어떤 액터/컴포넌트도 BeginPlay를 받기 전에 초기화됩니다.
+	 * 컴포넌트가 등록되고 bWantsInitializeComponent이 true여야 합니다.
+	 */
+	virtual void InitializeComponent();
+
+	/** BeginPlay가 호출되었지만 EndPlay이 아직 호출되지 않음을 나타냅니다. */
+	bool HasBegunPlay() const { return bHasBegunPlay; }
+
+	/**
+	 * 컴포넌트의 플레이를 시작합니다.
+	 * 소유 액터가 플레이를 시작하거나, 액터가 이미 플레이를 시작했을 때 컴포넌트가 생성될 때 호출됩니다.
+	 * Actor BeginPlay는 보통 PostInitializeComponents 다음에 발생하지만, 네트워크 액터나 자식 액터의 경우 지연될 수 있습니다.
+	 * 컴포넌트가 등록되고 초기화되어야 합니다.
+	 */
+	virtual void BeginPlay();
 
 protected:
 	/**
@@ -128,6 +148,9 @@ protected:
 	uint8 bRegistered : 1 = false;
 	/** 이 컴포넌트에 대한 렌더 상태가 현재 생성되었는지 여부 */
 	uint8 bRenderStateCreated : 1 = false;
+
+	/** BeginPlay가 호출되었지만 EndPlay이 아직 호출되지 않음을 나타냅니다. */
+	uint8 bHasBegunPlay : 1 = false;
 
 public:
 	/**
@@ -152,7 +175,8 @@ private:
 	/** 이 컴포넌트가 현재 활성 상태인지 여부 */
 	//UPROPERTY(transient, ReplicatedUsing = OnRep_IsActive)
 	uint8 bIsActive : 1 = false;
-
+	/** InitializeComponent가 호출되었지만 UninitializeComponent가 아직 호출되지 않음을 나타냅니다. */
+	uint8 bHasBeenInitialized : 1 = false;
 private:
 	AActor* GetActorOwnerNoninline() const;
 

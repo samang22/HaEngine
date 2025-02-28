@@ -583,7 +583,21 @@ void AActor::PostActorConstruction()
 
 void AActor::PreInitializeComponents()
 {
-	_ASSERT(false);
+	// 특정 경우에만 들어오는 것으로 보임
+	/*if (AutoReceiveInput != EAutoReceiveInput::Disabled)
+	{
+		const int32 PlayerIndex = int32(AutoReceiveInput.GetValue()) - 1;
+
+		APlayerController* PC = UGameplayStatics::GetPlayerController(this, PlayerIndex);
+		if (PC)
+		{
+			EnableInput(PC);
+		}
+		else
+		{
+			GetWorld()->PersistentLevel->RegisterActorForAutoReceiveInput(this, PlayerIndex);
+		}
+    }*/
 }
 
 bool AActor::OwnsComponent(UActorComponent* Component) const
@@ -594,4 +608,99 @@ bool AActor::OwnsComponent(UActorComponent* Component) const
 
 void AActor::Tick(float DeltaSeconds)
 {
+}
+
+void AActor::DispatchBeginPlay()
+{
+	UWorld* World = (!HasActorBegunPlay() && this ? GetWorld() : nullptr);
+
+	if (World)
+	{
+		//ensureMsgf(ActorHasBegunPlay == EActorBeginPlayState::HasNotBegunPlay, TEXT("BeginPlay was called on actor %s which was in state %d"), *GetPathName(), (int32)ActorHasBegunPlay);
+		//const uint32 CurrentCallDepth = BeginPlayCallDepth++;
+
+		//bActorBeginningPlayFromLevelStreaming = bFromLevelStreaming;
+		ActorHasBegunPlay = EActorBeginPlayState::BeginningPlay;
+
+		//BuildReplicatedComponentsInfo();
+
+//#if UE_WITH_IRIS
+//        BeginReplication();
+//#endif // UE_WITH_IRIS
+
+		BeginPlay();
+
+		//ensure(BeginPlayCallDepth - 1 == CurrentCallDepth);
+		//BeginPlayCallDepth = CurrentCallDepth;
+
+		//if (bActorWantsDestroyDuringBeginPlay)
+		//{
+		//    // Pass true for bNetForce as either it doesn't matter or it was true the first time to even 
+		//    // get to the point we set bActorWantsDestroyDuringBeginPlay to true
+		//    World->DestroyActor(this, true);
+		//}
+
+		//if (IsValidChecked(this))
+		//{
+		//    // Initialize overlap state
+		//    UpdateInitialOverlaps(bFromLevelStreaming);
+		//}
+
+		//bActorBeginningPlayFromLevelStreaming = false;
+	}
+}
+
+void AActor::InitializeComponents()
+{
+	TArray<UActorComponent*> Components;
+	GetComponents(Components);
+
+	for (UActorComponent* ActorComp : Components)
+	{
+		if (ActorComp->IsRegistered())
+		{
+			if (/*ActorComp->bAutoActivate &&*/ !ActorComp->IsActive())
+			{
+				ActorComp->Activate(true);
+			}
+
+			if (/*ActorComp->bWantsInitializeComponent &&*/ !ActorComp->HasBeenInitialized())
+			{
+				// Activate가 게임에서 콜백을 발생시키기에 너무 이른 시점에서 일으키므로 활성화 이벤트를 전파합니다.
+				ActorComp->InitializeComponent();
+			}
+		}
+	}
+}
+
+void AActor::PostInitializeComponents()
+{
+	bActorInitialized = true;
+
+	// UpdateAllReplicatedComponents();
+}
+
+void AActor::BeginPlay()
+{
+	//SetLifeSpan(InitialLifeSpan);
+	//RegisterAllActorTickFunctions(true, false); // Components are done below.
+
+	TArray<UActorComponent*> Components;
+	GetComponents(Components);
+
+	for (UActorComponent* Component : Components)
+	{
+		// bHasBegunPlay이 true일 경우 컴포넌트가 초기화 중에 이름이 변경되고 이동되었습니다.
+		if (Component->IsRegistered() && !Component->HasBegunPlay())
+		{
+			//Component->RegisterAllComponentTickFunctions(true);
+			Component->BeginPlay();
+			_ASSERT(Component->HasBegunPlay(), TEXT("Failed to route BeginPlay ({})"), Component->GetName());
+		}
+		else
+		{
+			// 액터가 플레이를 시작할 때, bAutoRegister가 false인 컴포넌트만 등록되지 않을 것으로 예상됩니다.
+			//check(!Component->bAutoRegister);
+		}
+	}
 }

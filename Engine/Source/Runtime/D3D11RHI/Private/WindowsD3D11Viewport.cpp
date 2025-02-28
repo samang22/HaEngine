@@ -111,7 +111,7 @@ FD3D11Viewport::FD3D11Viewport(FD3D11DynamicRHI* InD3DRHI, HWND InWindowHandle, 
 				E_LOG(Log, TEXT("CreateSwapChainForHwnd failed with result '{}' (0x{:X}), falling back to legacy CreateSwapChain."),
 					GetD3D11ErrorString(CreateSwapChainForHwndResult, D3DRHI->GetDevice()),
 					CreateSwapChainForHwndResult);
-			}
+			} 
 		}
 
 		// DXGI 메시지 후크를 설정하여 우리의 뒤에서 윈도우가 변경되지 않도록 합니다.

@@ -1,6 +1,8 @@
 #include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
 #include "Engine/World.h"
+#include "SceneInterface.h"
+#include "Components/PrimitiveComponent.h"
 
 ENGINE_API void FRegisterComponentContext::SendRenderDynamicData(FRegisterComponentContext* Context, UPrimitiveComponent* PrimitiveComponent)
 {
@@ -8,6 +10,33 @@ ENGINE_API void FRegisterComponentContext::SendRenderDynamicData(FRegisterCompon
 
 void FRegisterComponentContext::Process()
 {
+	FSceneInterface* Scene = World->Scene;
+
+	for (uint64 Index = 0; Index < AddPrimitiveBatches.size(); ++Index)
+	{
+		UPrimitiveComponent* Component = AddPrimitiveBatches[Index];
+
+		// AActor::PostRegisterAllComponents (IncrementalRegisterComponents에서 호출됨)은 컴포넌트를 제거하거나 다시 등록하는 코드를 실행할 수 있습니다.
+		// 제거되면 이 컴포넌트를 건너뜁니다. 다시 등록되면 FRegisterComponentContext가 전달되지 않으므로 SceneProxy를 생성할 수 있습니다.
+		if (Component && Component->IsRegistered())
+		{
+			if (Component->IsRenderStateCreated()/* || !bAppCanEverRender*/)
+			{
+				// SceneProxy가 이미 생성되었으면 건너뜁니다.
+				if (Component->SceneProxy == nullptr)
+				{
+					Scene->AddPrimitive(Component);
+				}
+			}
+			else // 컴포넌트 렌더 상태가 누락된 경우의 경계값을 위한 후처리입니다.
+			{
+				_ASSERT(false); // 왜 들어왔나 확인 해보기
+				Component->CreateRenderState_Concurrent(nullptr);
+			}
+		}
+	}
+
+	AddPrimitiveBatches.clear();
 }
 
 UActorComponent::UActorComponent()
@@ -152,6 +181,28 @@ void UActorComponent::SetComponentTickEnabled(bool bEnabled)
 {
 	// @TODO
 	// 이것도 해야함 RegisterActorTickFunctions
+}
+
+void UActorComponent::InitializeComponent()
+{
+	_ASSERT(bRegistered);
+	_ASSERT(!bHasBeenInitialized);
+
+	bHasBeenInitialized = true;
+}
+
+void UActorComponent::BeginPlay()
+{
+	_ASSERT(bRegistered);
+	_ASSERT(!bHasBegunPlay);
+	//_ASSERT(bTickFunctionsRegistered); // If this fails, someone called BeginPlay() without first calling RegisterAllComponentTickFunctions().
+
+	/*if (GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint) || !GetClass()->HasAnyClassFlags(CLASS_Native))
+	{
+		ReceiveBeginPlay();
+	}*/
+
+	bHasBegunPlay = true;
 }
 
 void UActorComponent::SetActiveFlag(const bool bNewIsActive)

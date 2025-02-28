@@ -27,9 +27,6 @@ FActorSpawnParameters::FActorSpawnParameters()
 
 UWorld::UWorld()
 {
-	if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
-
-	WorldCreatedDelegate.Broadcast(this);
 }
 
 UWorld::~UWorld()
@@ -67,6 +64,18 @@ void UWorld::InitializeActorsForPlay(FRegisterComponentContext* Context)
 	// 쿠킹된 데이터가 있거나 편집기에서 플레이 중이라면, 빈번히 콜드 데이터를 다시 실행할 필요가 없습니다.
 	// 디스크에서 로드되었는지 아니면 복제되었는지에 따라 PIE 세계가 업데이트되었는지 여부를 확인합니다.
 	UpdateWorldComponents(Context);
+
+	bActorsInitialized = true;
+
+	// Init the game mode.
+	/*if (AuthorityGameMode && !AuthorityGameMode->IsActorInitialized())
+	{
+		AuthorityGameMode->InitGame(FPaths::GetBaseFilename(InURL.Map), Options, Error);
+	}*/
+
+	// 여러 초기화 함수를 라우팅하고 볼륨을 설정합니다.
+	const int32 ProcessAllRouteActorInitializationGranularity = 0;
+	PersistentLevel->RouteActorInitialize(ProcessAllRouteActorInitializationGranularity);
 }
 
 void UWorld::UpdateWorldComponents(FRegisterComponentContext* Context)
@@ -77,6 +86,8 @@ void UWorld::UpdateWorldComponents(FRegisterComponentContext* Context)
 void UWorld::InitWorld()
 {
 	GetRendererModule().AllocateScene(this, ERHIFeatureLevel::SM5);
+
+	WorldCreatedDelegate.Broadcast(this);
 }
 
 void UWorld::Tick(float DeltaSeconds)
@@ -212,5 +223,34 @@ bool UWorld::IsGameWorld() const
 bool UWorld::IsEditorWorld() const
 {
 	return WorldType == EWorldType::Editor || WorldType == EWorldType::EditorPreview || WorldType == EWorldType::PIE;
+}
+
+void UWorld::OnWorldChanged()
+{
+	WorldChangedDelegate.Broadcast(this, PersistentLevel->Actors);
+}
+
+void UWorld::SetBegunPlay(bool bHasBegunPlay)
+{
+	if (bBegunPlay == bHasBegunPlay)
+	{
+		return;
+	}
+
+	bBegunPlay = bHasBegunPlay;
+	/*if (OnBeginPlay.IsBound())
+	{
+		OnBeginPlay.Broadcast(bBegunPlay);
+	}*/
+}
+
+bool UWorld::GetBegunPlay() const
+{
+	return bBegunPlay;
+}
+
+bool UWorld::HasBegunPlay() const
+{
+	return GetBegunPlay() && PersistentLevel && PersistentLevel->Actors.size();
 }
 
