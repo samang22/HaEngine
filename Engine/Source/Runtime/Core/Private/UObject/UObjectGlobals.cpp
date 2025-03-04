@@ -13,15 +13,33 @@ bool CORE_API IsEngineExitRequested()
 	return GIsRequestingExit;
 }
 
-CORE_API map<UClass*, map<FString, TEnginePtr<UObject>>> ObjectMap;
-
-TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FString& InObjectName)
+CORE_API map<UClass*, multimap<FString, TEnginePtr<UObject>>> ObjectMap;
+TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FString& InObjectName, UObject* Outer)
 {
 	UClass* Class = UClass::FindClass(InClassName);
 	if (!Class) { return nullptr; }
 	if (!ObjectMap[Class].contains(InObjectName)) { return nullptr; }
 
-	return ObjectMap[Class][InObjectName];
+	auto Range = ObjectMap[Class].equal_range(InObjectName);
+	for (auto it = Range.first; it != Range.second; ++it)
+	{
+		if (Outer == nullptr)
+		{
+			uint64 Count = std::distance(Range.first, Range.second);
+			if (Count != 1)
+			{
+				_ASSERT(false);
+			}
+			return it->second;
+		}
+
+		if (it->second->GetOuter() == Outer)
+		{
+			return it->second;
+		}
+	}
+
+	return nullptr;
 }
 
 CORE_API TObjectPtr<UObject> StaticDuplicateObject(UObject* SourceObject, UObject* DestOuter, const FName DestName, EDuplicateMode::Type DuplicateMode)

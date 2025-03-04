@@ -1,7 +1,7 @@
 #include "UObject/UObjectBase.h"
-#include "Uobject/Object.h"
+#include "UObject/Object.h"
 
-extern CORE_API map<UClass*, map<FString, TEnginePtr<UObject>>> ObjectMap;
+extern CORE_API map<UClass*, multimap<FString, TEnginePtr<UObject>>> ObjectMap;
 
 #pragma warning(disable:26495)
 UObjectBase::UObjectBase()
@@ -17,8 +17,24 @@ UObjectBase::UObjectBase(EObjectFlags InObjectFlags, UClass* InClass, UObject* I
 
 UObjectBase::~UObjectBase()                                                                                                  
 {
-	map<FString, TEnginePtr<UObject>>& Objects = ObjectMap[GetClass()];
-	Objects.erase(GetName());
+    auto& MultiMap = ObjectMap[GetClass()];
+    auto Range = MultiMap.equal_range(GetName());
+    for (auto It = Range.first; It != Range.second; )
+    {
+        if (It->second && It->second->GetOuter() == GetOuter())
+        {
+            It = MultiMap.erase(It);
+            break;
+        }
+        else if (!It->second)
+        {
+            It = MultiMap.erase(It);
+        }
+        else
+        {
+            ++It;
+        }
+    }
 }
 
 /**

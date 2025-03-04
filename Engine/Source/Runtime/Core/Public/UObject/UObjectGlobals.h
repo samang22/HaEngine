@@ -306,7 +306,7 @@ shared_ptr<T> NewObject(UObject* Outer, UClass* Class = nullptr, FName Name = NA
 	return Cast<T>(StaticConstructObject_Internal(Params));
 }
 
-TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FString& InObjectName);
+TEnginePtr<UObject> CORE_API FindObject(const FString& InClassName, const FString& InObjectName, UObject* Outer = nullptr);
 
 /**
  * 클래스의 기본 오브젝트를 가져옵니다.

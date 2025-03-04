@@ -457,7 +457,7 @@ void CWorldOutliner::OnActorSelectedAndMakeDetails(AActor* SelectedActor)
 	}
 }
 
-extern CORE_API map<UClass*, map<FString, TEnginePtr<UObject>>> ObjectMap;
+extern CORE_API map<UClass*, multimap<FString, TEnginePtr<UObject>>> ObjectMap;
 
 void CWorldOutliner::FillDetails(const bool bSameActor, CMFCPropertyGridProperty* ParentUI, UObject* InObject)
 {
@@ -575,7 +575,7 @@ void CWorldOutliner::FillDetails(const bool bSameActor, CMFCPropertyGridProperty
 							TEnginePtr<UObject>* Value = (TEnginePtr<UObject>*)Data.get(handle(Type.GetNode(), InObject)).data();
 							TEnginePtr<UObject> EnginePtr = *Value;
 							UClass* Class = EnginePtr->GetClass();
-							map<FString, TEnginePtr<UObject>> Objects = ObjectMap[Class];
+							multimap<FString, TEnginePtr<UObject>> Objects = ObjectMap[Class];
 							NewPropUI = new CMFCPropertyGridProperty(PropName.data(), EnginePtr->GetName().c_str(), TEXT(""));
 							for (auto& It : Objects)
 							{

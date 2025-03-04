@@ -250,7 +250,7 @@ void CDetailsPanel::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 	SetPropListFont();
 }
 
-extern CORE_API map<UClass*, map<FString, TEnginePtr<UObject>>> ObjectMap;
+extern CORE_API map<UClass*, multimap<FString, TEnginePtr<UObject>>> ObjectMap;
 
 LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 {
@@ -279,11 +279,18 @@ LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		TEnginePtr<UObject>* Value = (TEnginePtr<UObject>*)PropertyInfo->PropertyAddress;
 		TEnginePtr<UObject> EnginePtr = *Value;
 		UClass* Class = EnginePtr->GetClass();
-		map<FString, TEnginePtr<UObject>> Objects = ObjectMap[Class];
+		multimap<FString, TEnginePtr<UObject>> Objects = ObjectMap[Class];
 
 		BSTR CurrentValue = Prop->GetValue().bstrVal;
 		FString String = CurrentValue;
-		TEnginePtr<UObject> FindObject = Objects[String];
+		auto Range = Objects.equal_range(String);
+		const uint64 Count = std::distance(Range.first, Range.second);
+		if (Count != 1)
+		{
+			_ASSERT(false);
+		}
+
+		TEnginePtr<UObject> FindObject = Range.first->second;
 		*Value = FindObject;
 		break;
 	}
