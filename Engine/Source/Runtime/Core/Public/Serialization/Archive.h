@@ -92,7 +92,7 @@ protected:
 
 private:
     EMode Mode;
-    map<UObject*, TObjectPtr<UObject>>* DuplicatedObjectAnnotation; // Key: Src, Val: Dup
+    map<UObject*, TObjectPtr<UObject>>* DuplicatedObjectAnnotation = nullptr; // Key: Src, Val: Dup
     boost::archive::text_oarchive* SaveArchive = nullptr;
     boost::archive::text_iarchive* LoadArchive = nullptr;
 };

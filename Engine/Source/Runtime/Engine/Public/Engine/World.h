@@ -7,6 +7,7 @@
 class ULevel;
 class APawn;
 class UGameInstance;
+struct FURL;
 
 struct ENGINE_API FActorSpawnParameters
 {
@@ -125,6 +126,19 @@ public:
 		return CastCheckedRaw<T>(SpawnActor(Class, &Transform, SpawnParameters));
 	}
 
+	/**
+	 *  SpawnActor의 템플릿 버전입니다.
+	 */
+	template< class T >
+	T* SpawnActor(UClass* Class = nullptr, const FActorSpawnParameters& SpawnParameters = FActorSpawnParameters())
+	{
+		if (Class == nullptr)
+		{
+			Class = T::StaticClass();
+		}
+		return SpawnActor<T>(Class, FTransform::Identity, SpawnParameters);
+	}
+
 public:
 	/** 액터가 초기화되고 게임을 시작할 준비가 되면 true를 반환합니다. */
 	bool AreActorsInitialized() const;
@@ -152,11 +166,20 @@ public:
 	bool HasBegunPlay() const;
 
 
+public:
+	/** 레벨의 GameMode를 생성합니다. */
+	bool SetGameMode(const FURL& InURL);
+
+
 private:
+	/** 서버에서만 유효한 현재 GameMode */
+	//UPROPERTY(/*Transient*/)	
+	class AGameModeBase* AuthorityGameMode = nullptr;
+
+
 	/** 월드 정보, 기본 브러시 및 게임 플레이 중 스폰된 액터 등을 포함하는 PersistentLevel */
 	shared_ptr<ULevel> PersistentLevel;
-	FTransform Transform;
-
+	FTransform Transform = FTransform::Identity;
 
 	//UPROPERTY(Transient)
 	UGameInstance* OwningGameInstance = nullptr;

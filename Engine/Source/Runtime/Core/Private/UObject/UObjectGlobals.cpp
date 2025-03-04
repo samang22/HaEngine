@@ -249,20 +249,45 @@ void FObjectInitializer::PostConstructInit()
 	SharedObj->PostInitProperties();
 }
 
+FString MakeUniqueName(const FString& InClassName, FString& InObjectName)
+{
+	static map<FString, int64> GlobalNameCountMap;
+
+	if (InObjectName.empty())
+	{
+		InObjectName = InClassName;
+	}
+
+	if (!FindObject(InClassName, InObjectName))
+	{
+		return InObjectName;
+	}
+
+	int64& NewIndex = GlobalNameCountMap[InObjectName];
+	FString NewName = InObjectName + TEXT("_") + to_wstring(NewIndex);
+	++NewIndex;
+
+	TEnginePtr<UObject> FoundObject;
+	do
+	{
+		if (FoundObject = FindObject(InClassName, NewName))
+		{
+			NewName = MakeUniqueName(InClassName, NewName);
+		}
+	} while (FoundObject);
+
+	return NewName;
+}
+
+
 CORE_API TObjectPtr<UObject> StaticConstructObject_Internal(FStaticConstructObjectParameters& Params)
 {
 	UClass* InClass = Params.Class;
 	FName& InName = Params.Name;
 
-	if (InName == NAME_NONE)
 	{
-		static map<FString, int64> NameCountMap;
-		FString ClassName = InClass->ClassName;
-		int64& NewIndex = NameCountMap[ClassName];
-
-		InName = FName(ClassName + TEXT("_") + to_wstring(NewIndex));
-
-		++NewIndex;
+		FString StringName = InName.ToString();
+		InName = MakeUniqueName(InClass->ClassName, StringName);
 	}
 
 	TObjectPtr<UObject> Result = NULL;
@@ -319,70 +344,6 @@ CORE_API uint64 Hash(const WIDECHAR* NewString)
 	static hash<wstring_view> HashFunction;
 	return HashFunction(NewString);
 }
-
-//
-//#include <boost/archive/text_oarchive.hpp>
-//#include <boost/archive/text_iarchive.hpp>
-//#include <boost/serialization/nvp.hpp>
-//
-//shared_ptr<UObject> StaticDuplicateObject(UObject* SourceObject, UObject* DestOuter, const FString DestName, EDuplicateMode::Type DuplicateMode)
-//{
-//	// Parameters.SourceObject->PreDuplicate(Parameters);
-//
-//	FStaticConstructObjectParameters Params(SourceObject->GetClass());
-//	Params.Outer = DestOuter;
-//	Params.Name = DestName;
-//	Params.SetFlags = SourceObject->GetFlags();
-//	Params.Template = SourceObject;
-//	shared_ptr<UObject> DupRootObject = StaticConstructObject_Internal(Params);
-//
-//	map<UObject*, shared_ptr<UObject>> DuplicatedObjectAnnotation;
-//	std::stringstream Buffer;
-//	boost::archive::text_oarchive WriteAr = boost::archive::text_oarchive(Buffer);
-//	FArchive Writer = FArchive(WriteAr, DuplicatedObjectAnnotation, SourceObject, DupRootObject);
-//	
-//	vector<shared_ptr<UObject>> SerializedObjects;
-//
-//	while (Writer.UnserializedObjects.size())
-//	{
-//		shared_ptr<UObject> Object = Writer.UnserializedObjects.back();
-//		SerializedObjects.push_back(Object);
-//		Writer.UnserializedObjects.pop_back();
-//		Object->Serialize(Writer);
-//	};
-//
-//	boost::archive::text_iarchive ReadAr = boost::archive::text_iarchive(Buffer);
-//	FArchive Reader = FArchive(ReadAr, DuplicatedObjectAnnotation);
-//	for (int32 ObjectIndex = 0; ObjectIndex < SerializedObjects.size(); ObjectIndex++)
-//	{
-//		shared_ptr<UObject> SerializedObject = SerializedObjects[ObjectIndex];
-//		shared_ptr<UObject> DuplicatedObject = DuplicatedObjectAnnotation[SerializedObject.get()];
-//		_ASSERT(DuplicatedObject);
-//
-//		if (!DuplicatedObject->HasAnyFlags(RF_ClassDefaultObject))
-//		{
-//			DuplicatedObject->Serialize(Reader);
-//		}
-//		else
-//		{
-//			// 고민해보기
-//			_ASSERT(false);
-//		}
-//	}
-//
-//	for (int32 ObjectIndex = 0; ObjectIndex < SerializedObjects.size(); ObjectIndex++)
-//	{
-//		shared_ptr<UObject> OrigObject = SerializedObjects[ObjectIndex];
-//		shared_ptr<UObject> DuplicatedObject = DuplicatedObjectAnnotation[OrigObject.get()];
-//		DuplicatedObject->PostDuplicate(DuplicateMode);
-//		if (/*!Parameters.bSkipPostLoad && */!DuplicatedObject->IsTemplate())
-//		{
-//			DuplicatedObject->PostLoad(); // ConditionalPostLoad();
-//		}
-//	}
-//
-//	return DupRootObject;
-//}
 
 bool FObjectInitializer::FOverrides::IsLegalOverride(const UClass* DerivedComponentClass, const UClass* BaseComponentClass)
 {

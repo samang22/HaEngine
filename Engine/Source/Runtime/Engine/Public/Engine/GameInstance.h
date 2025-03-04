@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "Engine/EngineBaseTypes.h"
 #include "GameInstance.generated.h"
 
 class ULocalPlayer;
@@ -32,4 +33,8 @@ public:
 
 protected:
     UWorld* World = nullptr;
+
+public:
+    /** 주어진 맵 URL을 위해 게임 모드를 생성하는 호출 */
+    virtual class AGameModeBase* CreateGameModeForURL(FURL InURL, UWorld* InWorld);
 };

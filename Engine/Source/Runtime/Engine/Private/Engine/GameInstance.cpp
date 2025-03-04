@@ -1,5 +1,7 @@
 #include "Engine/GameInstance.h"
 #include "Engine/Engine.h"
+#include "GameMapsSettings.h"
+#include "GameFramework/GameModeBase.h"
 
 UGameInstance::UGameInstance()
 {
@@ -40,9 +42,9 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
     }
 
     // GameMode 생성 및 세팅
-    // PlayWorld->SetGameMode
     {
-
+        FURL URL = {};
+        PlayWorld->SetGameMode(URL);
     }
 
     // InitializeActorsForPlay
@@ -50,5 +52,25 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
         FRegisterComponentContext Context(PlayWorld);
         PlayWorld->InitializeActorsForPlay(&Context);
     }
+}
+AGameModeBase* UGameInstance::CreateGameModeForURL(FURL InURL, UWorld* InWorld)
+{
+    // 게임 모드 클래스를 가져옵니다. 처음에는 맵의 worldsettings에 지정된 기본 게임 유형을 사용합니다. 아래 설정으로 재정의될 수 있습니다.
+    //TSubclassOf<AGameModeBase> GameClass = Settings->DefaultGameMode;
+
+    const UGameMapsSettings* GameMapsSettings = GetDefault<UGameMapsSettings>();
+    TSubclassOf<AGameModeBase> GameClass = GameMapsSettings->GameModeClass;
+    if (!GameClass)
+    {
+        GameClass = AGameModeBase::StaticClass();
+    }
+
+    // Spawn the GameMode.
+    E_LOG(Log, TEXT("Game class is '{}'"), GameClass->GetName());
+    FActorSpawnParameters SpawnInfo;
+    //SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    SpawnInfo.ObjectFlags |= RF_Transient;    // 저는 맵에 게임 모드를 저장하지 않는 것을 원합니다.
+
+    return World->SpawnActor<AGameModeBase>(GameClass, SpawnInfo);
 }
 #endif

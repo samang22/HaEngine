@@ -98,12 +98,12 @@
         -> [o] Proxy 만들기
 - [o] FApp 추가 및 DeltaTime 계산
 - [o] Editor 카메라 처리
-- [] 계층 구조 만들기 (Setup Attachment)
+- [o] 계층 구조 만들기 (Setup Attachment)
 
 - PIE 제작
+    -> [o] Editor <-> PIE 제작
     -> [] GameInstance, GameMode 제작
     -> [] User Project GameInstance, GameMode 추가
-    -> [] Editor <-> PIE 제작
     -> [] Spawn된 Actor BeginPlay & Tick
 
 - 렌더러 개선

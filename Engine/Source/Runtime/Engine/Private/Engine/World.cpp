@@ -1,9 +1,12 @@
 #include "Engine/World.h"
+#include "Engine/EngineBaseTypes.h"
 #include "Engine/Level.h"
 
 #include "EngineModule.h"
 #include "RendererInterface.h"
 #include "SceneInterface.h"
+#include "Engine/GameInstance.h"
+#include "GameFramework/GameModeBase.h"
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -252,5 +255,23 @@ bool UWorld::GetBegunPlay() const
 bool UWorld::HasBegunPlay() const
 {
 	return GetBegunPlay() && PersistentLevel && PersistentLevel->Actors.size();
+}
+
+bool UWorld::SetGameMode(const FURL& InURL)
+{
+	if (!AuthorityGameMode)
+	{
+		AuthorityGameMode = GetGameInstance()->CreateGameModeForURL(InURL, this);
+		if (AuthorityGameMode != NULL)
+		{
+			return true;
+		}
+		else
+		{
+			E_LOG(Error, TEXT("Failed to spawn GameMode actor."));
+			return false;
+		}
+	}
+	return false;
 }
 

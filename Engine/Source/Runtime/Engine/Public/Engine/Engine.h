@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "Engine/EngineBaseTypes.h"
 #include "Engine/World.h"
 #include "Engine.generated.h"
 
