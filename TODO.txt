@@ -102,8 +102,8 @@
 
 - PIE 제작
     -> [o] Editor <-> PIE 제작
-    -> [] GameInstance, GameMode 제작
-    -> [] User Project GameInstance, GameMode 추가
+    -> [o] GameInstance, GameMode 제작
+    -> [o] User Project GameInstance, GameMode 추가
     -> [] Spawn된 Actor BeginPlay & Tick
 
 - 렌더러 개선

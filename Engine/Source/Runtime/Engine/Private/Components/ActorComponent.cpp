@@ -148,7 +148,7 @@ void UActorComponent::OnRegister()
 	UpdateComponentToWorld();
 
 	// 일반적인 ActorComponent는 이 시점이 아니라, FinishSpawning여기서 Active 하고 있다
-	if (true/*bAutoActivate*/)
+	if (bAutoActivate)
 	{
 		AActor* Owner = GetOwner();
 		if (!WorldPrivate->IsGameWorld() || Owner == nullptr /*|| Owner->IsActorInitialized()*/)

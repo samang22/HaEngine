@@ -144,6 +144,11 @@ public:
 	 */
 	virtual void BeginPlay();
 
+public:
+	/** 컴포넌트가 생성될 때 활성화되는지 또는 명시적으로 활성화되어야 하는지 여부입니다. */
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Activation)
+	uint8 bAutoActivate : 1 = false;
+
 protected:
 	/**
 	 * 이 ActorComponent가 현재 씬에 등록되어 있는지 여부를 나타냅니다.

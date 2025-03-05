@@ -658,7 +658,7 @@ void AActor::InitializeComponents()
 	{
 		if (ActorComp->IsRegistered())
 		{
-			if (/*ActorComp->bAutoActivate &&*/ !ActorComp->IsActive())
+			if (ActorComp->bAutoActivate && !ActorComp->IsActive())
 			{
 				ActorComp->Activate(true);
 			}
