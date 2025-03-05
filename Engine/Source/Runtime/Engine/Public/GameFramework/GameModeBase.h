@@ -3,8 +3,10 @@
 #include "GameModeBase.generated.h"
 
 class UPlayer;
+class AController;
 class APlayerController;
 class AGameSession;
+class AGameStateBase;
 
 UCLASS()
 class ENGINE_API AGameModeBase : public AActor
@@ -12,7 +14,7 @@ class ENGINE_API AGameModeBase : public AActor
 	GENERATED_BODY()
 public:
 	AGameModeBase();
-
+    virtual void PreInitializeComponents() override;
 
 public:
 
@@ -48,6 +50,12 @@ public:
      */
     virtual APlayerController* Login(UPlayer* NewPlayer/*, ENetRole InRemoteRole, const FString& Portal, const FString& Options, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage*/);
 
+    /** 로그인 성공 후 호출됩니다. PlayerController에서 복제된 함수를 호출할 수 있는 첫 번째 안전한 장소입니다. */
+    virtual void PostLogin(APlayerController* NewPlayer);
+
+    /** PostLogin 프로세스의 일부로 호출됩니다. 새로운 플레이어를 생성하기 전의 마지막 단계입니다. */
+    void DispatchPostLogin(AController* NewPlayer);
+
     //~=============================================================================
 
     /**
@@ -61,13 +69,33 @@ public:
      */
     virtual APlayerController* SpawnPlayerController(/*ENetRole InRemoteRole, const FString& Options*/);
 
+    //~=============================================================================
+    // 게임 시작/일시정지/초기화
+
+    /** 액터에서 BeginPlay를 호출하도록 전환합니다. */
+    //UFUNCTION(BlueprintCallable, Category = Game)
+    virtual void StartPlay();
+
+protected:
+    /** Called as part of DispatchPostLogin */
+    virtual void OnPostLogin(AController* NewPlayer) {}
+
+
 protected:
     /** 게임 세션은 로그인 승인, 중재, 온라인 게임 인터페이스를 처리합니다. */
     //UPROPERTY(Transient)
     AGameSession* GameSession = nullptr;
 
+    /** GameState는 모든 클라이언트에 관련 속성을 복제하는 데 사용됩니다. */
+//UPROPERTY(Transient)
+    AGameStateBase* GameState = nullptr;
+
 protected:
     /** 로그인하는 플레이어를 위해 스폰할 PlayerController의 클래스입니다. */
     //UPROPERTY(EditAnywhere, NoClear, BlueprintReadOnly, Category = Classes)
     TSubclassOf<APlayerController> PlayerControllerClass;
+
+    /** 이 GameMode와 연관된 GameState의 클래스입니다. */
+    //UPROPERTY(EditAnywhere, NoClear, BlueprintReadOnly, Category = Classes)
+    TSubclassOf<AGameStateBase> GameStateClass;
 };

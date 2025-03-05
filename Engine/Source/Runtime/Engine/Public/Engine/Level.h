@@ -23,6 +23,7 @@ class AActor;
 UCLASS()
 class ENGINE_API ULevel : public UObject
 {
+	friend class AGameStateBase;
 	GENERATED_BODY()
 public:
 	ULevel();

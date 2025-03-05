@@ -73,6 +73,8 @@ public:
     Matrix ProjectionMatrix = Matrix::Identity;
     Matrix ViewProjectionMatrix = Matrix::Identity;
 
+    FVector2D ViewportSize;
+
     /** Initialization constructor. */
     ENGINE_API FSceneViewFamily(const ConstructionValues& CVS);
     ENGINE_API virtual ~FSceneViewFamily();

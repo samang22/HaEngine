@@ -35,11 +35,11 @@ void UViewportClient::Tick(float DeltaTime)
 
 void UViewportClient::Draw()
 {
-	if (!GetScene()) { return; }
+	//if (!GetScene()) { return; }
 
-	FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(Viewport, GetScene()));
+	//FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(Viewport, GetScene()));
 
-	GetRendererModule().BeginRenderingViewFamily(&ViewFamily);
+	//GetRendererModule().BeginRenderingViewFamily(&ViewFamily);
 }
 
 void UViewportClient::RequestResize(const uint32 NewSizeX, const uint32 NewSizeY)

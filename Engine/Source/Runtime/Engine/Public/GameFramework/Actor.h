@@ -269,11 +269,4 @@ private:
 	 * EndPlay이 호출되면 HasNotBegunPlay로 다시 설정됩니다.
 	 */
 	EActorBeginPlayState ActorHasBegunPlay : 2 = EActorBeginPlayState::HasNotBegunPlay;
-
-public:
-	//UPROPERTY(VisibleAnywhere)
-	int Value = 0;
-
-	UPROPERTY(EditAnywhere);
-	int Value2 = 0;
 };

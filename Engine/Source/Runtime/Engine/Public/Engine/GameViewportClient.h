@@ -18,6 +18,7 @@
 UCLASS()
 class ENGINE_API UGameViewportClient : public UViewportClient
 {
+    friend class UEngine;
     GENERATED_BODY()
 
 public:
@@ -27,8 +28,8 @@ public:
 protected:
     /* 이 뷰포트에 대한 상대적인 월드 컨텍스트 */
     //UPROPERTY()
-    TObjectPtr<UWorld> World;
+    UWorld* World;
 
     //UPROPERTY()
-    TObjectPtr<UGameInstance> GameInstance;
+    UGameInstance* GameInstance = nullptr;
 };

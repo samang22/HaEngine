@@ -50,6 +50,7 @@ void UEditorViewportClient::Draw()
     if (!GetScene()) { return; }
     // 뷰포트를 위한 FSceneViewFamily/FSceneView 설정
     FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(Viewport, GetScene()));
+    ViewFamily.ViewportSize = ViewportSize;
 
     CalcSceneView(&ViewFamily);
     GetRendererModule().BeginRenderingViewFamily(&ViewFamily);

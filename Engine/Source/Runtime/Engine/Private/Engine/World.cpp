@@ -8,6 +8,7 @@
 #include "Engine/GameInstance.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameStateBase.h"
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -44,6 +45,16 @@ UWorld::~UWorld()
 		Scene->Release();
 		Scene = nullptr;
 	}
+}
+
+void UWorld::SetGameState(AGameStateBase* NewGameState)
+{
+	if (NewGameState == GameState)
+	{
+		return;
+	}
+
+	GameState = NewGameState;
 }
 
 void UWorld::InitalizeNewWorld()
@@ -239,7 +250,7 @@ APlayerController* UWorld::SpawnPlayActor(UPlayer* Player)
 		//}
 		NewPlayerController->SetPlayer(Player);
 
-		// GameMode->PostLogin(NewPlayerController);
+		GameMode->PostLogin(NewPlayerController);
 
 		return NewPlayerController;
 	}
@@ -308,5 +319,42 @@ bool UWorld::SetGameMode(const FURL& InURL)
 		}
 	}
 	return false;
+}
+
+void UWorld::BeginPlay()
+{
+	//    const TArray<UWorldSubsystem*>& WorldSubsystems = SubsystemCollection.GetSubsystemArray<UWorldSubsystem>(UWorldSubsystem::StaticClass());
+	//
+	//    if (SupportsMakingVisibleTransactionRequests() && (IsNetMode(NM_DedicatedServer) || IsNetMode(NM_ListenServer)))
+	//    {
+	//        ServerStreamingLevelsVisibility = AServerStreamingLevelsVisibility::SpawnServerActor(this);
+	//    }
+	//
+	//#if WITH_EDITOR
+	//    // PIE(게임 내 에디터)/게임에서 사용되는 자산들이 완료될 수 있도록 기회를 줍니다.
+	//    FAssetCompilingManager::Get().ProcessAsyncTasks();
+	//#endif
+	//
+	//    for (UWorldSubsystem* WorldSubsystem : WorldSubsystems)
+	//    {
+	//        WorldSubsystem->OnWorldBeginPlay(*this);
+	//    }
+
+	AGameModeBase* const GameMode = GetAuthGameMode();
+	if (GameMode)
+	{
+		GameMode->StartPlay();
+		/*if (GetAISystem())
+		{
+			GetAISystem()->StartPlay();
+		}*/
+	}
+
+	/*OnWorldBeginPlay.Broadcast();
+
+	if (PhysicsScene)
+	{
+		PhysicsScene->OnWorldBeginPlay();
+	}*/
 }
 

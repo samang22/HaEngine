@@ -273,9 +273,11 @@ void UEngine::CreateNewPlayInEditorInstance()
 
         GameViewport = NewObject<UGameViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
         GameViewport->InitPIE(EditorViewportClient->hViewportHandle, GWorld, GameInstance, EditorViewportClient->Viewport);
+        GameViewport->GameInstance = GameInstance.get();
         CurrentViewportClient = GameViewport;   
         UWorld* PIEWorld = GameInstance->GetWorld();
         PIEWorld->GameViewport = GameViewport.get();
+        GameViewport->World = PIEWorld;
 
         ULocalPlayer* NewLocalPlayer = nullptr;
         // 로컬 플레이어를 초기화하려고 시도합니다.

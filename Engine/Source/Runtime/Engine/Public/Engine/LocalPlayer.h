@@ -28,6 +28,20 @@ public:
      */
     virtual void SpawnPlayActor(/*const FString& URL, FString& OutError,*/ UWorld* InWorld);
 
+    /**
+     * 이 뷰 액터에서 그리기 위한 뷰 설정을 계산합니다.
+     *
+     * @param   View - 출력 뷰 구조체
+     * @param   OutViewLocation - 출력 액터 위치
+     * @param   OutViewRotation - 출력 액터 회전
+     * @param   Viewport - 현재 클라이언트 뷰포트
+     * @param   ViewDrawer - 뷰에서 선택적으로 그리기
+     * @param   StereoViewIndex - 스테레오스코피 사용 시 뷰의 인덱스
+     */
+    virtual void CalcSceneView(class FSceneViewFamily* ViewFamily,
+        FVector& OutViewLocation,
+        FRotator& OutViewRotation);
+
 protected:
     /** 이 플레이어의 뷰를 포함하는 기본 뷰포트입니다. */
     //UPROPERTY()

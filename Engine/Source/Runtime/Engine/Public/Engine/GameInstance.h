@@ -24,6 +24,7 @@ public:
     class UEngine* GetEngine() const;
     virtual UWorld* GetWorld() const override { return World; }
     class UGameViewportClient* GetGameViewportClient() const;
+    ULocalPlayer* GetLocalPlayer(const uint64 PlayerIndex);
 
 #if WITH_EDITOR
     /* 게임의 PIE 인스턴스를 위해 게임 인스턴스를 초기화하는데 호출됩니다 */

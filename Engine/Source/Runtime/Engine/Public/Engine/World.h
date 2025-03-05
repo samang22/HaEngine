@@ -10,6 +10,7 @@ class UGameInstance;
 class UGameViewportClient;
 class APlayerController;
 class AGameModeBase;
+class AGameStateBase;
 class UGameViewportClient;
 
 struct FURL;
@@ -49,6 +50,7 @@ struct ENGINE_API FActorSpawnParameters
 UCLASS()
 class ENGINE_API UWorld : public UObject
 {
+	friend class AGameStateBase;
 	friend class UGameInstance;
 	friend class UEngine;
 
@@ -76,6 +78,9 @@ public:
 	 * 서버에서만 유효한 포인터를 반환합니다. 클라이언트에서는 항상 null을 반환합니다.
 	 */
 	AGameModeBase* GetAuthGameMode() const { return AuthorityGameMode; }
+
+	/** 현재 GameState 인스턴스를 이 월드와 GameState의 레벨 컬렉션에 설정합니다. */
+	void SetGameState(AGameStateBase* NewGameState);
 
 	/**
 	 * 새로 생성된 월드를 초기화합니다.
@@ -200,12 +205,20 @@ public:
 	/** 레벨의 GameMode를 생성합니다. */
 	bool SetGameMode(const FURL& InURL);
 
+	/**
+	 * 게임 플레이를 시작합니다. 이는 게임 모드를 올바른 상태로 전환시키고, 모든 액터에서 BeginPlay를 호출합니다.
+	 */
+	void BeginPlay();
+
 
 private:
 	/** 서버에서만 유효한 현재 GameMode */
 	//UPROPERTY(/*Transient*/)	
 	class AGameModeBase* AuthorityGameMode = nullptr;
 
+	/** 클라이언트가 접근할 수 있는 게임 상태 정보를 포함하는 복제된 액터입니다. 직접 접근은 허용되지 않으며, GetGameState<>()를 사용해야 합니다. */
+	//UPROPERTY(Transient)
+	class AGameStateBase* GameState = nullptr;
 
 	/** 월드 정보, 기본 브러시 및 게임 플레이 중 스폰된 액터 등을 포함하는 PersistentLevel */
 	shared_ptr<ULevel> PersistentLevel;

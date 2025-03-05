@@ -18,6 +18,24 @@ UGameViewportClient* UGameInstance::GetGameViewportClient() const
     return GetWorld()->GameViewport;
 }
 
+ULocalPlayer* UGameInstance::GetLocalPlayer(const uint64 PlayerIndex)
+{
+    if (LocalPlayers.size() < PlayerIndex + 1)
+    {
+        _ASSERT(false);
+        return nullptr;
+    }
+
+    if (PlayerIndex != 0)
+    {
+        // 우리는 하나만 있음
+        _ASSERT(false);
+        return nullptr;
+    }
+
+    return LocalPlayers[PlayerIndex].get();
+}
+
 #if WITH_EDITOR
 void UGameInstance::InitializeForPlayInEditor()
 {
@@ -71,6 +89,7 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
         //}
     }
 
+    PlayWorld->BeginPlay();
 }
 
 ULocalPlayer* UGameInstance::CreateInitialPlayer()
