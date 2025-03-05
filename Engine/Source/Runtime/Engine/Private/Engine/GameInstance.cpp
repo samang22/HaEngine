@@ -1,5 +1,6 @@
 #include "Engine/GameInstance.h"
 #include "Engine/Engine.h"
+#include "Engine/LocalPlayer.h"
 #include "GameMapsSettings.h"
 #include "GameFramework/GameModeBase.h"
 
@@ -12,6 +13,11 @@ UEngine* UGameInstance::GetEngine() const
     return CastChecked<UEngine>(GetOuter()).get();
 }
 
+UGameViewportClient* UGameInstance::GetGameViewportClient() const
+{
+    return GetWorld()->GameViewport;
+}
+
 #if WITH_EDITOR
 void UGameInstance::InitializeForPlayInEditor()
 {
@@ -19,15 +25,15 @@ void UGameInstance::InitializeForPlayInEditor()
     UWorld* EditorWorld = EditorEngine->GetEditorWorld();
 
     // 표준 PIE path: 에디터 월드를 단순히 복제합니다.
-    TObjectPtr<UWorld> NewWorld = EditorEngine->CreatePIEWorldByDuplication(EditorWorld);
+    TObjectPtr<UWorld> PieWorld = EditorEngine->CreatePIEWorldByDuplication(EditorWorld);
 
-    EditorEngine->PlayWorld = NewWorld;
-    NewWorld->SetGameInstance(this);
-    World = NewWorld.get();
+    EditorEngine->PlayWorld = PieWorld;
+    PieWorld->SetGameInstance(this);
+    World = PieWorld.get();
 
     // World 컨텍스트를 설정하고 게임 인스턴스를 초기화한 후 월드를 초기화하여 일반적인 로드와 일관되게 합니다.
     // 이 작업은 월드 서브시스템을 생성하고 게임 시작을 준비합니다.
-    EditorEngine->PostCreatePIEWorld(NewWorld.get());
+    EditorEngine->PostCreatePIEWorld(PieWorld.get());
 }
 
 void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
@@ -53,6 +59,39 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
         PlayWorld->InitializeActorsForPlay(&Context);
     }
 }
+
+ULocalPlayer* UGameInstance::CreateInitialPlayer()
+{
+    return CreateLocalPlayer(false);
+}
+
+ULocalPlayer* UGameInstance::CreateLocalPlayer(bool bSpawnPlayerController)
+{
+    TObjectPtr<ULocalPlayer> NewPlayer;
+    NewPlayer = NewObject<ULocalPlayer>(GetEngine(), ULocalPlayer::StaticClass());// GetEngine()->LocalPlayerClass);
+    AddLocalPlayer(NewPlayer);
+
+    return NewPlayer.get();
+}
+
+int32 UGameInstance::AddLocalPlayer(TObjectPtr<ULocalPlayer> NewPlayer)
+{
+    if (NewPlayer == nullptr)
+    {
+        _ASSERT(false);
+        return INDEX_NONE;
+    }
+    // Add to list
+    LocalPlayers.push_back(NewPlayer);
+    const int32 InsertIndex = LocalPlayers.size() - 1;
+    // Notify the player they were added
+    NewPlayer->PlayerAdded(GetGameViewportClient()/*, UserId*/);
+
+    return InsertIndex;
+}
+
+#endif
+
 AGameModeBase* UGameInstance::CreateGameModeForURL(FURL InURL, UWorld* InWorld)
 {
     // 게임 모드 클래스를 가져옵니다. 처음에는 맵의 worldsettings에 지정된 기본 게임 유형을 사용합니다. 아래 설정으로 재정의될 수 있습니다.
@@ -73,4 +112,3 @@ AGameModeBase* UGameInstance::CreateGameModeForURL(FURL InURL, UWorld* InWorld)
 
     return World->SpawnActor<AGameModeBase>(GameClass, SpawnInfo);
 }
-#endif

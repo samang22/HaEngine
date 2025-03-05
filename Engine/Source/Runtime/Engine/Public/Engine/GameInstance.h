@@ -17,11 +17,13 @@ UCLASS()
 class ENGINE_API UGameInstance : public UObject
 {
     GENERATED_BODY()
+
 public:
     UGameInstance();
 
     class UEngine* GetEngine() const;
     virtual UWorld* GetWorld() const override { return World; }
+    class UGameViewportClient* GetGameViewportClient() const;
 
 #if WITH_EDITOR
     /* 게임의 PIE 인스턴스를 위해 게임 인스턴스를 초기화하는데 호출됩니다 */
@@ -31,10 +33,37 @@ public:
     virtual void StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer);
 #endif
 
-protected:
-    UWorld* World = nullptr;
+    virtual ULocalPlayer* CreateInitialPlayer();
+
+    /**
+     * 새로운 플레이어를 추가합니다.
+     * @param UserId - 플레이어가 입력을 받아야 하는 플랫폼 사용자 ID.
+     * @param OutError - 플레이어가 반환되지 않는 경우, OutError는 그 이유를 설명하는 문자열을 포함합니다.
+     * @param bSpawnPlayerController - 새로운 플레이어에 대해 플레이어 컨트롤러를 즉시 생성해야 하는 경우 true.
+     * @return 생성된 플레이어.
+     */
+    ULocalPlayer* CreateLocalPlayer(bool bSpawnPlayerController);
+
+    /**
+     * LocalPlayer를 로컬 및 글로벌 플레이어 목록에 추가합니다.
+     *
+     * @param   NewPlayer   추가할 플레이어
+     * @param   UserId      플레이어와 연결된 플랫폼 사용자 ID
+     */
+    virtual int32 AddLocalPlayer(TObjectPtr<ULocalPlayer> NewPlayer/*, FPlatformUserId UserId*/);
 
 public:
     /** 주어진 맵 URL을 위해 게임 모드를 생성하는 호출 */
     virtual class AGameModeBase* CreateGameModeForURL(FURL InURL, UWorld* InWorld);
+
+protected:
+    UWorld* World = nullptr;
+
+
+    /** 이 게임 인스턴스에 로컬로 참여 중인 플레이어 목록 */
+    // 일단 하나만 사용
+    //UPROPERTY()
+    TArray<TObjectPtr<ULocalPlayer>> LocalPlayers;
+
+
 };

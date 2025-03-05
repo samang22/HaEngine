@@ -7,6 +7,7 @@
 class ULevel;
 class APawn;
 class UGameInstance;
+class UGameViewportClient;
 struct FURL;
 
 struct ENGINE_API FActorSpawnParameters
@@ -44,6 +45,9 @@ struct ENGINE_API FActorSpawnParameters
 UCLASS()
 class ENGINE_API UWorld : public UObject
 {
+	friend class UGameInstance;
+	friend class UEngine;
+
 	GENERATED_BODY()
 
 public:
@@ -180,6 +184,8 @@ private:
 	/** 월드 정보, 기본 브러시 및 게임 플레이 중 스폰된 액터 등을 포함하는 PersistentLevel */
 	shared_ptr<ULevel> PersistentLevel;
 	FTransform Transform = FTransform::Identity;
+
+	UGameViewportClient* GameViewport = nullptr;
 
 	//UPROPERTY(Transient)
 	UGameInstance* OwningGameInstance = nullptr;

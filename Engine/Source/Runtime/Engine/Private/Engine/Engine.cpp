@@ -1,5 +1,7 @@
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
+#include "Engine/GameViewportClient.h"
+#include "Engine/LocalPlayer.h"
 #include "Editor/EditorViewportClient.h"
 #include "EngineModule.h"
 #include "GameMapsSettings.h"
@@ -228,7 +230,7 @@ TObjectPtr<UWorld> UEngine::CreatePIEWorldByDuplication(UWorld* InWorld)
 
     GWorld = NULL;
 
-    // Duplicate the editor world to create the PIE world
+    // 에디터 월드를 복제하여 PIE 월드를 만듭니다
     NewPIEWorld = UWorld::GetDuplicatedWorldForPIE(InWorld);
 
     GWorld = NewPIEWorld.get();
@@ -269,16 +271,32 @@ void UEngine::CreateNewPlayInEditorInstance()
         // GameInstance를 초기화하려고 시도합니다. 이것은 월드를 생성할 것입니다.
         GameInstance->InitializeForPlayInEditor();
 
-        GameViewportClient = NewObject<UEditorViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
-        GameViewportClient->InitPIE(EditorViewportClient->hViewportHandle, GWorld, GameInstance, EditorViewportClient->Viewport);
-        CurrentViewportClient = GameViewportClient;
+        GameViewport = NewObject<UGameViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
+        GameViewport->InitPIE(EditorViewportClient->hViewportHandle, GWorld, GameInstance, EditorViewportClient->Viewport);
+        CurrentViewportClient = GameViewport;
+        UWorld* PIEWorld = GameInstance->GetWorld();
+        PIEWorld->GameViewport = GameViewport.get();
 
+        ULocalPlayer* NewLocalPlayer = nullptr;
+        // 로컬 플레이어를 초기화하려고 시도합니다.
+        FString Error;
+        //NewLocalPlayer = GameViewport->SetupInitialLocalPlayer(Error);
+        // 간단하게 대체
+        // 초기 플레이어를 생성합니다. 이는 게임 내에서 아무것도 렌더링할 수 없기 때문에 필요합니다.
+        NewLocalPlayer = GameInstance->CreateInitialPlayer();
+
+        if (!NewLocalPlayer)
         {
-            // LocalPlayer
-            {
+            //FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("UnrealEd", "Error_CouldntSpawnPlayer", "Couldn't spawn player: {0}"), FText::FromString(Error)));
+            //// go back to using the real world as GWorld
+            //RestoreEditorWorld(EditorWorld);
+            //EndPlayMap();
+            //GameInstance->RemoveFromRoot();
+            _ASSERT(false);
+            return;
 
-            }
-
+        }
+        {
             GameInstance->StartPlayInEditorGameInstance(nullptr);
         }
     }
@@ -292,7 +310,7 @@ void UEngine::PIEtoSIE()
     bPIE = false;
 
     GameInstance = nullptr;
-    GameViewportClient = nullptr;
+    GameViewport = nullptr;
     CurrentViewportClient = EditorViewportClient;
 
     GWorld = EditorWorld.get();

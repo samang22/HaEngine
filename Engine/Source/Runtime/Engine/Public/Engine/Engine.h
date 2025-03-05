@@ -5,8 +5,8 @@
 #include "Engine.generated.h"
 
 class UEditorViewportClient;
+class UGameViewportClient; 
 class UViewportClient;
-
 class UGameInstance;
 
 UCLASS()
@@ -59,7 +59,10 @@ protected:
     TObjectPtr<UWorld> EditorWorld;
 
     TObjectPtr<UEditorViewportClient> EditorViewportClient;
-    TObjectPtr<UEditorViewportClient> GameViewportClient;
+
+    /** 현재 게임 인스턴스를 나타내는 뷰포트입니다. null 일 수 있으므로 확인 없이 사용하지 마세요. */
+    TObjectPtr<class UGameViewportClient> GameViewport;
+
     TEnginePtr<UViewportClient> CurrentViewportClient;
 
 protected: // PIE
