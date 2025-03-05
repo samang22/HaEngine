@@ -6,6 +6,7 @@
 
 void UGameViewportClient::Tick(float DeltaTime)
 {
+    Super::Tick(DeltaTime);
 }
 
 void UGameViewportClient::Draw()

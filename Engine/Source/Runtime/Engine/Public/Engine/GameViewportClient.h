@@ -16,7 +16,7 @@
  * @see UGameViewportClient
  */
 UCLASS()
-class UGameViewportClient : public UViewportClient
+class ENGINE_API UGameViewportClient : public UViewportClient
 {
     GENERATED_BODY()
 

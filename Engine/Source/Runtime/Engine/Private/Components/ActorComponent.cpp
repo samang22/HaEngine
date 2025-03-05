@@ -59,6 +59,20 @@ AActor* UActorComponent::GetOwner() const
     return GetActorOwnerNoninline();
 }
 
+void UActorComponent::RegisterComponent()
+{
+	AActor* MyOwner = GetOwner();
+	UWorld* MyOwnerWorld = (MyOwner ? MyOwner->GetWorld() : nullptr);
+	_ASSERT(MyOwnerWorld);
+	if (MyOwnerWorld)
+	{
+		//@note FH: world should be initialized when calling RegisterComponent or it should be handled gracefully as a no-op but that isn't currently the case
+		// however a lot of legacy code may end up calling RegisterComponent prior to world initialization hence why the ensure is currently commented
+		//ensure(MyOwnerWorld->bIsWorldInitialized);
+		RegisterComponentWithWorld(MyOwnerWorld);
+	}
+}
+
 void UActorComponent::RegisterComponentWithWorld(UWorld* InWorld, FRegisterComponentContext* Context)
 {
 	if (!this)
@@ -94,7 +108,6 @@ void UActorComponent::RegisterComponentWithWorld(UWorld* InWorld, FRegisterCompo
 	WorldPrivate = InWorld;
 
 	ExecuteRegisterEvents(Context);
-
 }
 
 void UActorComponent::OnComponentCreated()
@@ -135,14 +148,14 @@ void UActorComponent::OnRegister()
 	UpdateComponentToWorld();
 
 	// 일반적인 ActorComponent는 이 시점이 아니라, FinishSpawning여기서 Active 하고 있다
-	//if (true/*bAutoActivate*/)
-	//{
-	//	AActor* Owner = GetOwner();
-	//	if (!WorldPrivate->IsGameWorld() || Owner == nullptr /*|| Owner->IsActorInitialized()*/)
-	//	{
-	//		Activate(true);
-	//	}
-	//}
+	if (true/*bAutoActivate*/)
+	{
+		AActor* Owner = GetOwner();
+		if (!WorldPrivate->IsGameWorld() || Owner == nullptr /*|| Owner->IsActorInitialized()*/)
+		{
+			Activate(true);
+		}
+	}
 }
 
 void UActorComponent::CreateRenderState_Concurrent(FRegisterComponentContext* Context)

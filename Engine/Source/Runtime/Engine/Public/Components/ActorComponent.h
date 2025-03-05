@@ -70,6 +70,9 @@ public:
 	/** 이 컴포넌트가 현재 등록되어 있는지 확인합니다. */
 	FORCEINLINE bool IsRegistered() const { return bRegistered; }
 
+	/** 이 컴포넌트를 등록하여 렌더링/물리 상태를 생성합니다. 또한, 이미 존재하지 않는 경우 Outer 액터의 컴포넌트 배열에 자신을 추가합니다. */
+	void RegisterComponent();
+
 	/**
 	 * 컴포넌트를 특정 월드에 등록하여 시각적/물리적 상태를 생성합니다.
 	 * @param InWorld - 컴포넌트를 등록할 월드입니다.

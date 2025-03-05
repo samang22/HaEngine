@@ -273,13 +273,13 @@ void UEngine::CreateNewPlayInEditorInstance()
 
         GameViewport = NewObject<UGameViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
         GameViewport->InitPIE(EditorViewportClient->hViewportHandle, GWorld, GameInstance, EditorViewportClient->Viewport);
-        CurrentViewportClient = GameViewport;
+        CurrentViewportClient = GameViewport;   
         UWorld* PIEWorld = GameInstance->GetWorld();
         PIEWorld->GameViewport = GameViewport.get();
 
         ULocalPlayer* NewLocalPlayer = nullptr;
         // 로컬 플레이어를 초기화하려고 시도합니다.
-        FString Error;
+        //FString Error;
         //NewLocalPlayer = GameViewport->SetupInitialLocalPlayer(Error);
         // 간단하게 대체
         // 초기 플레이어를 생성합니다. 이는 게임 내에서 아무것도 렌더링할 수 없기 때문에 필요합니다.
@@ -297,7 +297,7 @@ void UEngine::CreateNewPlayInEditorInstance()
 
         }
         {
-            GameInstance->StartPlayInEditorGameInstance(nullptr);
+            GameInstance->StartPlayInEditorGameInstance(NewLocalPlayer);
         }
     }
 

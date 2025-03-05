@@ -11,4 +11,9 @@ UCLASS()
 class UPlayer : public UObject
 {
     GENERATED_BODY()
+
+public:
+    /** 이 플레이어가 제어하는 액터. */
+    //UPROPERTY(transient)
+    class APlayerController* PlayerController = nullptr;
 };

@@ -205,6 +205,19 @@ void CWorldOutliner::OnWorldCreated(UWorld* NewWorld)
 
 void CWorldOutliner::OnWorldDestroyed(UWorld* NewWorld)
 {
+	//if (NewWorld->WorldType == EWorldType::PIE)
+	//{
+	//	if (GWorld->WorldType != EWorldType::Editor)
+	//	{
+	//		// PIE가 종료될때 GWorld가 Editor World로 바뀌어야 합니다
+	//		_ASSERT(false);
+	//		return;
+	//	}
+
+	//	DeleteAllItems();
+	//	InsertRootItem(NewWorld->GetName().c_str());
+	//	OnSelectedItemChanged(hClassViewRoot);
+	//}
 }
 
 void CWorldOutliner::OnActorSpawned(AActor* NewActor)
@@ -216,6 +229,14 @@ void CWorldOutliner::OnActorSpawned(AActor* NewActor)
 
 void CWorldOutliner::OnWorldChanged(UWorld* NewWorld, TArray<TObjectPtr<AActor>>& NewActors)
 {
+	DeleteAllItems();
+	InsertRootItem(NewWorld->GetName().c_str());
+	OnSelectedItemChanged(hClassViewRoot);
+
+	for (TEnginePtr<AActor> Actor : NewActors)
+	{
+		OnActorSpawned(Actor);
+	}
 }
 
 void CWorldOutliner::OnSort(UINT id)

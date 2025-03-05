@@ -8,6 +8,10 @@ class ULevel;
 class APawn;
 class UGameInstance;
 class UGameViewportClient;
+class APlayerController;
+class AGameModeBase;
+class UGameViewportClient;
+
 struct FURL;
 
 struct ENGINE_API FActorSpawnParameters
@@ -67,6 +71,11 @@ public:
 		return OwningGameInstance;
 	}
 
+	/**
+	 * 현재 게임 모드 인스턴스를 반환합니다. 서버의 게임 플레이 도중에는 항상 유효합니다.
+	 * 서버에서만 유효한 포인터를 반환합니다. 클라이언트에서는 항상 null을 반환합니다.
+	 */
+	AGameModeBase* GetAuthGameMode() const { return AuthorityGameMode; }
 
 	/**
 	 * 새로 생성된 월드를 초기화합니다.
@@ -142,6 +151,23 @@ public:
 		}
 		return SpawnActor<T>(Class, FTransform::Identity, SpawnParameters);
 	}
+
+	/**
+	 * PlayerController를 생성하고 지정된 RemoteRole 및 옵션으로 전달된 Player에 바인딩합니다.
+	 *
+	 * @param Player - PlayerController에 설정할 플레이어입니다.
+	 * @param RemoteRole - PlayerController에 설정할 RemoteRole입니다.
+	 * @param URL - 플레이어 옵션(이름 등)을 포함하는 URL입니다.
+	 * @param UniqueId - 플레이어의 고유 네트워크 ID입니다(온라인 서브시스템이 없거나 로그인하지 않은 경우, 예: 로컬 게임 또는 LAN 매치의 경우 0일 수 있습니다).
+	 * @param Error (out) - 설정된 경우, 오류가 있음을 나타냅니다. 보통 호출 코드가 실제 메시지를 조회할 수 있는 속성으로 설정됩니다.
+	 * @param InNetPlayerIndex (optional) - PlayerController에 설정할 NetPlayerIndex입니다.
+	 * @return 생성된 PlayerController입니다(실패할 경우 NULL을 반환할 수 있습니다).
+	 */
+	 //UE_DEPRECATED(5.0, "FUniqueNetIdRepl을 사용하는 SpawnPlayActor를 사용하세요.")
+	 //    APlayerController* SpawnPlayActor(class UPlayer* Player, ENetRole RemoteRole, const FURL& InURL, const FUniqueNetIdPtr& UniqueId, FString& Error, uint8 InNetPlayerIndex = 0);
+	APlayerController* SpawnPlayActor(class UPlayer* Player/*, ENetRole RemoteRole, const FURL& InURL, const FUniqueNetIdRepl& UniqueId, FString& Error, uint8 InNetPlayerIndex = 0*/);
+
+
 
 public:
 	/** 액터가 초기화되고 게임을 시작할 준비가 되면 true를 반환합니다. */

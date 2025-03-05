@@ -1,11 +1,12 @@
 #include "Engine/World.h"
 #include "Engine/EngineBaseTypes.h"
 #include "Engine/Level.h"
-
+#include "Engine/Player.h"
 #include "EngineModule.h"
 #include "RendererInterface.h"
 #include "SceneInterface.h"
 #include "Engine/GameInstance.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/GameModeBase.h"
 
 #include <boost/archive/text_oarchive.hpp>
@@ -48,7 +49,6 @@ UWorld::~UWorld()
 void UWorld::InitalizeNewWorld()
 {
 	PersistentLevel = NewObject<ULevel>(this, ULevel::StaticClass(), TEXT("PersistentLevel"));
-	PersistentLevel->OwningWorld = this->As<UWorld>();
 
 	InitWorld();
 
@@ -71,10 +71,10 @@ void UWorld::InitializeActorsForPlay(FRegisterComponentContext* Context)
 	bActorsInitialized = true;
 
 	// Init the game mode.
-	/*if (AuthorityGameMode && !AuthorityGameMode->IsActorInitialized())
+	if (AuthorityGameMode && !AuthorityGameMode->IsActorInitialized())
 	{
-		AuthorityGameMode->InitGame(FPaths::GetBaseFilename(InURL.Map), Options, Error);
-	}*/
+		AuthorityGameMode->InitGame(/*FPaths::GetBaseFilename(InURL.Map), Options, Error*/);
+	}
 
 	// 여러 초기화 함수를 라우팅하고 볼륨을 설정합니다.
 	const int32 ProcessAllRouteActorInitializationGranularity = 0;
@@ -211,6 +211,41 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, co
 	E_LOG(Warning, TEXT("Actor Spawned({})"), Class->GetName());
 
 	return NewActor;
+}
+
+APlayerController* UWorld::SpawnPlayActor(UPlayer* Player)
+{
+	if (AGameModeBase* const GameMode = GetAuthGameMode())
+	{
+		// Give the GameMode a chance to accept the login
+		APlayerController* NewPlayerController = GameMode->Login(Player/*, RemoteRole, *InURL.Portal, Options, UniqueId, Error*/);
+		if (NewPlayerController == NULL)
+		{
+			_ASSERT(false);
+			//E_LOG(Warning, TEXT("Login failed: {}"), *Error);
+			return NULL;
+		}
+
+		//E_LOG(Log, TEXT("{} got player {} [{}]"), NewPlayerController->GetName(), NewPlayer->GetName()/*, UniqueId.IsValid() ? *UniqueId->ToString() : TEXT("Invalid")*/);
+		E_LOG(Log, TEXT("{} got player {}"), NewPlayerController->GetName(), Player->GetName());
+
+		// 새로 스폰된 플레이어를 소유합니다.
+		//NewPlayerController->NetPlayerIndex = InNetPlayerIndex;
+		//NewPlayerController->SetRole(ROLE_Authority);
+		//NewPlayerController->SetReplicates(RemoteRole != ROLE_None);
+		//if (RemoteRole == ROLE_AutonomousProxy)
+		//{
+		//    NewPlayerController->SetAutonomousProxy(true);
+		//}
+		NewPlayerController->SetPlayer(Player);
+
+		// GameMode->PostLogin(NewPlayerController);
+
+		return NewPlayerController;
+	}
+
+	E_LOG(Warning, TEXT("Login failed: No game mode set."));
+	return nullptr;
 }
 
 bool UWorld::AreActorsInitialized() const

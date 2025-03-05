@@ -25,8 +25,8 @@ void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 
 void UViewportClient::InitPIE(HWND hInViewportHandle, UWorld* InWorld, TEnginePtr<UGameInstance> OwningGameInstance, FViewportRHIRef InViewport)
 {
-	Init(hInViewportHandle, InWorld);
 	Viewport = InViewport;
+	Init(hInViewportHandle, InWorld);
 }
 
 void UViewportClient::Tick(float DeltaTime)

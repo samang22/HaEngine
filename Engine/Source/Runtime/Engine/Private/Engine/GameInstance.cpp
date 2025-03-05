@@ -57,7 +57,20 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
     {
         FRegisterComponentContext Context(PlayWorld);
         PlayWorld->InitializeActorsForPlay(&Context);
+        Context.Process();
     }
+    // @todo, 그냥 WorldContext.GamePlayer[0]을 사용?
+    if (LocalPlayer)
+    {
+        LocalPlayer->SpawnPlayActor(/*URL.ToString(1), Error,*/ PlayWorld);
+        //if (!LocalPlayer->SpawnPlayActor(/*URL.ToString(1), Error,*/ PlayWorld))
+        //{
+        //	_ASSERT(false);
+        //	return;
+        //	//return FGameInstancePIEResult::Failure(FText::Format(NSLOCTEXT("UnrealEd", "Error_CouldntSpawnPlayer", "Couldn't spawn player: {0}"), FText::FromString(Error)));
+        //}
+    }
+
 }
 
 ULocalPlayer* UGameInstance::CreateInitialPlayer()

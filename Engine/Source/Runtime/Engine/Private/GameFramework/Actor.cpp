@@ -483,92 +483,91 @@ void AActor::PostActorConstruction()
 
 	if (bActorsInitialized)
 	{
-		_ASSERT(false);
-		//		// Call InitializeComponent on components
-		//		InitializeComponents();
-		//
-		//		// actor should have all of its components created and registered now, do any collision checking and handling that we need to do
-		//		if (World)
-		//		{
-		//			switch (SpawnCollisionHandlingMethod)
-		//			{
-		//			case ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn:
-		//			{
-		//				// Try to find a spawn position
-		//				FVector AdjustedLocation = GetActorLocation();
-		//				FRotator AdjustedRotation = GetActorRotation();
-		//				if (World->FindTeleportSpot(this, AdjustedLocation, AdjustedRotation))
-		//				{
-		//					SetActorLocationAndRotation(AdjustedLocation, AdjustedRotation, false, nullptr, ETeleportType::TeleportPhysics);
-		//				}
-		//			}
-		//			break;
-		//			case ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding:
-		//			{
-		//				// Try to find a spawn position			
-		//				FVector AdjustedLocation = GetActorLocation();
-		//				FRotator AdjustedRotation = GetActorRotation();
-		//				if (World->FindTeleportSpot(this, AdjustedLocation, AdjustedRotation))
-		//				{
-		//					SetActorLocationAndRotation(AdjustedLocation, AdjustedRotation, false, nullptr, ETeleportType::TeleportPhysics);
-		//				}
-		//				else
-		//				{
-		//					UE_LOG(LogSpawn, Warning, TEXT("SpawnActor failed because of collision at the spawn location [%s] for [%s]"), *AdjustedLocation.ToString(), *GetClass()->GetName());
-		//					Destroy();
-		//				}
-		//			}
-		//			break;
-		//			case ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding:
-		//				if (World->EncroachingBlockingGeometry(this, GetActorLocation(), GetActorRotation()))
-		//				{
-		//					UE_LOG(LogSpawn, Warning, TEXT("SpawnActor failed because of collision at the spawn location [%s] for [%s]"), *GetActorLocation().ToString(), *GetClass()->GetName());
-		//					Destroy();
-		//				}
-		//				break;
-		//			case ESpawnActorCollisionHandlingMethod::Undefined:
-		//			case ESpawnActorCollisionHandlingMethod::AlwaysSpawn:
-		//			default:
-		//				// note we use "always spawn" as default, so treat undefined as that
-		//				// nothing to do here, just proceed as normal
-		//				break;
-		//			}
-		//		}
-		//
-		//		if (IsValidChecked(this))
-		//		{
-		//			PostInitializeComponents();
-		//			if (IsValidChecked(this))
-		//			{
-		//				if (!bActorInitialized)
-		//				{
-		//					UE_LOG(LogActor, Fatal, TEXT("%s failed to route PostInitializeComponents.  Please call Super::PostInitializeComponents() in your <className>::PostInitializeComponents() function. "), *GetFullName());
-		//				}
-		//
-		//				bool bRunBeginPlay = !bDeferBeginPlayAndUpdateOverlaps && (BeginPlayCallDepth > 0 || World->HasBegunPlay());
-		//				if (bRunBeginPlay)
-		//				{
-		//					if (AActor* ParentActor = GetParentActor())
-		//					{
-		//						// Child Actors cannot run begin play until their parent has run
-		//						bRunBeginPlay = (ParentActor->HasActorBegunPlay() || ParentActor->IsActorBeginningPlay());
-		//					}
-		//				}
-		//
-		//#if WITH_EDITOR
-		//				if (bRunBeginPlay && bIsEditorPreviewActor)
-		//				{
-		//					bRunBeginPlay = false;
-		//				}
-		//#endif
-		//
-		//				if (bRunBeginPlay)
-		//				{
-		//					SCOPE_CYCLE_COUNTER(STAT_ActorBeginPlay);
-		//					DispatchBeginPlay();
-		//				}
-		//			}
-		//		}
+		// Call InitializeComponent on components
+		InitializeComponents();
+
+		// actor should have all of its components created and registered now, do any collision checking and handling that we need to do
+		if (World)
+		{
+			//switch (SpawnCollisionHandlingMethod)
+			//{
+			//case ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn:
+			//{
+			//	// Try to find a spawn position
+			//	FVector AdjustedLocation = GetActorLocation();
+			//	FRotator AdjustedRotation = GetActorRotation();
+			//	if (World->FindTeleportSpot(this, AdjustedLocation, AdjustedRotation))
+			//	{
+			//		SetActorLocationAndRotation(AdjustedLocation, AdjustedRotation, false, nullptr, ETeleportType::TeleportPhysics);
+			//	}
+			//}
+			//break;
+			//case ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding:
+			//{
+			//	// Try to find a spawn position			
+			//	FVector AdjustedLocation = GetActorLocation();
+			//	FRotator AdjustedRotation = GetActorRotation();
+			//	if (World->FindTeleportSpot(this, AdjustedLocation, AdjustedRotation))
+			//	{
+			//		SetActorLocationAndRotation(AdjustedLocation, AdjustedRotation, false, nullptr, ETeleportType::TeleportPhysics);
+			//	}
+			//	else
+			//	{
+			//		UE_LOG(LogSpawn, Warning, TEXT("SpawnActor failed because of collision at the spawn location [%s] for [%s]"), *AdjustedLocation.ToString(), *GetClass()->GetName());
+			//		Destroy();
+			//	}
+			//}
+			//break;
+			//case ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding:
+			//	if (World->EncroachingBlockingGeometry(this, GetActorLocation(), GetActorRotation()))
+			//	{
+			//		UE_LOG(LogSpawn, Warning, TEXT("SpawnActor failed because of collision at the spawn location [%s] for [%s]"), *GetActorLocation().ToString(), *GetClass()->GetName());
+			//		Destroy();
+			//	}
+			//	break;
+			//case ESpawnActorCollisionHandlingMethod::Undefined:
+			//case ESpawnActorCollisionHandlingMethod::AlwaysSpawn:
+			//default:
+			//	// note we use "always spawn" as default, so treat undefined as that
+			//	// nothing to do here, just proceed as normal
+			//	break;
+			//}
+		}
+
+		if (/*IsValidChecked*/(this))
+		{
+			PostInitializeComponents();
+			if (/*IsValidChecked*/(this))
+			{
+				if (!bActorInitialized)
+				{
+					E_LOG(Fatal, TEXT("{} failed to route PostInitializeComponents.  Please call Super::PostInitializeComponents() in your <className>::PostInitializeComponents() function. "), GetName());
+				}
+
+				bool bRunBeginPlay = /*!bDeferBeginPlayAndUpdateOverlaps &&*/ (/*BeginPlayCallDepth > 0 ||*/ World->HasBegunPlay());				if (bRunBeginPlay)
+				if (bRunBeginPlay) 
+				{
+					//if (AActor* ParentActor = GetParentActor())
+					//{
+					//	// Child Actors cannot run begin play until their parent has run
+					//	bRunBeginPlay = (ParentActor->HasActorBegunPlay() || ParentActor->IsActorBeginningPlay());
+					//}
+				}
+
+//#if WITH_EDITOR
+//				if (bRunBeginPlay && bIsEditorPreviewActor)
+//				{
+//					bRunBeginPlay = false;
+//				}
+//#endif
+
+				if (bRunBeginPlay)
+				{
+					//SCOPE_CYCLE_COUNTER(STAT_ActorBeginPlay);
+					DispatchBeginPlay();
+				}
+			}
+		}
 	}
 	else
 	{
