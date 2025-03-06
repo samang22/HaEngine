@@ -1996,3 +1996,10 @@ public:
 protected:
 	FConstantBufferInfo Layout;
 };
+
+class FRHIRasterizerState : public FRHIResource
+{
+public:
+	FRHIRasterizerState() : FRHIResource(RRT_RasterizerState) {}
+	virtual bool GetInitializer(struct FRasterizerStateInitializerRHI& Init) { return false; }
+};

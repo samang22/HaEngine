@@ -65,3 +65,15 @@ RHI_API void FRHIRenderPassInfo::ConvertToRenderTargetsInfo(FRHISetRenderTargets
 	//OutRTInfo.ShadingRateTextureCombiner = ShadingRateTextureCombiner;
 	OutRTInfo.MultiViewCount = MultiViewCount;
 }
+
+bool operator== (const FRasterizerStateInitializerRHI& A, const FRasterizerStateInitializerRHI& B)
+{
+	bool bSame =
+		A.FillMode == B.FillMode &&
+		A.CullMode == B.CullMode &&
+		A.DepthBias == B.DepthBias &&
+		A.SlopeScaleDepthBias == B.SlopeScaleDepthBias &&
+		A.DepthClipMode == B.DepthClipMode &&
+		A.bAllowMSAA == B.bAllowMSAA;
+	return bSame;
+}

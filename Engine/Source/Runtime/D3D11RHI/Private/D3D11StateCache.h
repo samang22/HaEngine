@@ -142,12 +142,23 @@ public:
         }
     }
 
+    inline void SetRasterizerState(ID3D11RasterizerState* State)
+    {
+        if (CurrentRasterizerState != State)
+        {
+            CurrentRasterizerState = State;
+            Direct3DDeviceIMContext->RSSetState(State);
+        }
+    }
 
 protected:
 	ID3D11DeviceContext* Direct3DDeviceIMContext = nullptr;
 
     // Input Layout State
     ID3D11InputLayout* CurrentInputLayout = nullptr;
+
+    // Rasterizer State Cache
+    ID3D11RasterizerState* CurrentRasterizerState = nullptr;
 
     // Shader Cache
     ID3D11VertexShader* CurrentVertexShader = nullptr;

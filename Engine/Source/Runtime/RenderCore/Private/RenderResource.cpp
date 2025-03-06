@@ -16,6 +16,7 @@ RENDERCORE_API void FRenderResource::ReleaseRHIForAllResources()
 
 RENDERCORE_API void FRenderResource::InitPreRHIResources()
 {
+    GetCommandList().ExecuteRenderPass();
     for (FRenderResource* It : GetRenderResources())
     {
         It->InitRHI(FRHICommandListExecutor::GetImmediateCommandList());
@@ -52,4 +53,14 @@ RENDERCORE_API void FVertexBuffer::ReleaseRHI()
 RENDERCORE_API void FIndexBuffer::ReleaseRHI()
 {
     IndexBufferRHI.SafeRelease();
+}
+
+void BeginInitResource(FRenderResource* Resource)
+{
+    GetCommandList().BeginRenderPass(
+        [Resource]
+        {
+            Resource->InitResource();
+        }
+    );
 }

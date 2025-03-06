@@ -223,21 +223,22 @@ void FD3D11DynamicRHI::RHIDrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimit
     //EnableUAVOverlap();
 }
 
+
+// Rasterizer state.
+void FD3D11DynamicRHI::RHISetRasterizerState(FRHIRasterizerState* NewStateRHI)
+{
+    FD3D11RasterizerState* NewState = ResourceCast(NewStateRHI);
+    StateCache.SetRasterizerState(NewState->Resource);
+}
+
+
+#include "RHIStaticStates.h"
+
 void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances)
 {
     // 임시로 컬링하지 않도록 설정
-    {
-        D3D11_RASTERIZER_DESC RasterDesc;
-        ZeroMemory(&RasterDesc, sizeof(RasterDesc));
-        RasterDesc.FillMode = D3D11_FILL_WIREFRAME;
-        RasterDesc.CullMode = D3D11_CULL_BACK;
-        RasterDesc.FrontCounterClockwise = true;
-        RasterDesc.DepthClipEnable = false;
-
-        TRefCountPtr<ID3D11RasterizerState> RasterState;
-        Direct3DDevice->CreateRasterizerState(&RasterDesc, RasterState.GetInitReference());
-        Direct3DDeviceIMContext->RSSetState(RasterState);
-    }
+    FRHIRasterizerState* RasterizerState = TStaticRasterizerState<>::GetRHI();
+    RHISetRasterizerState(RasterizerState);
 
     // [깊이 반전(근평면 1.f)] 임시로 여기서 일괄 처리
     //{

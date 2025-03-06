@@ -1,5 +1,6 @@
 #pragma once
 #include "DynamicRHI.h"
+#include "RHIDefinitions.h"
 
 /** Initializes the RHI. */
 extern RHI_API void RHIInit();
@@ -52,4 +53,40 @@ struct FVertexElement
 	//RHI_API FString ToString() const;
 	//RHI_API void FromString(const FString& Src);
 	//RHI_API void FromString(const FStringView& Src);
+};
+
+struct FRasterizerStateInitializerRHI
+{
+	ERasterizerFillMode FillMode = FM_Point;
+	ERasterizerCullMode CullMode = CM_None;
+	float DepthBias = 0.0f;
+	float SlopeScaleDepthBias = 0.0f;
+	ERasterizerDepthClipMode DepthClipMode = ERasterizerDepthClipMode::DepthClip;
+	bool bAllowMSAA = false;
+
+	FRasterizerStateInitializerRHI() = default;
+	FRasterizerStateInitializerRHI(const FRasterizerStateInitializerRHI&) = default;
+	FRasterizerStateInitializerRHI(FRasterizerStateInitializerRHI&&) = default;
+	FRasterizerStateInitializerRHI& operator=(const FRasterizerStateInitializerRHI&) = default;
+
+	FRasterizerStateInitializerRHI(ERasterizerFillMode InFillMode, ERasterizerCullMode InCullMode, bool bInAllowMSAA)
+		: FillMode(InFillMode)
+		, CullMode(InCullMode)
+		, bAllowMSAA(bInAllowMSAA)
+	{
+	}
+
+	FRasterizerStateInitializerRHI(ERasterizerFillMode InFillMode, ERasterizerCullMode InCullMode, float InDepthBias, float InSlopeScaleDepthBias, ERasterizerDepthClipMode InDepthClipMode, bool bInAllowMSAA)
+		: FillMode(InFillMode)
+		, CullMode(InCullMode)
+		, DepthBias(InDepthBias)
+		, SlopeScaleDepthBias(InSlopeScaleDepthBias)
+		, DepthClipMode(InDepthClipMode)
+		, bAllowMSAA(bInAllowMSAA)
+	{
+	}
+
+
+	//RHI_API friend uint32 GetTypeHash(const FRasterizerStateInitializerRHI& Initializer);
+	RHI_API friend bool operator== (const FRasterizerStateInitializerRHI& A, const FRasterizerStateInitializerRHI& B);
 };

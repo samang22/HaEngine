@@ -149,3 +149,9 @@ public:
 
     FBufferRHIRef IndexBufferRHI;
 };
+
+/**
+ * Sends a message to the rendering thread to initialize a resource.
+ * This is called in the game thread.
+ */
+extern RENDERCORE_API void BeginInitResource(FRenderResource* Resource);

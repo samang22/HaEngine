@@ -525,3 +525,35 @@ static_assert(PT_Num <= (1 << 8), "EPrimitiveType doesn't fit in a byte");
 
 // PT_NumBits가 너무 작은지 확인하는 정적 어설션입니다.
 static_assert(PT_Num <= (1 << PT_NumBits), "PT_NumBits is too small");
+
+enum ERasterizerFillMode : uint8
+{
+	FM_Point,
+	FM_Wireframe,
+	FM_Solid,
+
+	ERasterizerFillMode_Num,
+	ERasterizerFillMode_NumBits = 2,
+};
+static_assert(ERasterizerFillMode_Num <= (1 << ERasterizerFillMode_NumBits), "ERasterizerFillMode_Num will not fit on ERasterizerFillMode_NumBits");
+
+enum ERasterizerCullMode : uint8
+{
+	CM_None,
+	CM_CW,
+	CM_CCW,
+
+	ERasterizerCullMode_Num,
+	ERasterizerCullMode_NumBits = 2,
+};
+static_assert(ERasterizerCullMode_Num <= (1 << ERasterizerCullMode_NumBits), "ERasterizerCullMode_Num will not fit on ERasterizerCullMode_NumBits");
+
+enum class ERasterizerDepthClipMode : uint8
+{
+	DepthClip,
+	DepthClamp,
+
+	Num,
+	NumBits = 1,
+};
+static_assert(uint32(ERasterizerDepthClipMode::Num) <= (1U << uint32(ERasterizerDepthClipMode::NumBits)), "ERasterizerDepthClipMode::Num will not fit on ERasterizerDepthClipMode::NumBits");

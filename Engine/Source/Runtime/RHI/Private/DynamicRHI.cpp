@@ -27,3 +27,14 @@ void RHIExit()
         GDynamicRHI = NULL;
     }
 }
+
+FUniformBufferRHIRef RHICreateUniformBuffer(const FConstantBufferInfo& Layout, const void* Contents, const uint32 ContentsSize)
+{
+    return GDynamicRHI->RHICreateUniformBuffer(Layout, Contents, ContentsSize);
+}
+
+FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer)
+{
+    //LLM_SCOPE_BYNAME(TEXT("RHIMisc/CreateRasterizerState"));
+    return GDynamicRHI->RHICreateRasterizerState(Initializer);
+}

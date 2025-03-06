@@ -2,6 +2,9 @@
 
 #include "Templates/RefCounting.h"
 
+struct FRasterizerStateInitializerRHI;
+
+class FRHIRasterizerState;
 class FRHITexture;
 class FRHIPixelShader;
 class FRHIVertexShader;
@@ -11,6 +14,7 @@ class FRHIVertexDeclaration;
 class FRHIBoundShaderState;
 class FRHIBuffer;
 
+using FRasterizerStateRHIRef = TRefCountPtr<FRHIRasterizerState>;
 using FTextureRHIRef = TRefCountPtr<FRHITexture>;
 using FPixelShaderRHIRef = TRefCountPtr<FRHIPixelShader>;
 using FVertexShaderRHIRef = TRefCountPtr<FRHIVertexShader>;

@@ -1,6 +1,7 @@
 #pragma once
 #include "RHIResources.h"
 #include "D3D11ThirdParty.h"
+#include "D3D11State.h"
 
 /** 셰이더 리소스로 바인딩될 수 있는 리소스의 기본 클래스. */
 class FD3D11ViewableResource
@@ -390,11 +391,11 @@ struct TD3D11ResourceTraits<FRHIBuffer>
 //{
 //	typedef FD3D11SamplerState TConcreteType;
 //};
-//template<>
-//struct TD3D11ResourceTraits<FRHIRasterizerState>
-//{
-//	typedef FD3D11RasterizerState TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHIRasterizerState>
+{
+	typedef FD3D11RasterizerState TConcreteType;
+};
 //template<>
 //struct TD3D11ResourceTraits<FRHIDepthStencilState>
 //{

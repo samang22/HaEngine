@@ -29,7 +29,7 @@ void FD3D11StateCache::ClearState()
     }*/
     
     // Rasterizer State Cache
-    //CurrentRasterizerState = nullptr;
+    CurrentRasterizerState = nullptr;
     
     //// Depth Stencil State Cache
     //CurrentReferenceStencil = 0;

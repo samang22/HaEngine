@@ -39,6 +39,8 @@ public:
 	virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) = 0;
 
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader) = 0;
+
+	virtual FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer) = 0;
 };
 
 // 동적으로 바인딩된 RHI 구현을 가리키는 전역 포인터.
@@ -74,3 +76,5 @@ FORCEINLINE class IRHICommandContext* RHIGetDefaultContext()
 {
 	return GDynamicRHI->RHIGetDefaultContext();
 }
+
+FRasterizerStateRHIRef RHI_API RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer);
