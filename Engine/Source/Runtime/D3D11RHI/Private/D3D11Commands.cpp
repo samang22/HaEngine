@@ -229,8 +229,8 @@ void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32
     {
         D3D11_RASTERIZER_DESC RasterDesc;
         ZeroMemory(&RasterDesc, sizeof(RasterDesc));
-        RasterDesc.FillMode = D3D11_FILL_SOLID;
-        RasterDesc.CullMode = D3D11_CULL_NONE; // 기본적으로 설정됨
+        RasterDesc.FillMode = D3D11_FILL_WIREFRAME;
+        RasterDesc.CullMode = D3D11_CULL_BACK;
         RasterDesc.FrontCounterClockwise = false;
         RasterDesc.DepthClipEnable = false;
 
@@ -238,6 +238,21 @@ void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32
         Direct3DDevice->CreateRasterizerState(&RasterDesc, RasterState.GetInitReference());
         Direct3DDeviceIMContext->RSSetState(RasterState);
     }
+
+    // [깊이 반전(근평면 1.f)] 임시로 여기서 일괄 처리
+    //{
+    //    // 반전된 깊이 스텐실 상태 설정
+    //    D3D11_DEPTH_STENCIL_DESC invertedDepthStencilDesc;
+    //    ZeroMemory(&invertedDepthStencilDesc, sizeof(invertedDepthStencilDesc));
+    //    invertedDepthStencilDesc.DepthEnable = TRUE;
+    //    invertedDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    //    invertedDepthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER; // 반전된 깊이 비교 함수
+
+    //    TRefCountPtr<ID3D11DepthStencilState> invertedDepthStencilState;
+    //    Direct3DDevice->CreateDepthStencilState(&invertedDepthStencilDesc, invertedDepthStencilState.GetInitReference());
+    //    Direct3DDeviceIMContext->OMSetDepthStencilState(invertedDepthStencilState, 1);
+    //}
+
     FD3D11Buffer* IndexBuffer = ResourceCast(IndexBufferRHI);
 
     // 호출된 함수는 입력이 유효한지 확인해야 합니다. 이는 숨겨진 버그를 방지합니다.

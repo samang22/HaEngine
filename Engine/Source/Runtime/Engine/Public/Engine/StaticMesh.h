@@ -12,6 +12,8 @@ struct FStaticMeshRenderData
 public:
 	void Create(class UStaticMesh* Outer, const FMeshData& NewMeshData);
 
+	FString Name;
+
 	FVertexFactory VertexFactory;
 
 	TObjectPtr<UMaterial> Material;

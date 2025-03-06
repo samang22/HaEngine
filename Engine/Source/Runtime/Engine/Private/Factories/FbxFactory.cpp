@@ -101,6 +101,9 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
 
 		if (AttributeType == fbxsdk::FbxNodeAttribute::eMesh)
 		{
+			const FString FbxNodeName = ANSI_TO_TCHAR(InNode->GetName());
+			E_LOG(Log, TEXT("ExtractFbx Mesh: {}"), FbxNodeName);
+
 			fbxsdk::FbxMesh* Mesh = static_cast<fbxsdk::FbxMesh*>(NodeAttribute);
 			_ASSERT(Mesh);
 			bool bSuccessed = true;
@@ -141,8 +144,7 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
 						break;
 					}
 
-					// 일반적으로 3번 돌겠죠? 삼각형 이니까
-					for (int32 j = 0; j < PolygonSize; ++j)
+					for (int32 j = PolygonSize - 1; j >= 0; --j) 
 					{
 						const int32 Index = Mesh->GetPolygonVertex(i, j);
 						if (Index == -1)
@@ -159,6 +161,7 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
 			if (bSuccessed)
 			{
 				FMeshData& NewMeshData = OutMeshData.emplace_back();
+				NewMeshData.Name = FbxNodeName;
 				NewMeshData.Vertices = move(Vertices);
 				NewMeshData.Indices = move(Indices);
                 NewMeshData.NumPrimitives = PolygonCount;

@@ -10,15 +10,26 @@ cbuffer FSceneUniformBuffer : register(b1)
     matrix ViewProjectionMatrix;
 }
 
-float4 VS(float3 Position : ATTRIBUTE0) : SV_Position
+struct FVSOutput
+{
+    float4 SVPosition : SV_Position;
+    float4 WorldPosition : POSITIONW;
+};
+
+FVSOutput VS(float3 Position : ATTRIBUTE0)
 {
     float4 WorldPosition = mul(float4(Position, 1.f), WorldMatrix);
     //float4 ViewPosition = mul(WorldPosition, ViewMatrix);
     float4 FinalPosition = mul(WorldPosition, ViewProjectionMatrix);
-    return FinalPosition;
+
+    FVSOutput Output;
+    Output.SVPosition = FinalPosition;
+    Output.WorldPosition = WorldPosition;
+    
+    return Output;
 }
 
-float4 PS() : SV_Target0
+float4 PS(float4 SVPosition : SV_Position, float4 WorldPosition : POSITIONW) : SV_Target0
 {
-    return float4(1.f, 0.f, 0.f, 1.f);
+    return float4(WorldPosition.xyz, 1.f);
 }

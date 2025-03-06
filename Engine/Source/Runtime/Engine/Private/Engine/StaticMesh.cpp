@@ -54,6 +54,8 @@ UStaticMesh::UStaticMesh()
 
 void FStaticMeshRenderData::Create(UStaticMesh* Outer, const FMeshData& NewMeshData)
 {
+    Name = NewMeshData.Name;
+
     TShaderMapRef<FMaterialVS> VertexShader;
     TShaderMapRef<FMaterialPS> PixelShader;
     Material = NewObject<UMaterial>(Outer, UMaterial::StaticClass());

@@ -12,6 +12,7 @@ namespace fbxsdk
 
 struct FMeshData
 {
+    FString Name;
     TArray<FVector3D> Vertices;
     TArray<uint32> Indices;
 
