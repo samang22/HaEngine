@@ -31,7 +31,7 @@ public class HE1 : CommonProject
         // if (target.LaunchType == ELaunchType.Editor || target.LaunchType == ELaunchType.Client)
         // {
         // conf.AddPublicDependency<Slate>(target);
-        // conf.AddPublicDependency<Renderer>(target);
+        conf.AddPublicDependency<Renderer>(target);
         // conf.AddPublicDependency<D3D11RHI>(target);
         // }
     }

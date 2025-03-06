@@ -116,7 +116,7 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
 				for (uint32 i = 0; i < VertexCount; ++i)
 				{
 					// UE 축에 맞게 변환
-					Vertices.emplace_back(-FbxVertices[i][1], -FbxVertices[i][0], FbxVertices[i][2]);
+					Vertices.emplace_back(FbxVertices[i][0], -FbxVertices[i][1], FbxVertices[i][2]);
 				}
 			}
 

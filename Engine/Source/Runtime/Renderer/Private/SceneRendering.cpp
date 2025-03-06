@@ -112,8 +112,7 @@ TGlobalResource<FNDCTriangleVertexBuffer> GNDCTriangleVertexBuffer;
 
 void FSceneRenderer::Render()
 {
-	FRHICommandListExecutor::GetImmediateCommandList().BeginDrawingViewport(ViewFamily.RenderTarget, FTextureRHIRef());
-
+	GetCommandList().BeginDrawingViewport(ViewFamily.RenderTarget, FTextureRHIRef());
 	/*{
 		TShaderMapRef<FTestVS> VertextShader;
 		TShaderMapRef<FTestPS> PixelShader;
@@ -147,7 +146,7 @@ void FSceneRenderer::Render()
 		}
 	}
 
-	FRHICommandListExecutor::GetImmediateCommandList().BeginRenderPass(
+	GetCommandList().BeginRenderPass(
 		[this, MeshDrawCommands = move(MeshDrawCommands)]()
 		{
 			TShaderMapRef<FMaterialVS> MaterialVS;
@@ -160,7 +159,7 @@ void FSceneRenderer::Render()
 			SceneUniformBuffer.ViewProjectionMatrix = ViewFamily.ViewProjectionMatrix.Transpose();
 			RHIUpdateUniformBuffer(SceneUniformBufferRHI, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
 			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
-
+			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, SceneUniformBufferRHI);
 
 			for (const FStaticMeshDrawCommand& StaticMeshDrawCommand : MeshDrawCommands)
 			{
@@ -186,7 +185,6 @@ void FSceneRenderer::Render()
 		}
 	);
 
-	FRHICommandListExecutor::GetImmediateCommandList().ExecuteRenderPass();
-
-	FRHICommandListExecutor::GetImmediateCommandList().EndDrawingViewport(ViewFamily.RenderTarget, true, false);
+	GetCommandList().ExecuteRenderPass();
+	GetCommandList().EndDrawingViewport(ViewFamily.RenderTarget, true, false);
 }
