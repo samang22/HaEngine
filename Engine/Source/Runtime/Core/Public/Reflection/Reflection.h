@@ -47,9 +47,10 @@ struct FProperty
 struct FPropertyInfo
 {
 	FPropertyInfo(const FProperty& InProperty, void* InPropertyAddress)
-		:PropertyType(InProperty.PropertyType), PropertySize(InProperty.PropertySize)
+		: Property(InProperty), PropertyType(InProperty.PropertyType), PropertySize(InProperty.PropertySize)
 		, PropertyAddress(InPropertyAddress) {}
 
+	FProperty Property;
 	EPropertyType PropertyType = EPropertyType::T_NONE; // 변수 타입
 	size_t PropertySize = 0;// 변수 타입 크기(우선은 기본 자료형만)
 

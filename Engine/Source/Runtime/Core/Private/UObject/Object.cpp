@@ -190,6 +190,7 @@ void UObject::Serialize(FArchive& Ar)
                     break;
                 }
                 }
+                OnPropertyChanged(Prop);
             }
         }
     }

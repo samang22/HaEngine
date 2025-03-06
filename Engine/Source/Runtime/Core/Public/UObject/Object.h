@@ -9,8 +9,8 @@ class CORE_API UObject : public UObjectBase
 public:
 	virtual void Serialize(FArchive& Ar);
 
-	// 에디터에서 UPROPERTY 값을 변경 한 경우 호출 됩니다
-	virtual void OnPropertyChanged(struct FPropertyInfo*) {}
+	// 에디터에서 UPROPERTY 값을 변경 한 경우 및 Serialized load에서 호출 됩니다
+	virtual void OnPropertyChanged(struct FProperty&) {}
 
 public:
 	/** 아래 템플릿을 위한 유틸리티 함수 */

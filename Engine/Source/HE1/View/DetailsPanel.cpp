@@ -322,7 +322,7 @@ LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		break;
 	}
 
-	LastSelectedActor->OnPropertyChanged(PropertyInfo);
+	LastSelectedActor->OnPropertyChanged(PropertyInfo->Property);
 
 	return TRUE;
 }

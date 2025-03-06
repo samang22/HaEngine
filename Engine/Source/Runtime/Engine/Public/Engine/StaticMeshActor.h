@@ -20,7 +20,7 @@ class AStaticMeshActor : public AActor
 public:
     AStaticMeshActor();
 
-    virtual void OnPropertyChanged(struct FPropertyInfo*) override;
+    virtual void OnPropertyChanged(FProperty&) override;
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
 private:

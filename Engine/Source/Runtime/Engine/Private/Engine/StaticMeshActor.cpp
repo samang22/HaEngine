@@ -34,7 +34,7 @@ AStaticMeshActor::AStaticMeshActor()
 	RootComponent = Cast<USceneComponent>(StaticMeshComponent);
 }
 
-void AStaticMeshActor::OnPropertyChanged(FPropertyInfo*)
+void AStaticMeshActor::OnPropertyChanged(FProperty&)
 {
 	for (uint32 i = 0; i < StaticMeshComponent->GetMaterialCount(); ++i)
 	{
