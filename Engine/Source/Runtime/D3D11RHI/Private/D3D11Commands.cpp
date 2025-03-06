@@ -231,14 +231,8 @@ void FD3D11DynamicRHI::RHISetRasterizerState(FRHIRasterizerState* NewStateRHI)
     StateCache.SetRasterizerState(NewState->Resource);
 }
 
-
-#include "RHIStaticStates.h"
-
 void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances)
 {
-    // 임시로 컬링하지 않도록 설정
-    FRHIRasterizerState* RasterizerState = TStaticRasterizerState<FM_Wireframe, CM_CW>::GetRHI();
-    RHISetRasterizerState(RasterizerState);
     // [깊이 반전(근평면 1.f)] 임시로 여기서 일괄 처리
     //{
     //    // 반전된 깊이 스텐실 상태 설정

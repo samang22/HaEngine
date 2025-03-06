@@ -24,6 +24,8 @@ class ENGINE_API UMaterial : public UObject
     GENERATED_BODY()
 
 public:
+    UMaterial();
+    virtual void PostInitProperties() override;
     void SetVertexShader(TShaderMapRef<FMaterialVS> InShader);
     void SetPixelShader(TShaderMapRef<FMaterialPS> InShader);
 
@@ -32,7 +34,14 @@ public:
     FMaterialVS* GetVertexShader() const { return VertexShader.GetShader(); }
     FMaterialPS* GetPixelShader() const { return PixelShader.GetShader(); }
 
+    void SetRasterizerState(const ERasterizerState InRasterizerState);
+    void SetRasterizerState(FRHIRasterizerState* InRasterizerState) { RHIRasterizerState = InRasterizerState; }
+    FRHIRasterizerState* GetRasterizerState() { return RHIRasterizerState; }
+
 private:
     TShaderMapRef<FMaterialVS> VertexShader;
     TShaderMapRef<FMaterialPS> PixelShader;
+    FRHIRasterizerState* RHIRasterizerState = nullptr;
+    UPROPERTY()
+    int RasterizerState = E_SOLID_BACK; // ERasterizerState
 };

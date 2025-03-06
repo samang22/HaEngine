@@ -98,6 +98,12 @@ public:
     {
         GetContext().RHIDrawIndexedPrimitive(IndexBufferRHI, BaseVertexIndex, FirstInstance, NumVertices, StartIndex, NumPrimitives, NumInstances);
     }
+
+    FORCEINLINE void SetRasterizerState(FRHIRasterizerState* RasterizerState)
+    {
+        GetContext().RHISetRasterizerState(RasterizerState);
+    }
+
     void BeginRenderPass(function<void()> InCmd)
     {
         RenderCmds.emplace_back(InCmd);

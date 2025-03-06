@@ -2,6 +2,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/AssetManager.h"
+#include "RHIStaticStates.h"
+#include "Materials/Material.h"
 
 AStaticMeshActor::AStaticMeshActor()
 {
@@ -18,12 +20,27 @@ AStaticMeshActor::AStaticMeshActor()
 	StaticMeshComponent->SetStaticMesh(StaticMesh);
 	StaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -200.f));
 
+	for (int i = 0; i < StaticMeshComponent->GetMaterialCount(); ++i)
+	{
+		TObjectPtr<UMaterial> NewMaterial = NewObject<UMaterial>(StaticMeshComponent, nullptr, TEXT("Material"), RF_NoFlags, StaticMesh->GetMaterial(i));
+		StaticMeshComponent->SetMaterial(NewMaterial, i);
+	}
+
 	ChildStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ChildStaticMeshComponent"));
 	ChildStaticMeshComponent->SetStaticMesh(StaticMesh);
 	ChildStaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -200.f));
 	ChildStaticMeshComponent->SetupAttachment(StaticMeshComponent);
 
 	RootComponent = Cast<USceneComponent>(StaticMeshComponent);
+}
+
+void AStaticMeshActor::OnPropertyChanged(FPropertyInfo*)
+{
+	for (uint32 i = 0; i < StaticMeshComponent->GetMaterialCount(); ++i)
+	{
+		UMaterial* Material = StaticMeshComponent->GetMaterial(i);
+		Material->SetRasterizerState((ERasterizerState)RasterizerState);
+	}
 }
 
 void AStaticMeshActor::BeginPlay()

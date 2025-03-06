@@ -54,12 +54,14 @@ FSceneRenderer::~FSceneRenderer()
 
 struct FStaticMeshDrawCommand
 {
-    FStaticMeshDrawCommand(FPrimitiveSceneProxy* InProxy, vector<FStaticMeshRenderData>& InRenderDatas)
-        : Proxy(InProxy), RenderDatas(InRenderDatas) {
+	FStaticMeshDrawCommand(FPrimitiveSceneProxy* InProxy, TArray<FStaticMeshRenderData>& InRenderDatas, TArray<TObjectPtr<UMaterial>>& InOverrideMaterials)
+		: Proxy(InProxy), RenderDatas(InRenderDatas), OverrideMaterials(InOverrideMaterials) 
+	{
     }
 
     FPrimitiveSceneProxy* Proxy;
     TArray<FStaticMeshRenderData>& RenderDatas;
+	TArray<TObjectPtr<UMaterial>>& OverrideMaterials;
 };
 
 
@@ -140,9 +142,10 @@ void FSceneRenderer::Render()
 		{
 			TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
 			TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
+			TArray<TObjectPtr<UMaterial>>& OverrideMaterials = StaticMeshComponent->GetOverrideMaterials();
 			FMatrix RenderMatrix = StaticMeshComponent->GetRenderMatrix();
 			Proxy->SetTransform(RenderMatrix);
-			MeshDrawCommands.emplace_back(Proxy, RenderDatas);
+			MeshDrawCommands.emplace_back(Proxy, RenderDatas, OverrideMaterials);
 		}
 	}
 

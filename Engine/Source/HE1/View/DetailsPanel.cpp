@@ -322,28 +322,7 @@ LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 		break;
 	}
 
-
-	//if (PropName.find(TEXT("T_BOOL_")) != FString::npos)
-	//{
-	//	bool CurrentValue = Prop->GetValue().boolVal;
-	//	bool* Address = (bool*)Prop->GetData();
-	//	*Address = CurrentValue;
-	//}
-	//else if (PropName.find(TEXT("T_INT_")) != FString::npos)
-	//{
-	//	int CurrentValue = Prop->GetValue().intVal;
-	//	int* Address = (int*)Prop->GetData();
-	//	*Address = CurrentValue;
-	//}
-	/*if (PropName == TEXT("X") || PropName == TEXT("Y") || PropName == TEXT("Z") ||
-		PropName == TEXT("Pitch") || PropName == TEXT("Yaw") || PropName == TEXT("Roll"))
-	{
-		float OriginalValue = Prop->GetOriginalValue().fltVal;
-		float CurrentValue = Prop->GetValue().fltVal;
-		float* Address = (float*)Prop->GetData();
-		*Address = CurrentValue;
-		Prop->SetOriginalValue(CurrentValue);
-	}*/
+	LastSelectedActor->OnPropertyChanged(PropertyInfo);
 
 	return TRUE;
 }

@@ -29,6 +29,14 @@ public:
     UStaticMesh();
     virtual void Create(const TArray<FMeshData>& NewMeshData);
 	TArray<FStaticMeshRenderData>& GetRenderData() { return RenderData; }
+
+	TEnginePtr<UMaterial> GetMaterial(const int32 MaterialIndex)
+	{
+		return RenderData[MaterialIndex].Material;
+	}
+
+	uint32 GetRenderDataCount() { return RenderData.size(); }
+
 protected:
 	TArray<FStaticMeshRenderData> RenderData;
 };

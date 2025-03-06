@@ -557,3 +557,14 @@ enum class ERasterizerDepthClipMode : uint8
 	NumBits = 1,
 };
 static_assert(uint32(ERasterizerDepthClipMode::Num) <= (1U << uint32(ERasterizerDepthClipMode::NumBits)), "ERasterizerDepthClipMode::Num will not fit on ERasterizerDepthClipMode::NumBits");
+
+enum ERasterizerState
+{
+	E_SOLID_FRONT,
+	E_SOLID_BACK,
+	E_SOLID_NONE,
+
+	E_WIREFRAME_FRONT,
+	E_WIREFRAME_BACK,
+	E_WIREFRAME_NONE,
+};

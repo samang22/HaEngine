@@ -14,6 +14,30 @@ void UStaticMeshComponent::SetStaticMesh(TEnginePtr<UStaticMesh> NewStaticMesh)
     }
 
     StaticMesh = NewStaticMesh;
+    OverrideMaterials.clear();
+    OverrideMaterials.resize(StaticMesh->GetRenderDataCount());
+}
+
+TEnginePtr<UMaterial> UStaticMeshComponent::GetMaterial(int32 MaterialIndex)
+{
+    if (OverrideMaterials[MaterialIndex] == nullptr)
+    {
+        return StaticMesh->GetMaterial(MaterialIndex);
+    }
+    else
+    {
+        return OverrideMaterials[MaterialIndex];
+    }
+}
+
+void UStaticMeshComponent::SetMaterial(TObjectPtr<UMaterial> NewMaterial, int32 MaterialIndex)
+{
+    OverrideMaterials[MaterialIndex] = NewMaterial;
+}
+
+uint32 UStaticMeshComponent::GetMaterialCount()
+{
+    return StaticMesh->GetRenderDataCount();
 }
 
 bool UStaticMeshComponent::ShouldCreateRenderState() const
