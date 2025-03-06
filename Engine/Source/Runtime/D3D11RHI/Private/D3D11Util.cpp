@@ -86,6 +86,73 @@ D3D11RHI_API void VerifyD3D11ShaderResult(FRHIShader* Shader, HRESULT D3DResult,
 	E_LOG(Fatal, TEXT("{} failed trying to create shader '{}' with error {}\n at {}:{}"), ANSI_TO_TCHAR(Code), Shader->GetShaderName(), ErrorString, ANSI_TO_TCHAR(Filename), Line);
 }
 
+D3D11RHI_API void VerifyD3D11CreateTextureResult(HRESULT D3DResult, int32 UEFormat, const ANSICHAR* Code, const ANSICHAR* Filename, uint32 Line, uint32 SizeX, uint32 SizeY, uint32 SizeZ, uint8 D3DFormat, uint32 NumMips, uint32 Flags, D3D11_USAGE Usage, uint32 CPUAccessFlags, uint32 MiscFlags, uint32 SampleCount, uint32 SampleQuality, const void* SubResPtr, uint32 SubResPitch, uint32 SubResSlicePitch, ID3D11Device* Device, const TCHAR* DebugName)
+{
+	_ASSERT(FAILED(D3DResult));
+
+	const FString ErrorString = GetD3D11ErrorString(D3DResult, 0);
+	E_LOG(Error, TEXT("{}"), ErrorString);
+	/*const TCHAR* D3DFormatString = UE::DXGIUtilities::GetFormatString((DXGI_FORMAT)D3DFormat);
+
+	FString DebugInfoString;
+
+	if (FScopedDebugInfo* DebugInfo = FScopedDebugInfo::GetDebugInfoStack())
+	{
+		DebugInfoString = DebugInfo->GetFunctionName();
+	}
+
+	UE_LOG(LogD3D11RHI, Error,
+		TEXT("%s failed with error %s\n at %s:%u\n Size=%ix%ix%i PF=%d D3DFormat=%s(0x%08X), NumMips=%i, Flags=%s, Usage:0x%x, CPUFlags:0x%x, MiscFlags:0x%x, SampleCount:0x%x, SampleQuality:0x%x, SubresPtr:0x%p, SubresPitch:%i, SubresSlicePitch:%i, Name:'%s', DebugInfo: %s"),
+		ANSI_TO_TCHAR(Code),
+		*ErrorString,
+		ANSI_TO_TCHAR(Filename),
+		Line,
+		SizeX,
+		SizeY,
+		SizeZ,
+		UEFormat,
+		D3DFormatString,
+		D3DFormat,
+		NumMips,
+		*GetD3D11TextureFlagString(Flags),
+		Usage,
+		CPUAccessFlags,
+		MiscFlags,
+		SampleCount,
+		SampleQuality,
+		SubResPtr,
+		SubResPitch,
+		SubResSlicePitch,
+		DebugName ? DebugName : TEXT(""),
+		*DebugInfoString);
+
+	TerminateOnDeviceRemoved(D3DResult, Device);
+	TerminateOnOutOfMemory(D3DResult, true);
+
+	E_LOG(Fatal,
+		TEXT("{} failed with error {}\n at {}:{}\n Size=%ix%ix%i PF=%d Format=%s(0x%08X), NumMips=%i, Flags=%s, Usage:0x%x, CPUFlags:0x%x, MiscFlags:0x%x, SampleCount:0x%x, SampleQuality:0x%x, SubresPtr:0x%p, SubresPitch:%i, SubresSlicePitch:%i"),
+		ANSI_TO_TCHAR(Code),
+		ErrorString,
+		ANSI_TO_TCHAR(Filename),
+		Line,
+		SizeX,
+		SizeY,
+		SizeZ,
+		UEFormat,
+		D3DFormatString,
+		D3DFormat,
+		NumMips,
+		GetD3D11TextureFlagString(Flags),
+		Usage,
+		CPUAccessFlags,
+		MiscFlags,
+		SampleCount,
+		SampleQuality,
+		SubResPtr,
+		SubResPitch,
+        SubResSlicePitch);*/
+}
+
 FD3D11BoundRenderTargets::FD3D11BoundRenderTargets(ID3D11DeviceContext* InDeviceContext)
 {
 	ZeroMemory(RenderTargetViews, sizeof(RenderTargetViews));

@@ -1,6 +1,7 @@
 #pragma once
 #include "DynamicRHI.h"
 #include "RHIDefinitions.h"
+#include "RHIGlobals.h"
 
 /** Initializes the RHI. */
 extern RHI_API void RHIInit();

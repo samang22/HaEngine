@@ -3,6 +3,19 @@
 
 IMPLEMENT_MODULE(FD3D11DynamicRHIModule, D3D11RHI);
 
+uint32 FD3D11DynamicRHI::GetMaxMSAAQuality(uint32 SampleCount)
+{
+    if (SampleCount <= DX_MAX_MSAA_COUNT)
+    {
+        // 0 has better quality (a more even distribution)
+        // higher quality levels might be useful for non box filtered AA or when using weighted samples 
+        return 0;
+        //        return AvailableMSAAQualities[SampleCount];
+    }
+    // not supported
+    return 0xffffffff;
+}
+
 FD3D11DynamicRHI::FD3D11DynamicRHI(IDXGIFactory1* InDXGIFactory1, D3D_FEATURE_LEVEL InFeatureLevel, const FD3D11Adapter& InAdapter)
 	: DXGIFactory1(InDXGIFactory1)
 	, FeatureLevel(InFeatureLevel)
@@ -109,10 +122,12 @@ FD3D11DynamicRHI::FD3D11DynamicRHI(IDXGIFactory1* InDXGIFactory1, D3D_FEATURE_LE
 extern bool GIsDebugLayerEnabled;
 extern D3D11RHI_API map<type_index, TRefCountPtr<FRHIShader>> RHIShaders;
 extern unordered_map<FString, FUniformBufferRHIRef> UniformBuffers;
+extern unordered_map<FString, FTextureRHIRef> Textures;
 
 void FD3D11DynamicRHI::CleanupD3DDevice()
 {
     UniformBuffers.clear();
+    Textures.clear();
     RHIShaders.clear();
     E_LOG(Log, TEXT("CleanupD3DDevice"));
     _ASSERT(Direct3DDevice);

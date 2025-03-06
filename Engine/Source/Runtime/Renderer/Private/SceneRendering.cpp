@@ -114,6 +114,8 @@ TGlobalResource<FNDCTriangleVertexBuffer> GNDCTriangleVertexBuffer;
 
 void FSceneRenderer::Render()
 {
+	//FSceneTextures::InitializeViewFamily();
+
 	GetCommandList().BeginDrawingViewport(ViewFamily.RenderTarget, FTextureRHIRef());
 	/*{
 		TShaderMapRef<FTestVS> VertextShader;
@@ -190,4 +192,10 @@ void FSceneRenderer::Render()
 
 	GetCommandList().ExecuteRenderPass();
 	GetCommandList().EndDrawingViewport(ViewFamily.RenderTarget, true, false);
+}
+
+FViewFamilyInfo::FViewFamilyInfo(const FSceneViewFamily& InViewFamily)
+	: FSceneViewFamily(InViewFamily)
+{
+	bIsViewFamilyInfo = true;
 }

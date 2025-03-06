@@ -11,8 +11,12 @@
 #include "D3D11Viewport.h"
 #include "RHIContext.h"
 
+// DX11 doesn't support higher MSAA count
+#define DX_MAX_MSAA_COUNT 8
+
 typedef ID3D11DeviceContext FD3D11DeviceContext;
 typedef ID3D11Device FD3D11Device;
+
 
 // 쉽게 생각해서 그래픽 카드에 대응되는 Struct라고 보면 된다.
 struct FD3D11Adapter
@@ -90,6 +94,9 @@ public:
         return DXGIFactory1;
     }
 
+    // @return 0xffffffff if not not supported
+    uint32 GetMaxMSAAQuality(uint32 SampleCount);
+
     template<typename TRHIType>
     static FORCEINLINE typename TD3D11ResourceTraits<TRHIType>::TConcreteType* ResourceCast(TRHIType* Resource)
     {
@@ -127,6 +134,8 @@ public:
     virtual FUniformBufferRHIRef RHICreateUniformBuffer(const FConstantBufferInfo& Layout, const void* Contents, const uint32 ContentsSize);
     virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) final override;
     virtual void RHISetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer) final override;
+
+    virtual FTextureRHIRef RHICreateTexture(FRHICommandList& RHICmdList, const FRHITextureCreateDesc& CreateDesc) final override;
 
     virtual void RHISetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ) override;
     virtual void RHISetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY) final override;
@@ -173,6 +182,9 @@ public:
 
     template <EShaderFrequency ShaderFrequency>
     void ClearAllShaderResourcesForFrequency();
+
+protected:
+    FD3D11Texture* CreateD3D11Texture2D(const FRHITextureCreateDesc& CreateDesc, TArray<D3D11_SUBRESOURCE_DATA> InitialData = {});
 
 public:
     void ClearState();

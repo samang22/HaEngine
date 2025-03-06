@@ -1,5 +1,43 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "SceneTextures.h"
+
+class FViewFamilyInfo : public FSceneViewFamily
+{
+public:
+    explicit FViewFamilyInfo(const FSceneViewFamily& InViewFamily);
+    virtual ~FViewFamilyInfo() {}
+
+
+    /** Get scene textures associated with this view family -- asserts or checks that they have been initialized */
+    inline FSceneTextures& GetSceneTextures()
+    {
+        _ASSERT(bIsSceneTexturesInitialized, TEXT("FSceneTextures was not initialized. Call FSceneTextures::InitializeViewFamily() first."));
+        return SceneTextures;
+    }
+
+    inline const FSceneTextures& GetSceneTextures() const
+    {
+        _ASSERT(bIsSceneTexturesInitialized, TEXT("FSceneTextures was not initialized. Call FSceneTextures::InitializeViewFamily() first."));
+        return SceneTextures;
+    }
+
+    inline FSceneTextures* GetSceneTexturesChecked()
+    {
+        return bIsSceneTexturesInitialized ? &SceneTextures : nullptr;
+    }
+
+    inline const FSceneTextures* GetSceneTexturesChecked() const
+    {
+        return bIsSceneTexturesInitialized ? &SceneTextures : nullptr;
+    }
+
+private:
+    friend struct FMinimalSceneTextures;
+    friend struct FSceneTextures;
+
+    FSceneTextures SceneTextures;
+};
 
 /**
  * 장면 렌더링 함수들의 범위로 사용됩니다.
@@ -15,7 +53,7 @@ public:
     virtual void Render();
 
     /** 렌더링 중인 뷰 패밀리. 이 변수는 Views 배열을 참조합니다. */
-    FSceneViewFamily ViewFamily;
+    FViewFamilyInfo ViewFamily;
 
     struct FSceneUniformBuffer
     {

@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "SceneInterface.h"
+#include "RenderGraphUtils.h"
 
 class FSceneViewFamily;
 class FRenderTarget;
@@ -60,10 +61,10 @@ public:
     //TArray<const FSceneView*> Views;
 
     /** 뷰가 렌더링되는 렌더 타겟. */
-    FRHIViewport* RenderTarget;
+    FRHIViewport* RenderTarget = nullptr;
 
     /** 조회되는 장면. */
-    FSceneInterface* Scene;
+    FSceneInterface* Scene = nullptr;
 
     /** true인 경우 장면 렌더링 결과를 렌더 타겟에 복사/해결함. */
     uint32 bResolveScene : 1;
@@ -73,7 +74,10 @@ public:
     Matrix ProjectionMatrix = Matrix::Identity;
     Matrix ViewProjectionMatrix = Matrix::Identity;
 
-    FVector2D ViewportSize;
+    FVector2D ViewportSize = FVector2D::Zero;
+
+    bool bIsSceneTexturesInitialized = false;
+    bool bIsViewFamilyInfo = false;
 
     /** Initialization constructor. */
     ENGINE_API FSceneViewFamily(const ConstructionValues& CVS);

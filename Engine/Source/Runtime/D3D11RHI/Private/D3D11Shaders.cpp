@@ -3,7 +3,7 @@
 
 D3D11RHI_API map<type_index, TRefCountPtr<FRHIShader>> RHIShaders;
 
-bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TObjectPtr<FShader>& OutShader) 
+bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TObjectPtr<FShader>& OutShader)
 {
     string TargetName;
     switch (InShaderType->Frequency)

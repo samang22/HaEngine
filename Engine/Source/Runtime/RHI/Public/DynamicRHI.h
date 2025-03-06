@@ -12,6 +12,7 @@
 class FRHICommandList;
 struct FRHIBufferDesc;
 struct FRHIResourceCreateInfo;
+struct FRHITextureCreateDesc;
 
 /** 동적으로 바인딩된 RHI가 구현하는 인터페이스입니다. */
 class FDynamicRHI
@@ -39,6 +40,7 @@ public:
 	virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) = 0;
 
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader) = 0;
+	virtual FTextureRHIRef RHICreateTexture(FRHICommandList& RHICmdList, const FRHITextureCreateDesc& CreateDesc) = 0;
 
 	virtual FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer) = 0;
 };

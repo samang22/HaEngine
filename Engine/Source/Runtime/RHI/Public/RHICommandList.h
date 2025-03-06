@@ -104,6 +104,18 @@ public:
         GetContext().RHISetRasterizerState(RasterizerState);
     }
 
+    FORCEINLINE FTextureRHIRef CreateTexture(const FRHITextureCreateDesc& CreateDesc)
+    {
+        if (CreateDesc.InitialState == ERHIAccess::Unknown)
+        {
+            FRHITextureCreateDesc NewCreateDesc(CreateDesc);
+            NewCreateDesc.SetInitialState(RHIGetDefaultResourceState(CreateDesc.Flags, CreateDesc.BulkData != nullptr));
+
+            return GDynamicRHI->RHICreateTexture(*this, NewCreateDesc);
+        }
+        return GDynamicRHI->RHICreateTexture(*this, CreateDesc);
+    }
+
     void BeginRenderPass(function<void()> InCmd)
     {
         RenderCmds.emplace_back(InCmd);

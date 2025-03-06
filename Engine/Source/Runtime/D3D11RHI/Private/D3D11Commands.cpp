@@ -333,3 +333,44 @@ void FD3D11DynamicRHI::RHISetScissorRect(bool bEnable, uint32 MinX, uint32 MinY,
     ValidateScissorRect(Viewport, ScissorRect);
     Direct3DDeviceIMContext->RSSetScissorRects(1, &ScissorRect);
 }
+
+unordered_map<FString, FTextureRHIRef> Textures;
+
+FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(FRHICommandList& RHICmdList, const FRHITextureCreateDesc& CreateDesc)
+{
+    const FString TextureName = CreateDesc.DebugName;
+    if (!TextureName.empty())
+    {
+        if (Textures.contains(TextureName))
+        {
+            FTextureRHIRef Texture = Textures[TextureName];
+
+            FD3D11Texture* D3D11Texture = ResourceCast(Texture);
+            const FVector3D TextureSize = D3D11Texture->GetSizeXYZ();
+            const FVector3D NewTextureSize = CreateDesc.GetSize();
+            if (TextureSize != CreateDesc.GetSize())
+            {
+                E_LOG(Warning, TEXT("{} size changed: {} {} {} to {} {} {}"),
+                    TextureName,
+                    TextureSize.x, TextureSize.y, TextureSize.z,
+                    NewTextureSize.x, NewTextureSize.y, NewTextureSize.z);
+                Textures.erase(TextureName);
+            }
+            else
+            {
+                return Texture;
+            }
+        }
+    }
+
+    FTextureRHIRef NewTexture = CreateDesc.IsTexture3D()
+        ? nullptr // CreateD3D11Texture3D(CreateDesc)
+        : CreateD3D11Texture2D(CreateDesc);
+
+    if (!TextureName.empty())
+    {
+        Textures.emplace(TextureName, NewTexture);
+    }
+
+    return NewTexture;
+}
