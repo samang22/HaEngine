@@ -144,7 +144,7 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
 						break;
 					}
 
-					for (int32 j = PolygonSize - 1; j >= 0; --j) 
+					for (int32 j = 0; j < PolygonSize; ++j) 
 					{
 						const int32 Index = Mesh->GetPolygonVertex(i, j);
 						if (Index == -1)

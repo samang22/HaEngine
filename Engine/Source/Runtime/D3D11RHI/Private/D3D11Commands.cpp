@@ -231,7 +231,7 @@ void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32
         ZeroMemory(&RasterDesc, sizeof(RasterDesc));
         RasterDesc.FillMode = D3D11_FILL_WIREFRAME;
         RasterDesc.CullMode = D3D11_CULL_BACK;
-        RasterDesc.FrontCounterClockwise = false;
+        RasterDesc.FrontCounterClockwise = true;
         RasterDesc.DepthClipEnable = false;
 
         TRefCountPtr<ID3D11RasterizerState> RasterState;
