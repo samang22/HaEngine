@@ -113,8 +113,6 @@ public:
     virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader);
 
 public:
-    virtual void RHISetViewports(FVector3D RenderTargetSize);
-
     virtual FViewportRHIRef RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat) override;
     virtual class IRHICommandContext* RHIGetDefaultContext() final override;
   
@@ -130,6 +128,8 @@ public:
     virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) final override;
     virtual void RHISetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer) final override;
 
+    virtual void RHISetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ) override;
+    virtual void RHISetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY) final override;
     virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) final override;
     virtual void RHISetPrimitiveTopology(EPrimitiveType InPrimitiveType) final override;
     virtual void RHIBeginDrawingViewport(FRHIViewport* Viewport, FRHITexture* RenderTargetRHI) final override;

@@ -237,9 +237,8 @@ void FD3D11DynamicRHI::RHISetRasterizerState(FRHIRasterizerState* NewStateRHI)
 void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances)
 {
     // 임시로 컬링하지 않도록 설정
-    FRHIRasterizerState* RasterizerState = TStaticRasterizerState<>::GetRHI();
+    FRHIRasterizerState* RasterizerState = TStaticRasterizerState<FM_Wireframe, CM_CW>::GetRHI();
     RHISetRasterizerState(RasterizerState);
-
     // [깊이 반전(근평면 1.f)] 임시로 여기서 일괄 처리
     //{
     //    // 반전된 깊이 스텐실 상태 설정
@@ -288,4 +287,55 @@ void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32
     }
 
     //EnableUAVOverlap();
+}
+
+static void ValidateScissorRect(const D3D11_VIEWPORT& Viewport, const D3D11_RECT& ScissorRect)
+{
+    _ASSERT(ScissorRect.left >= (LONG)Viewport.TopLeftX);
+    _ASSERT(ScissorRect.top >= (LONG)Viewport.TopLeftY);
+    _ASSERT(ScissorRect.right <= (LONG)Viewport.TopLeftX + (LONG)Viewport.Width);
+    _ASSERT(ScissorRect.bottom <= (LONG)Viewport.TopLeftY + (LONG)Viewport.Height);
+    _ASSERT(ScissorRect.left <= ScissorRect.right && ScissorRect.top <= ScissorRect.bottom);
+}
+
+void FD3D11DynamicRHI::RHISetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ)
+{
+    // These are the maximum viewport extents for D3D11. Exceeding them leads to badness.
+    _ASSERT(MinX <= (float)D3D11_VIEWPORT_BOUNDS_MAX);
+    _ASSERT(MinY <= (float)D3D11_VIEWPORT_BOUNDS_MAX);
+    _ASSERT(MaxX <= (float)D3D11_VIEWPORT_BOUNDS_MAX);
+    _ASSERT(MaxY <= (float)D3D11_VIEWPORT_BOUNDS_MAX);
+
+    D3D11_VIEWPORT Viewport = { MinX, MinY, MaxX - MinX, MaxY - MinY, MinZ, MaxZ };
+    //avoid setting a 0 extent viewport, which the debug runtime doesn't like
+    if (Viewport.Width > 0 && Viewport.Height > 0)
+    {
+        StateCache.SetViewport(Viewport);
+        RHISetScissorRect(true, MinX, MinY, MaxX, MaxY);
+    }
+}
+
+void FD3D11DynamicRHI::RHISetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY)
+{
+    D3D11_VIEWPORT Viewport;
+    StateCache.GetViewport(&Viewport);
+
+    D3D11_RECT ScissorRect;
+    if (bEnable)
+    {
+        ScissorRect.left = MinX;
+        ScissorRect.top = MinY;
+        ScissorRect.right = MaxX;
+        ScissorRect.bottom = MaxY;
+    }
+    else
+    {
+        ScissorRect.left = (LONG)Viewport.TopLeftX;
+        ScissorRect.top = (LONG)Viewport.TopLeftY;
+        ScissorRect.right = (LONG)Viewport.TopLeftX + (LONG)Viewport.Width;
+        ScissorRect.bottom = (LONG)Viewport.TopLeftY + (LONG)Viewport.Height;
+    }
+
+    ValidateScissorRect(Viewport, ScissorRect);
+    Direct3DDeviceIMContext->RSSetScissorRects(1, &ScissorRect);
 }

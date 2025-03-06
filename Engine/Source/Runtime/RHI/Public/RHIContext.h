@@ -17,12 +17,12 @@ public:
 	}
 
 public:
-    virtual void RHISetViewports(FVector3D RenderTargetSize) = 0; // 간소화
     virtual void RHISetBoundShaderState(FRHIBoundShaderState* BoundShaderState) = 0;
     virtual void RHISetStreamSource(uint32 StreamIndex, FRHIBuffer* VertexBuffer, uint32 Offset) = 0;
     virtual void RHISetPrimitiveTopology(EPrimitiveType InPrimitiveType) = 0;
     virtual void RHISetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer) = 0; 
-    
+    virtual void RHISetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY) = 0;
+
     virtual void RHIDrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances) = 0;
     virtual void RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances) = 0;
 
@@ -36,5 +36,6 @@ public:
 
     virtual void RHIClearMRTImpl(const bool* bClearColorArray, int32 NumClearColors, const FLinearColor* ColorArray, bool bClearDepth, float Depth, bool bClearStencil, uint32 Stencil) = 0;
 
+    virtual void RHISetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ) = 0;
     virtual void RHISetRasterizerState(FRHIRasterizerState* NewState) = 0;
 };

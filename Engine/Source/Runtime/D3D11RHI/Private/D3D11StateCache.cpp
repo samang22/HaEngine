@@ -52,8 +52,8 @@ void FD3D11StateCache::ClearState()
     //CurrentBlendFactor[2] = 1.0f;
     //CurrentBlendFactor[3] = 1.0f;
 
-    //FMemory::Memset(&CurrentViewport[0], 0, sizeof(D3D11_VIEWPORT) * D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
-    //CurrentNumberOfViewports = 0;
+    ZeroMemory(&CurrentViewport[0], 0, sizeof(D3D11_VIEWPORT) * D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
+    CurrentNumberOfViewports = 0;
 
     //CurrentBlendSampleMask = 0xffffffff;
     //CurrentBlendState = nullptr;

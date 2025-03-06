@@ -2,12 +2,6 @@
 #include "RHIResources.h"
 #include "D3D11Viewport.h"
 
-void FD3D11DynamicRHI::RHISetViewports(FVector3D RenderTargetSize)
-{
-	const D3D11_VIEWPORT Viewports[1] = { 0.f, 0.f, RenderTargetSize.x, RenderTargetSize.y, 0.f, 1.f };
-	Direct3DDeviceIMContext->RSSetViewports(1, Viewports);
-}
-
 FViewportRHIRef FD3D11DynamicRHI::RHICreateViewport(void* WindowHandle, uint32 SizeX, uint32 SizeY, bool bIsFullscreen, EPixelFormat PreferredPixelFormat)
 {
     if (PreferredPixelFormat != EPixelFormat::PF_A2B10G10R10)
@@ -38,11 +32,8 @@ void FD3D11DynamicRHI::RHIBeginDrawingViewport(FRHIViewport* ViewportRHI, FRHITe
 	RPInfo.ConvertToRenderTargetsInfo(RTInfo);
 	SetRenderTargetsAndClear(RTInfo);
 
-	// 우리는 생략 가능
-	// RHISetScissorRect
-
 	FVector3D RenderTargetSize = RenderTarget->GetSizeXY();
-	RHISetViewports(RenderTargetSize);
+	RHISetViewport(0, 0, 0, RenderTargetSize.x, RenderTargetSize.y, 1.f);
 }
 
 void FD3D11DynamicRHI::RHIEndDrawingViewport(FRHIViewport* ViewportRHI, bool bPresent, bool bLockToVsync)

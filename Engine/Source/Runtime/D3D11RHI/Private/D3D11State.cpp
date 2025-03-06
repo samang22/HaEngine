@@ -31,7 +31,7 @@ FRasterizerStateRHIRef FD3D11DynamicRHI::RHICreateRasterizerState(const FRasteri
     RasterizerDesc.DepthBias = (INT)floor(Initializer.DepthBias * (float)(1 << 24));
     RasterizerDesc.DepthClipEnable = Initializer.DepthClipMode == ERasterizerDepthClipMode::DepthClip;
     RasterizerDesc.MultisampleEnable = Initializer.bAllowMSAA;
-    //RasterizerDesc.ScissorEnable = true;
+    RasterizerDesc.ScissorEnable = true;
 
     FD3D11RasterizerState* RasterizerState = new FD3D11RasterizerState;
     VERIFYD3D11RESULT_EX(Direct3DDevice->CreateRasterizerState(&RasterizerDesc, RasterizerState->Resource.GetInitReference()), Direct3DDevice);

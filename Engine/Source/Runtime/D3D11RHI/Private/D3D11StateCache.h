@@ -151,6 +151,22 @@ public:
         }
     }
 
+    inline void SetViewport(D3D11_VIEWPORT Viewport)
+    {
+        if (CurrentNumberOfViewports != 1 || memcmp(&CurrentViewport[0], &Viewport, sizeof(D3D11_VIEWPORT)))
+        {
+            memcpy(&CurrentViewport[0], &Viewport, sizeof(D3D11_VIEWPORT));
+            CurrentNumberOfViewports = 1;
+            Direct3DDeviceIMContext->RSSetViewports(1, &Viewport);
+        }
+    }
+
+    inline void GetViewport(D3D11_VIEWPORT* Viewport)
+    {
+        _ASSERT(Viewport);
+        memcpy(Viewport, &CurrentViewport, sizeof(D3D11_VIEWPORT));
+    }
+
 protected:
 	ID3D11DeviceContext* Direct3DDeviceIMContext = nullptr;
 
@@ -185,4 +201,9 @@ protected:
     uint16 StreamStrides[MaxVertexElementCount] = {};
 
     ID3D11Buffer* CurrentConstantBuffers[EShaderFrequency::SF_NumStandardFrequencies][D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT] = {};
+
+    // Viewport
+    uint32            CurrentNumberOfViewports = 0;
+    D3D11_VIEWPORT CurrentViewport[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE] = {};
+
 };
