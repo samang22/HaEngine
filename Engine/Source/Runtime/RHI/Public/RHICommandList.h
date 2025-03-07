@@ -104,6 +104,11 @@ public:
         GetContext().RHISetRasterizerState(RasterizerState);
     }
 
+    FORCEINLINE void SetDepthStencilState(FRHIDepthStencilState* DepthStencilState, uint32 StencilRef = 0)
+    {
+        GetContext().RHISetDepthStencilState(DepthStencilState, StencilRef);
+    }
+
     FORCEINLINE FTextureRHIRef CreateTexture(const FRHITextureCreateDesc& CreateDesc)
     {
         if (CreateDesc.InitialState == ERHIAccess::Unknown)
@@ -148,19 +153,21 @@ public:
 
     bool IsInsideRenderPass() const { return PersistentState.bInsideRenderPass; }
 
-    void BeginRenderPass(function<void()> InCmd)
-    {
-        RenderCmds.emplace_back(InCmd);
-    }
+    RHI_API void CopyTexture(FRHITexture* SourceTextureRHI, FRHITexture* DestTextureRHI, const FRHICopyTextureInfo& CopyInfo);
 
-    void ExecuteRenderPass()
-    {
-        for (function Cmd : RenderCmds)
-        {
-            Cmd();
-        }
-        RenderCmds.clear();
-    }
+    //void BeginRenderPass(function<void()> InCmd)
+    //{
+    //    RenderCmds.emplace_back(InCmd);
+    //}
+
+    //void ExecuteRenderPass()
+    //{
+    //    for (function Cmd : RenderCmds)
+    //    {
+    //        Cmd();
+    //    }
+    //    RenderCmds.clear();
+    //}
 
 protected:
     void CacheActiveRenderTargets(const FRHIRenderPassInfo& Info)
@@ -267,7 +274,7 @@ protected:
 private:
 	// 그래픽 명령이 기록되는 활성 컨텍스트.
 	IRHICommandContext* GraphicsContext = nullptr;
-    TArray<function<void()>> RenderCmds;
+    //TArray<function<void()>> RenderCmds;
 };
 
 

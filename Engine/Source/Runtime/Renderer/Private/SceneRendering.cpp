@@ -5,6 +5,7 @@
 #include "StaticMeshSceneProxy.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "RHIStaticStates.h"
 
 FRendererModule::FRendererModule()
 {
@@ -96,9 +97,9 @@ public:
 	virtual void InitRHI(FRHICommandList& RHICmdList)
 	{
 		TResourceArray<FVector3D> PositionData;
-		PositionData.emplace_back(0.0f, 0.5f, 0.0f);
-		PositionData.emplace_back(0.5f, -0.5f, 0.0f);
 		PositionData.emplace_back(-0.5f, -0.5f, 0.0f);
+		PositionData.emplace_back(0.5f, -0.5f, 0.0f);
+		PositionData.emplace_back(0.0f, 0.5f, 0.0f);
 
 		FRHIResourceCreateInfo CreateInfo(TEXT("MyVertexBuffer"), &PositionData);
 		VertexBufferRHI = GetCommandList().CreateVertexBuffer(PositionData.GetResourceDataSize(), BUF_Static, CreateInfo);
@@ -121,6 +122,9 @@ void FSceneRenderer::Render()
 		FRHITexture* RenderTargets[1] = { SceneTextures.Color.Target };
 		FRHIRenderPassInfo RPInfo(1, RenderTargets, ERenderTargetActions::Clear_Store, SceneTextures.Depth.Target, EDepthStencilTargetActions::ClearDepthStencil_StoreDepthStencil);
 		GetCommandList().BeginRenderPass(RPInfo, TEXT("BasePass"));
+
+		FRHIDepthStencilState* DepthStencilState = TStaticDepthStencilState<true>().GetRHI();
+		GetCommandList().SetDepthStencilState(DepthStencilState);
 
 		TArray<FStaticMeshDrawCommand> MeshDrawCommands;
 
@@ -180,6 +184,7 @@ void FSceneRenderer::Render()
 					ObjectUniformBuffer.Matrix = StaticMeshDrawCommand.Proxy->GetTransform();
 					RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
 					GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+					
 					GetCommandList().SetRasterizerState(Material->GetRasterizerState());
 					GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);
 					GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.GetIndexBufferRHI(), 0, 0,
@@ -189,16 +194,19 @@ void FSceneRenderer::Render()
 				}
 			}
 		}
-		//);
 		GetCommandList().EndRenderPass();
-		GetCommandList().ExecuteRenderPass();
 	}
+
+	GetCommandList().CopyTexture(SceneTextures.Color.Target, ViewFamily.RenderTarget->GetRenderTarget(), FRHICopyTextureInfo());
 
 	// UI Render
 	{
 		GetCommandList().BeginDrawingViewport(ViewFamily.RenderTarget, FTextureRHIRef());
 
-		/*{
+		FRHIDepthStencilState* DepthStencilState = TStaticDepthStencilState<false>().GetRHI();
+		GetCommandList().SetDepthStencilState(DepthStencilState);
+
+		{
 			TShaderMapRef<FTestVS> VertextShader;
 			TShaderMapRef<FTestPS> PixelShader;
 			GetCommandList().SetBoundShaderState(
@@ -208,10 +216,14 @@ void FSceneRenderer::Render()
 					PixelShader.GetPixelShader()
 				).GetReference()
 			);
+
+			FRHIRasterizerState* RHIRasterizerState = TStaticRasterizerState<FM_Solid, CM_CW>::GetRHI();
+			GetCommandList().SetRasterizerState(RHIRasterizerState);
+
 			GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
 			GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
 			GetCommandList().DrawPrimitive(0, 1, 1);
-		}*/
+		}
 
 		GetCommandList().EndDrawingViewport(ViewFamily.RenderTarget, true, false);
 	}

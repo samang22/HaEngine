@@ -396,11 +396,11 @@ struct TD3D11ResourceTraits<FRHIRasterizerState>
 {
 	typedef FD3D11RasterizerState TConcreteType;
 };
-//template<>
-//struct TD3D11ResourceTraits<FRHIDepthStencilState>
-//{
-//	typedef FD3D11DepthStencilState TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHIDepthStencilState>
+{
+	typedef FD3D11DepthStencilState TConcreteType;
+};
 //template<>
 //struct TD3D11ResourceTraits<FRHIBlendState>
 //{

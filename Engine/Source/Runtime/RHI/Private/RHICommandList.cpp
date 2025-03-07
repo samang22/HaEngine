@@ -21,3 +21,8 @@ RHI_API void FRHICommandList::SetBoundShaderState(FRHIBoundShaderState* BoundSha
 {
 	GetContext().RHISetBoundShaderState(BoundShaderState);
 }
+
+RHI_API void FRHICommandList::CopyTexture(FRHITexture* SourceTextureRHI, FRHITexture* DestTextureRHI, const FRHICopyTextureInfo& CopyInfo)
+{
+	GetContext().RHICopyTexture(SourceTextureRHI, DestTextureRHI, CopyInfo);
+}

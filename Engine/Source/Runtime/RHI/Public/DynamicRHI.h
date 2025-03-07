@@ -42,6 +42,7 @@ public:
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader) = 0;
 	virtual FTextureRHIRef RHICreateTexture(FRHICommandList& RHICmdList, const FRHITextureCreateDesc& CreateDesc) = 0;
 
+	virtual FDepthStencilStateRHIRef RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer) = 0;
 	virtual FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer) = 0;
 };
 
@@ -80,3 +81,4 @@ FORCEINLINE class IRHICommandContext* RHIGetDefaultContext()
 }
 
 FRasterizerStateRHIRef RHI_API RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer);
+FDepthStencilStateRHIRef RHI_API RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer);

@@ -91,3 +91,81 @@ struct FRasterizerStateInitializerRHI
 	//RHI_API friend uint32 GetTypeHash(const FRasterizerStateInitializerRHI& Initializer);
 	RHI_API friend bool operator== (const FRasterizerStateInitializerRHI& A, const FRasterizerStateInitializerRHI& B);
 };
+
+struct FDepthStencilStateInitializerRHI
+{
+	bool bEnableDepthWrite;
+	ECompareFunction DepthTest;
+
+	bool bEnableFrontFaceStencil;
+	ECompareFunction FrontFaceStencilTest;
+	EStencilOp FrontFaceStencilFailStencilOp;
+	EStencilOp FrontFaceDepthFailStencilOp;
+	EStencilOp FrontFacePassStencilOp;
+	bool bEnableBackFaceStencil;
+	ECompareFunction BackFaceStencilTest;
+	EStencilOp BackFaceStencilFailStencilOp;
+	EStencilOp BackFaceDepthFailStencilOp;
+	EStencilOp BackFacePassStencilOp;
+	uint8 StencilReadMask;
+	uint8 StencilWriteMask;
+
+	FDepthStencilStateInitializerRHI(
+		bool bInEnableDepthWrite = true,
+		ECompareFunction InDepthTest = CF_LessEqual,
+		bool bInEnableFrontFaceStencil = false,
+		ECompareFunction InFrontFaceStencilTest = CF_Always,
+		EStencilOp InFrontFaceStencilFailStencilOp = SO_Keep,
+		EStencilOp InFrontFaceDepthFailStencilOp = SO_Keep,
+		EStencilOp InFrontFacePassStencilOp = SO_Keep,
+		bool bInEnableBackFaceStencil = false,
+		ECompareFunction InBackFaceStencilTest = CF_Always,
+		EStencilOp InBackFaceStencilFailStencilOp = SO_Keep,
+		EStencilOp InBackFaceDepthFailStencilOp = SO_Keep,
+		EStencilOp InBackFacePassStencilOp = SO_Keep,
+		uint8 InStencilReadMask = 0xFF,
+		uint8 InStencilWriteMask = 0xFF
+	)
+		: bEnableDepthWrite(bInEnableDepthWrite)
+		, DepthTest(InDepthTest)
+		, bEnableFrontFaceStencil(bInEnableFrontFaceStencil)
+		, FrontFaceStencilTest(InFrontFaceStencilTest)
+		, FrontFaceStencilFailStencilOp(InFrontFaceStencilFailStencilOp)
+		, FrontFaceDepthFailStencilOp(InFrontFaceDepthFailStencilOp)
+		, FrontFacePassStencilOp(InFrontFacePassStencilOp)
+		, bEnableBackFaceStencil(bInEnableBackFaceStencil)
+		, BackFaceStencilTest(InBackFaceStencilTest)
+		, BackFaceStencilFailStencilOp(InBackFaceStencilFailStencilOp)
+		, BackFaceDepthFailStencilOp(InBackFaceDepthFailStencilOp)
+		, BackFacePassStencilOp(InBackFacePassStencilOp)
+		, StencilReadMask(InStencilReadMask)
+		, StencilWriteMask(InStencilWriteMask)
+	{
+	}
+
+	/*friend FArchive& operator<<(FArchive& Ar, FDepthStencilStateInitializerRHI& DepthStencilStateInitializer)
+	{
+		Ar << DepthStencilStateInitializer.bEnableDepthWrite;
+		Ar << DepthStencilStateInitializer.DepthTest;
+		Ar << DepthStencilStateInitializer.bEnableFrontFaceStencil;
+		Ar << DepthStencilStateInitializer.FrontFaceStencilTest;
+		Ar << DepthStencilStateInitializer.FrontFaceStencilFailStencilOp;
+		Ar << DepthStencilStateInitializer.FrontFaceDepthFailStencilOp;
+		Ar << DepthStencilStateInitializer.FrontFacePassStencilOp;
+		Ar << DepthStencilStateInitializer.bEnableBackFaceStencil;
+		Ar << DepthStencilStateInitializer.BackFaceStencilTest;
+		Ar << DepthStencilStateInitializer.BackFaceStencilFailStencilOp;
+		Ar << DepthStencilStateInitializer.BackFaceDepthFailStencilOp;
+		Ar << DepthStencilStateInitializer.BackFacePassStencilOp;
+		Ar << DepthStencilStateInitializer.StencilReadMask;
+		Ar << DepthStencilStateInitializer.StencilWriteMask;
+		return Ar;
+	}*/
+
+	//RHI_API friend uint32 GetTypeHash(const FDepthStencilStateInitializerRHI& Initializer);
+	//RHI_API friend bool operator== (const FDepthStencilStateInitializerRHI& A, const FDepthStencilStateInitializerRHI& B);
+
+	//RHI_API FString ToString() const;
+	//RHI_API void FromString(const FString& Src);
+	//RHI_API void FromString(const FStringView& Src);
+};

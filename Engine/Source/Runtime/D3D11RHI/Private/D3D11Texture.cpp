@@ -633,3 +633,94 @@ FD3D11Texture* FD3D11DynamicRHI::CreateD3D11Texture2D(const FRHITextureCreateDes
 
     return Texture2D;
 }
+
+/**
+ * Aligns a value to the nearest higher multiple of 'Alignment'.
+ *
+ * @param  Val        The value to align.
+ * @param  Alignment  The alignment value, can be any arbitrary value.
+ *
+ * @return The value aligned up to the specified alignment.
+ */
+template <typename T>
+FORCEINLINE constexpr T AlignArbitrary(T Val, uint64 Alignment)
+{
+    static_assert(TIsIntegral<T>::Value || TIsPointer<T>::Value, "AlignArbitrary expects an integer or pointer type");
+
+    return (T)((((uint64)Val + Alignment - 1) / Alignment) * Alignment);
+}
+
+void FD3D11DynamicRHI::RHICopyTexture(FRHITexture* SourceTextureRHI, FRHITexture* DestTextureRHI, const FRHICopyTextureInfo& CopyInfo)
+{
+    //FRHICommandList_RecursiveHazardous RHICmdList(this);
+
+    FD3D11Texture* SourceTexture = ResourceCast(SourceTextureRHI);
+    FD3D11Texture* DestTexture = ResourceCast(DestTextureRHI);
+
+    _ASSERT(SourceTexture && DestTexture);
+
+    //GPUProfilingData.RegisterGPUWork();
+
+    const FRHITextureDesc& SourceDesc = SourceTextureRHI->GetDesc();
+    const FRHITextureDesc& DestDesc = DestTextureRHI->GetDesc();
+
+    const uint16 SourceArraySize = SourceDesc.ArraySize * (SourceDesc.IsTextureCube() ? 6 : 1);
+    const uint16 DestArraySize = DestDesc.ArraySize * (DestDesc.IsTextureCube() ? 6 : 1);
+
+    const bool bAllPixels =
+        SourceDesc.GetSize() == DestDesc.GetSize() && (CopyInfo.Size == FVector3D::Zero || CopyInfo.Size == SourceDesc.GetSize());
+
+    const bool bAllSubresources =
+        SourceDesc.NumMips == DestDesc.NumMips && SourceDesc.NumMips == CopyInfo.NumMips &&
+        SourceArraySize == DestArraySize && SourceArraySize == CopyInfo.NumSlices;
+
+    if (!bAllPixels || !bAllSubresources)
+    {
+        const FPixelFormatInfo& PixelFormatInfo = GPixelFormats[SourceTextureRHI->GetFormat()];
+
+        const FVector3D SourceSize = SourceDesc.GetSize();
+        FVector3D CopySize = CopyInfo.Size;
+        if (CopyInfo.Size == FVector3D::Zero)
+        {
+            CopySize.x = (uint32)SourceSize.x >> CopyInfo.SourceMipIndex;
+            CopySize.y = (uint32)SourceSize.y >> CopyInfo.SourceMipIndex;
+            CopySize.z = (uint32)SourceSize.z >> CopyInfo.SourceMipIndex;
+        }
+
+        for (uint32 SliceIndex = 0; SliceIndex < CopyInfo.NumSlices; ++SliceIndex)
+        {
+            uint32 SourceSliceIndex = CopyInfo.SourceSliceIndex + SliceIndex;
+            uint32 DestSliceIndex = CopyInfo.DestSliceIndex + SliceIndex;
+
+            for (uint32 MipIndex = 0; MipIndex < CopyInfo.NumMips; ++MipIndex)
+            {
+                uint32 SourceMipIndex = CopyInfo.SourceMipIndex + MipIndex;
+                uint32 DestMipIndex = CopyInfo.DestMipIndex + MipIndex;
+
+                const uint32 SourceSubresource = D3D11CalcSubresource(SourceMipIndex, SourceSliceIndex, SourceTextureRHI->GetNumMips());
+                const uint32 DestSubresource = D3D11CalcSubresource(DestMipIndex, DestSliceIndex, DestTextureRHI->GetNumMips());
+
+                D3D11_BOX SrcBox;
+                SrcBox.left = (uint32)CopyInfo.SourcePosition.x >> MipIndex;
+                SrcBox.top = (uint32)CopyInfo.SourcePosition.y >> MipIndex;
+                SrcBox.front = (uint32)CopyInfo.SourcePosition.z >> MipIndex;
+                SrcBox.right = AlignArbitrary<uint32>(FMath::Max<uint32>(((uint32)CopyInfo.SourcePosition.x + (uint32)CopySize.x) >> MipIndex, 1), PixelFormatInfo.BlockSizeX);
+                SrcBox.bottom = AlignArbitrary<uint32>(FMath::Max<uint32>(((uint32)CopyInfo.SourcePosition.y + (uint32)CopySize.y) >> MipIndex, 1), PixelFormatInfo.BlockSizeY);
+                SrcBox.back = AlignArbitrary<uint32>(FMath::Max<uint32>(((uint32)CopyInfo.SourcePosition.z + (uint32)CopySize.z) >> MipIndex, 1), PixelFormatInfo.BlockSizeZ);
+
+                const uint32 DestX = (uint32)CopyInfo.DestPosition.x >> MipIndex;
+                const uint32 DestY = (uint32)CopyInfo.DestPosition.y >> MipIndex;
+                const uint32 DestZ = (uint32)CopyInfo.DestPosition.z >> MipIndex;
+
+                Direct3DDeviceIMContext->CopySubresourceRegion(DestTexture->GetResource(), DestSubresource, DestX, DestY, DestZ, SourceTexture->GetResource(), SourceSubresource, &SrcBox);
+            }
+        }
+    }
+    else
+    {
+        // 이 경우 매개변수가 모두 기본값인지 확인합니다.
+        _ASSERT(CopyInfo.SourceSliceIndex == 0 && CopyInfo.DestSliceIndex == 0 && CopyInfo.SourcePosition == FVector3D::Zero && CopyInfo.DestPosition == FVector3D::Zero &&
+            CopyInfo.SourceMipIndex == 0 && CopyInfo.DestMipIndex == 0);
+        Direct3DDeviceIMContext->CopyResource(DestTexture->GetResource(), SourceTexture->GetResource());
+    }
+}

@@ -167,6 +167,16 @@ public:
         memcpy(Viewport, &CurrentViewport, sizeof(D3D11_VIEWPORT));
     }
 
+    inline void SetDepthStencilState(ID3D11DepthStencilState* State, uint32 RefStencil)
+    {
+        if (CurrentDepthStencilState != State || CurrentReferenceStencil != RefStencil)
+        {
+            CurrentDepthStencilState = State;
+            CurrentReferenceStencil = RefStencil;
+            Direct3DDeviceIMContext->OMSetDepthStencilState(State, RefStencil);
+        }
+    }
+
 protected:
 	ID3D11DeviceContext* Direct3DDeviceIMContext = nullptr;
 
@@ -175,6 +185,10 @@ protected:
 
     // Rasterizer State Cache
     ID3D11RasterizerState* CurrentRasterizerState = nullptr;
+
+    // Depth Stencil State Cache
+    uint32 CurrentReferenceStencil = 0;
+    ID3D11DepthStencilState* CurrentDepthStencilState = nullptr;
 
     // Shader Cache
     ID3D11VertexShader* CurrentVertexShader = nullptr;

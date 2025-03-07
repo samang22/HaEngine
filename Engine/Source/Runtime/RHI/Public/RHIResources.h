@@ -2003,3 +2003,11 @@ public:
 	FRHIRasterizerState() : FRHIResource(RRT_RasterizerState) {}
 	virtual bool GetInitializer(struct FRasterizerStateInitializerRHI& Init) { return false; }
 };
+
+class FRHIDepthStencilState : public FRHIResource
+{
+public:
+	FRHIDepthStencilState() : FRHIResource(RRT_DepthStencilState) {}
+
+	virtual bool GetInitializer(struct FDepthStencilStateInitializerRHI& Init) { return false; }
+};

@@ -38,3 +38,8 @@ FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitialize
     //LLM_SCOPE_BYNAME(TEXT("RHIMisc/CreateRasterizerState"));
     return GDynamicRHI->RHICreateRasterizerState(Initializer);
 }
+
+FDepthStencilStateRHIRef RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer)
+{
+    return GDynamicRHI->RHICreateDepthStencilState(Initializer);
+}

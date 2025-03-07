@@ -6,7 +6,40 @@ class FRHIBoundShaderState;
 class FRHIBuffer;
 class FRHIUniformBuffer;
 class FRHIRasterizerState;
+class FRHIDepthStencilState;
 struct FRHIRenderPassInfo;
+
+struct FRHICopyTextureInfo
+{
+    // 소스 텍스처의 복사할 영역을 반환합니다.
+    FVector4D GetSourceRect() const
+    {
+        return FVector4D(SourcePosition.x, SourcePosition.y, SourcePosition.x + Size.x, SourcePosition.y + Size.y);
+    }
+
+    // 목적지 텍스처의 복사할 영역을 반환합니다.
+    FVector4D GetDestRect() const
+    {
+        return FVector4D(DestPosition.x, DestPosition.y, DestPosition.x + Size.x, DestPosition.y + Size.y);
+    }
+
+    // 복사할 텍셀의 수입니다. 기본적으로 크기가 지정되지 않으면 전체 리소스를 복사합니다.
+    FVector3D Size = FVector3D::Zero;
+
+    // 소스 텍스처에서 복사할 위치/목적지 텍스처로의 위치
+    FVector3D SourcePosition = FVector3D::Zero;
+    FVector3D DestPosition = FVector3D::Zero;
+
+    uint32 SourceSliceIndex = 0;
+    uint32 DestSliceIndex = 0;
+    uint32 NumSlices = 1;
+
+    // 복사할 Mip 레벨과 목적지 Mip 레벨
+    uint32 SourceMipIndex = 0;
+    uint32 DestMipIndex = 0;
+    uint32 NumMips = 1;
+};
+
 
 // RHI 명령 컨텍스트 인터페이스. 때로는 RHI가 이를 처리합니다.
 // 명령 리스트를 병렬로 처리할 수 있는 플랫폼에서는 별도의 객체입니다.
@@ -39,7 +72,11 @@ public:
 
     virtual void RHISetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ) = 0;
     virtual void RHISetRasterizerState(FRHIRasterizerState* NewState) = 0;
+    virtual void RHISetDepthStencilState(FRHIDepthStencilState* NewState, uint32 StencilRef) = 0;
+
 
     virtual void RHIBeginRenderPass(const FRHIRenderPassInfo& InInfo, const TCHAR* InName) = 0;
     virtual void RHIEndRenderPass() = 0;
+
+    virtual void RHICopyTexture(FRHITexture* SourceTextureRHI, FRHITexture* DestTextureRHI, const FRHICopyTextureInfo& CopyInfo) = 0;
 };

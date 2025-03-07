@@ -231,6 +231,47 @@ void FD3D11DynamicRHI::RHISetRasterizerState(FRHIRasterizerState* NewStateRHI)
     StateCache.SetRasterizerState(NewState->Resource);
 }
 
+void FD3D11DynamicRHI::ValidateExclusiveDepthStencilAccess(FExclusiveDepthStencil RequestedAccess) const
+{
+    const bool bSrcDepthWrite = RequestedAccess.IsDepthWrite();
+    const bool bSrcStencilWrite = RequestedAccess.IsStencilWrite();
+
+    if (bSrcDepthWrite || bSrcStencilWrite)
+    {
+        // 새로운 규칙: SetRenderTarget[s]()를 먼저 호출해야 합니다
+        _ASSERT(CurrentDepthTexture);
+
+        const bool bDstDepthWrite = CurrentDSVAccessType.IsDepthWrite();
+        const bool bDstStencilWrite = CurrentDSVAccessType.IsStencilWrite();
+
+        // 요청된 접근이 불가능합니다. SetRenderTarget의 EExclusiveDepthStencil을 수정하거나 다른 것을 요청하십시오.
+        _ASSERT(
+            !bSrcDepthWrite || bDstDepthWrite,
+            TEXT("기대값: SrcDepthWrite := false 또는 DstDepthWrite := true. 실제값: SrcDepthWrite := %s 또는 DstDepthWrite := %s"),
+            (bSrcDepthWrite) ? TEXT("true") : TEXT("false"),
+            (bDstDepthWrite) ? TEXT("true") : TEXT("false")
+        );
+
+        _ASSERT(
+            !bSrcStencilWrite || bDstStencilWrite,
+            TEXT("기대값: SrcStencilWrite := false 또는 DstStencilWrite := true. 실제값: SrcStencilWrite := %s 또는 DstStencilWrite := %s"),
+            (bSrcStencilWrite) ? TEXT("true") : TEXT("false"),
+            (bDstStencilWrite) ? TEXT("true") : TEXT("false")
+        );
+
+    }
+}
+
+void FD3D11DynamicRHI::RHISetDepthStencilState(FRHIDepthStencilState* NewStateRHI, uint32 StencilRef)
+{
+    FD3D11DepthStencilState* NewState = ResourceCast(NewStateRHI);
+
+    ValidateExclusiveDepthStencilAccess(NewState->AccessType);
+
+    StateCache.SetDepthStencilState(NewState->Resource, StencilRef);
+}
+
+
 void FD3D11DynamicRHI::RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances)
 {
     // [깊이 반전(근평면 1.f)] 임시로 여기서 일괄 처리

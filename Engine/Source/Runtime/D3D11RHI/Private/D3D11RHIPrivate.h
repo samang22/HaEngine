@@ -149,10 +149,14 @@ public:
     virtual void RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances) final override;
 
     virtual FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer) final override;
+    virtual FDepthStencilStateRHIRef RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer) final override; 
     virtual void RHISetRasterizerState(FRHIRasterizerState* NewState) final override;
+    virtual void RHISetDepthStencilState(FRHIDepthStencilState* NewState, uint32 StencilRef) final override;
 
     virtual void RHIBeginRenderPass(const FRHIRenderPassInfo& InInfo, const TCHAR* InName) final override;
     virtual void RHIEndRenderPass() final override;
+
+    virtual void RHICopyTexture(FRHITexture* SourceTextureRHI, FRHITexture* DestTextureRHI, const FRHICopyTextureInfo& CopyInfo) final override;
 
 public:
     void SetRenderTargets(uint32 NumSimultaneousRenderTargets, const FRHIRenderTargetView* NewRenderTargets, const FRHIDepthRenderTargetView* NewDepthStencilTarget);
@@ -188,6 +192,7 @@ public:
 
 protected:
     FD3D11Texture* CreateD3D11Texture2D(const FRHITextureCreateDesc& CreateDesc, TArray<D3D11_SUBRESOURCE_DATA> InitialData = {});
+    void ValidateExclusiveDepthStencilAccess(FExclusiveDepthStencil Src) const;
 
 public:
     void ClearState();

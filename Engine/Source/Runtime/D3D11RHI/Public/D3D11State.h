@@ -19,16 +19,17 @@ public:
 
     TRefCountPtr<ID3D11RasterizerState> Resource;
 };
-//
-//class FD3D11DepthStencilState : public FRHIDepthStencilState
-//{
-//public:
-//
-//    TRefCountPtr<ID3D11DepthStencilState> Resource;
-//
-//    /* Describes the read/write state of the separate depth and stencil components of the DSV. */
-//    FExclusiveDepthStencil AccessType;
-//};
+
+class FD3D11DepthStencilState : public FRHIDepthStencilState
+{
+public:
+
+    TRefCountPtr<ID3D11DepthStencilState> Resource;
+
+    /* Describes the read/write state of the separate depth and stencil components of the DSV. */
+    FExclusiveDepthStencil AccessType;
+};
+
 //
 //class FD3D11BlendState : public FRHIBlendState
 //{

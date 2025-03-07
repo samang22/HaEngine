@@ -31,9 +31,10 @@ void FD3D11StateCache::ClearState()
     // Rasterizer State Cache
     CurrentRasterizerState = nullptr;
     
-    //// Depth Stencil State Cache
-    //CurrentReferenceStencil = 0;
-    //CurrentDepthStencilState = nullptr;
+    // Depth Stencil State Cache
+    CurrentReferenceStencil = 0;
+    CurrentDepthStencilState = nullptr;
+    
     //bDepthBoundsEnabled = false;
     //DepthBoundsMin = 0.0f;
     //DepthBoundsMax = 1.0f;

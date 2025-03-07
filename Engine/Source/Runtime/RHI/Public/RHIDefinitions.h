@@ -568,3 +568,56 @@ enum ERasterizerState
 	E_WIREFRAME_BACK,
 	E_WIREFRAME_NONE,
 };
+
+enum ECompareFunction : uint8
+{
+	CF_Less,
+	CF_LessEqual,
+	CF_Greater,
+	CF_GreaterEqual,
+	CF_Equal,
+	CF_NotEqual,
+	CF_Never,
+	CF_Always,
+
+	ECompareFunction_Num,
+	ECompareFunction_NumBits = 3,
+
+	// Utility enumerations
+	CF_DepthNearOrEqual = (((int32)ERHIZBuffer::IsInverted != 0) ? CF_GreaterEqual : CF_LessEqual),
+	CF_DepthNear = (((int32)ERHIZBuffer::IsInverted != 0) ? CF_Greater : CF_Less),
+	CF_DepthFartherOrEqual = (((int32)ERHIZBuffer::IsInverted != 0) ? CF_LessEqual : CF_GreaterEqual),
+	CF_DepthFarther = (((int32)ERHIZBuffer::IsInverted != 0) ? CF_Less : CF_Greater),
+};
+static_assert(ECompareFunction_Num <= (1 << ECompareFunction_NumBits), "ECompareFunction_Num will not fit on ECompareFunction_NumBits");
+
+enum EStencilMask
+{
+	SM_Default,
+	SM_255,
+	SM_1,
+	SM_2,
+	SM_4,
+	SM_8,
+	SM_16,
+	SM_32,
+	SM_64,
+	SM_128,
+	SM_Count
+};
+
+enum EStencilOp : uint8
+{
+	SO_Keep,
+	SO_Zero,
+	SO_Replace,
+	SO_SaturatedIncrement,
+	SO_SaturatedDecrement,
+	SO_Invert,
+	SO_Increment,
+	SO_Decrement,
+
+	EStencilOp_Num,
+	EStencilOp_NumBits = 3,
+};
+static_assert(EStencilOp_Num <= (1 << EStencilOp_NumBits), "EStencilOp_Num will not fit on EStencilOp_NumBits");
