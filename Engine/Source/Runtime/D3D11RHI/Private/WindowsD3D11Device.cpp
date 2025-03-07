@@ -653,10 +653,10 @@ void FD3D11DynamicRHI::InitD3DDevice()
         }
 
         StateCache.Init(Direct3DDeviceIMContext);
-    }
 
-    GRHICommandList.GetImmediateCommandList().InitializeImmediateContexts();
-    FRenderResource::InitPreRHIResources();
+        GRHICommandList.GetImmediateCommandList().InitializeImmediateContexts();
+        FRenderResource::InitPreRHIResources();
+    }
 }
 
 
