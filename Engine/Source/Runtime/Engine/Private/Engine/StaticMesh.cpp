@@ -16,7 +16,7 @@ TGlobalResource<FStaticMeshVertexDeclaration> GStaticMeshVertexDeclaration;
 class ENGINE_API FStaticMeshVertexBuffer : public FVertexBuffer
 {
 public:
-    TResourceArray<FVector3D> VertexData;
+    TResourceArray<FPositionNormal> VertexData;
 
     virtual void InitRHI(FRHICommandList& RHICmdList) override
     {

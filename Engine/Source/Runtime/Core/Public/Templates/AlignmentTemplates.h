@@ -64,3 +64,5 @@ FORCEINLINE constexpr T Align(T Val, uint64 Alignment)
 
     return (T)(((uint64)Val + Alignment - 1) & ~(Alignment - 1));
 }
+
+#define STRUCT_OFFSET( struc, member )	offsetof(struc, member)

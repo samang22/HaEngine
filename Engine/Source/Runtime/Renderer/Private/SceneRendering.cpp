@@ -181,7 +181,7 @@ void FSceneRenderer::Render()
 					);
 
 					FObjectUniformBuffer ObjectUniformBuffer;
-					ObjectUniformBuffer.Matrix = StaticMeshDrawCommand.Proxy->GetTransform();
+					ObjectUniformBuffer.WorldMatrix = StaticMeshDrawCommand.Proxy->GetTransform();
 					RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
 					GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
 					

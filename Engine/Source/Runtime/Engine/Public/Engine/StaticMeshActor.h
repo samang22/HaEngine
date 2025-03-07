@@ -29,5 +29,5 @@ private:
     UStaticMeshComponent* ChildStaticMeshComponent;
 
     UPROPERTY(EditAnywhere)
-    int RasterizerState = 0;
+    int RasterizerState = 1;
 };

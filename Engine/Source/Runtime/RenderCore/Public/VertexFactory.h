@@ -5,7 +5,8 @@
 
 struct FObjectUniformBuffer
 {
-    FMatrix Matrix = FMatrix::Identity;
+    FMatrix WorldMatrix = FMatrix::Identity;
+    FMatrix WorldInverseTransposeMatrix = FMatrix::Identity;
 };
 
 /**

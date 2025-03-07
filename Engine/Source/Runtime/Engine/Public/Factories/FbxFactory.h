@@ -1,5 +1,6 @@
 #pragma once
 #include "Factory.h"
+#include "RenderCore.h"
 #include "FbxFactory.generated.h"
 
 
@@ -13,7 +14,7 @@ namespace fbxsdk
 struct FMeshData
 {
     FString Name;
-    TArray<FVector3D> Vertices;
+    TArray<FPositionNormal> Vertices;
     TArray<uint32> Indices;
 
     uint32 NumPrimitives = 0;

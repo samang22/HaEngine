@@ -1,4 +1,5 @@
 #include "VertexFactory.h"
+#include "RenderCore.h"
 
 class FStaticMeshVertexDeclaration : public FVertexDeclaration
 {
@@ -6,8 +7,10 @@ public:
     virtual void InitRHI(FRHICommandList& RHICmdList) override
     {
         FVertexDeclarationElementList Elements;
-        Elements.push_back(FVertexElement(0, 0, VET_Float3, 0, sizeof(FVector3D)));
-        VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
+		const uint16 Stride = sizeof(FPositionNormal);
+		Elements.push_back(FVertexElement(0, STRUCT_OFFSET(FPositionNormal, Position), VET_Float3, 0, Stride));
+		Elements.push_back(FVertexElement(0, STRUCT_OFFSET(FPositionNormal, Normal), VET_Float3, 1, Stride));
+		VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
     }
 };
 TGlobalResource<FStaticMeshVertexDeclaration> GStaticMeshVertexDeclaration;
@@ -27,7 +30,8 @@ void FVertexFactory::Create(TObjectPtr<FVertexBuffer> InVertexBuffer, TObjectPtr
 void FVertexFactory::UpdateObjectUniformBuffer(FRHICommandList& CommandList, const FObjectUniformBuffer& InBuffer)
 {
 	ObjectUniformBuffer = InBuffer;
-	ObjectUniformBuffer.Matrix = ObjectUniformBuffer.Matrix.Transpose();
+	ObjectUniformBuffer.WorldMatrix = ObjectUniformBuffer.WorldMatrix.Transpose();
+	ObjectUniformBuffer.WorldInverseTransposeMatrix = ObjectUniformBuffer.WorldMatrix.Invert().Transpose();
 	RHIUpdateUniformBuffer(UniformBuffer, &ObjectUniformBuffer, sizeof(ObjectUniformBuffer));
 	CommandList.SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, UniformBuffer);
 }
