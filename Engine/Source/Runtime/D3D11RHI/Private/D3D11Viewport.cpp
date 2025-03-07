@@ -23,14 +23,14 @@ void FD3D11DynamicRHI::RHIBeginDrawingViewport(FRHIViewport* ViewportRHI, FRHITe
 		RenderTarget = Viewport->GetBackBuffer();
 	}
 
-	//FRHIRenderTargetView View(RenderTarget, ERenderTargetLoadAction::ELoad);
-	//SetRenderTargets(1, &View, nullptr);
+	FRHIRenderTargetView View(RenderTarget, ERenderTargetLoadAction::ELoad);
+	SetRenderTargets(1, &View, nullptr);
 
 
-	FRHISetRenderTargetsInfo RTInfo;
-	FRHIRenderPassInfo RPInfo(RenderTarget, ERenderTargetActions::Clear_DontStore);
-	RPInfo.ConvertToRenderTargetsInfo(RTInfo);
-	SetRenderTargetsAndClear(RTInfo);
+	//FRHISetRenderTargetsInfo RTInfo;
+	//FRHIRenderPassInfo RPInfo(RenderTarget, ERenderTargetActions::Clear_DontStore);
+	//RPInfo.ConvertToRenderTargetsInfo(RTInfo);
+	//SetRenderTargetsAndClear(RTInfo);
 
 	FVector3D RenderTargetSize = RenderTarget->GetSizeXY();
 	RHISetViewport(0, 0, 0, RenderTargetSize.x, RenderTargetSize.y, 1.f);

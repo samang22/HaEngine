@@ -1151,30 +1151,30 @@ public:
 
 	uint32 GetIndex() const
 	{
-		// Note: The array to index has views created in that specific order.
+		// 참고: 배열을 인덱싱할 때 해당 순서로 뷰가 생성됩니다.
 
-		// we don't care about the Nop versions so less views are needed
-		// we combine Nop and Write
+		// 우리는 Nop 버전에 신경 쓰지 않으므로 적은 뷰가 필요합니다.
+		// 우리는 Nop과 Write를 결합합니다.
 		switch (Value)
 		{
 		case DepthWrite_StencilNop:
 		case DepthNop_StencilWrite:
 		case DepthWrite_StencilWrite:
 		case DepthNop_StencilNop:
-			return 0; // old DSAT_Writable
+			return 0; // 이전 DSAT_Writable
 
 		case DepthRead_StencilNop:
 		case DepthRead_StencilWrite:
-			return 1; // old DSAT_ReadOnlyDepth
+			return 1; // 이전 DSAT_ReadOnlyDepth
 
 		case DepthNop_StencilRead:
 		case DepthWrite_StencilRead:
-			return 2; // old DSAT_ReadOnlyStencil
+			return 2; // 이전 DSAT_ReadOnlyStencil
 
 		case DepthRead_StencilRead:
-			return 3; // old DSAT_ReadOnlyDepthAndStencil
+			return 3; // 이전 DSAT_ReadOnlyDepthAndStencil
 		}
-		// should never happen
+		// 발생해서는 안 되는 경우
 		_ASSERT(0);
 		return -1;
 	}

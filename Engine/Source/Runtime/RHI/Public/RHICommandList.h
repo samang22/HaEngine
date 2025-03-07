@@ -116,6 +116,38 @@ public:
         return GDynamicRHI->RHICreateTexture(*this, CreateDesc);
     }
 
+    FORCEINLINE void BeginRenderPass(const FRHIRenderPassInfo& InInfo, const TCHAR* Name)
+    {
+        _ASSERT(!IsInsideRenderPass());
+        //check(!IsInsideComputePass());
+
+        //InInfo.Validate();
+
+        GetContext().RHIBeginRenderPass(InInfo, Name);
+
+        CacheActiveRenderTargets(InInfo);
+        PersistentState.bInsideRenderPass = true;
+        /*ResetSubpass(InInfo.SubpassHint);
+
+
+        if (InInfo.NumOcclusionQueries)
+        {
+            PersistentState.bInsideOcclusionQueryBatch = true;
+            GDynamicRHI->RHIBeginOcclusionQueryBatch_TopOfPipe(*this, InInfo.NumOcclusionQueries);
+        }*/
+    }
+
+    FORCEINLINE void EndRenderPass()
+    {
+        _ASSERT(IsInsideRenderPass());
+
+        GetContext().RHIEndRenderPass();
+
+        PersistentState.bInsideRenderPass = false;
+    }
+
+    bool IsInsideRenderPass() const { return PersistentState.bInsideRenderPass; }
+
     void BeginRenderPass(function<void()> InCmd)
     {
         RenderCmds.emplace_back(InCmd);
@@ -129,6 +161,107 @@ public:
         }
         RenderCmds.clear();
     }
+
+protected:
+    void CacheActiveRenderTargets(const FRHIRenderPassInfo& Info)
+    {
+        FRHISetRenderTargetsInfo RTInfo;
+        Info.ConvertToRenderTargetsInfo(RTInfo);
+
+        for (int32 RTIdx = 0; RTIdx < RTInfo.NumColorRenderTargets; ++RTIdx)
+        {
+            PersistentState.CachedRenderTargets[RTIdx] = RTInfo.ColorRenderTarget[RTIdx];
+        }
+
+        PersistentState.CachedNumSimultanousRenderTargets = RTInfo.NumColorRenderTargets;
+        PersistentState.CachedDepthStencilTarget = RTInfo.DepthStencilRenderTarget;
+        //PersistentState.HasFragmentDensityAttachment = RTInfo.ShadingRateTexture != nullptr;
+        //PersistentState.MultiViewCount = RTInfo.MultiViewCount;
+    }
+
+    // 이 구조체의 값들은 명령 목록이 이동되거나 재설정될 때 유지됩니다.
+    struct FPersistentState
+    {
+        uint32 CachedNumSimultanousRenderTargets = 0; // 캐시된 동시 렌더 타겟 수
+        TStaticArray<FRHIRenderTargetView, MaxSimultaneousRenderTargets> CachedRenderTargets; // 캐시된 렌더 타겟 배열
+        FRHIDepthRenderTargetView CachedDepthStencilTarget; // 캐시된 깊이-스텐실 타겟
+
+        //ESubpassHint SubpassHint = ESubpassHint::None; // 서브패스 힌트
+        //uint8 SubpassIndex = 0; // 서브패스 인덱스
+        //uint8 MultiViewCount = 0; // 멀티뷰 카운트
+        //uint8 ExtendResourceLifetimeRefCount = 0; // 리소스 수명 연장 참조 카운트
+        //bool HasFragmentDensityAttachment = false; // 프래그먼트 밀도 첨부 여부
+
+        bool bInsideRenderPass = false; // 렌더 패스 내부 여부
+        //bool bInsideComputePass = false; // 컴퓨트 패스 내부 여부
+        //bool bInsideOcclusionQueryBatch = false; // 오클루전 쿼리 배치 내부 여부
+        //bool bAsyncPSOCompileAllowed = true; // 비동기 PSO 컴파일 허용 여부
+        //bool bImmediate = false; // 즉시 여부
+
+        //ERecordingThread RecordingThread; // 기록 스레드
+
+        //FRHIGPUMask CurrentGPUMask; // 현재 GPU 마스크
+        //FRHIGPUMask InitialGPUMask; // 초기 GPU 마스크
+
+        //FBoundShaderStateInput BoundShaderInput; // 바인딩된 셰이더 상태 입력
+        //FRHIComputeShader* BoundComputeShaderRHI = nullptr; // 바인딩된 컴퓨트 셰이더 RHI
+
+        //FGraphEventRef RHIThreadBufferLockFence; // RHI 스레드 버퍼 잠금 펜스
+
+        //struct FFenceCandidate : public TConcurrentLinearObject<FFenceCandidate>, public FRefCountBase
+        //{
+        //    FGraphEventRef Fence; // 펜스
+        //};
+
+        //TRefCountPtr<FFenceCandidate> FenceCandidate; // 펜스 후보
+        //FGraphEventArray QueuedFenceCandidateEvents; // 큐에 저장된 펜스 후보 이벤트 배열
+        //TArray<TRefCountPtr<FFenceCandidate>, FConcurrentLinearArrayAllocator> QueuedFenceCandidates; // 큐에 저장된 펜스 후보 배열
+        //TArray<FRHIResource*, FConcurrentLinearArrayAllocator> ExtendedLifetimeResources; // 수명이 연장된 리소스 배열
+
+//        struct FGPUStats
+//        {
+//#if HAS_GPU_STATS
+//            FDrawCallCategoryName* CategoryTOP = nullptr; // 상위 카테고리
+//            FDrawCallCategoryName* CategoryBOP = nullptr; // 하위 카테고리
+//#endif
+//
+//            FRHIDrawStats* Ptr = nullptr; // 드로우 통계 포인터
+//
+//            void InitFrom(FGPUStats* Other)
+//            {
+//                if (!Other)
+//                    return;
+//
+//                Ptr = Other->Ptr;
+//#if HAS_GPU_STATS
+//                CategoryBOP = Other->CategoryTOP;
+//#endif
+//            }
+//
+//            void ApplyToContext(IRHIComputeContext* Context)
+//            {
+//                uint32 CategoryID = FRHIDrawStats::NoCategory;
+//#if HAS_GPU_STATS
+//                check(!CategoryBOP || CategoryBOP->ShouldCountDraws());
+//                if (CategoryBOP)
+//                {
+//                    CategoryID = CategoryBOP->Index;
+//                }
+//#endif
+//
+//                Context->StatsSetCategory(Ptr, CategoryID);
+//            }
+//        } Stats; // GPU 통계
+
+        /*FPersistentState(FRHIGPUMask InInitialGPUMask, ERecordingThread InRecordingThread, bool bInImmediate = false)
+            : bImmediate(bInImmediate)
+            , RecordingThread(InRecordingThread)
+            , CurrentGPUMask(InInitialGPUMask)
+            , InitialGPUMask(InInitialGPUMask)
+        {
+        }*/
+    } PersistentState; // 지속 상태
+
 
 
 private:

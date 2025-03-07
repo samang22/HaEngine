@@ -38,7 +38,7 @@ FRHIPixelShader* UMaterial::GetPixelShaderRHI() const
 
 void UMaterial::SetRasterizerState(const ERasterizerState InRasterizerState)
 {
-    RasterizerState = InRasterizerState;
+    RasterizerState = InRasterizerState; 
 
     switch (RasterizerState)
     {

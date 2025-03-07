@@ -114,45 +114,35 @@ TGlobalResource<FNDCTriangleVertexBuffer> GNDCTriangleVertexBuffer;
 
 void FSceneRenderer::Render()
 {
-	//FSceneTextures::InitializeViewFamily();
+	FSceneTextures::InitializeViewFamily(ViewFamily);
+	FSceneTextures& SceneTextures = GetActiveSceneTextures();
 
-	GetCommandList().BeginDrawingViewport(ViewFamily.RenderTarget, FTextureRHIRef());
-	/*{
-		TShaderMapRef<FTestVS> VertextShader;
-		TShaderMapRef<FTestPS> PixelShader;
-		GetCommandList().SetBoundShaderState(
-			GDynamicRHI->RHICreateBoundShaderState(
-				GTestVertexDeclaration.VertexDeclarationRHI,
-				VertextShader.GetVertexShader(),
-				PixelShader.GetPixelShader()
-			).GetReference()
-		);
-		GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-		GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
-		GetCommandList().DrawPrimitive(0, 1, 1);
-	}*/
-
-	TArray<FStaticMeshDrawCommand> MeshDrawCommands;
-
-	FScene* Scene = (FScene*)ViewFamily.Scene;
-	for (FPrimitiveSceneProxy* Proxy : Scene->Proxies)
 	{
-		UPrimitiveComponent* PrimitiveComponent = Proxy->GetPrimitiveComponent();
-		PrimitiveComponent->UpdateComponentToWorld();
+		FRHITexture* RenderTargets[1] = { SceneTextures.Color.Target };
+		FRHIRenderPassInfo RPInfo(1, RenderTargets, ERenderTargetActions::Clear_Store, SceneTextures.Depth.Target, EDepthStencilTargetActions::ClearDepthStencil_StoreDepthStencil);
+		GetCommandList().BeginRenderPass(RPInfo, TEXT("BasePass"));
 
-		if (UStaticMeshComponent* StaticMeshComponent = dynamic_cast<UStaticMeshComponent*>(PrimitiveComponent))
+		TArray<FStaticMeshDrawCommand> MeshDrawCommands;
+
+		FScene* Scene = (FScene*)ViewFamily.Scene;
+		for (FPrimitiveSceneProxy* Proxy : Scene->Proxies)
 		{
-			TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
-			TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
-			TArray<TObjectPtr<UMaterial>>& OverrideMaterials = StaticMeshComponent->GetOverrideMaterials();
-			FMatrix RenderMatrix = StaticMeshComponent->GetRenderMatrix();
-			Proxy->SetTransform(RenderMatrix);
-			MeshDrawCommands.emplace_back(Proxy, RenderDatas, OverrideMaterials);
-		}
-	}
+			UPrimitiveComponent* PrimitiveComponent = Proxy->GetPrimitiveComponent();
+			PrimitiveComponent->UpdateComponentToWorld();
 
-	GetCommandList().BeginRenderPass(
-		[this, MeshDrawCommands = move(MeshDrawCommands)]()
+			if (UStaticMeshComponent* StaticMeshComponent = dynamic_cast<UStaticMeshComponent*>(PrimitiveComponent))
+			{
+				TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
+				TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
+				TArray<TObjectPtr<UMaterial>>& OverrideMaterials = StaticMeshComponent->GetOverrideMaterials();
+				FMatrix RenderMatrix = StaticMeshComponent->GetRenderMatrix();
+				Proxy->SetTransform(RenderMatrix);
+				MeshDrawCommands.emplace_back(Proxy, RenderDatas, OverrideMaterials);
+			}
+		}
+
+		//GetCommandList().BeginRenderPass(
+			//[this, MeshDrawCommands = move(MeshDrawCommands)]()
 		{
 			TShaderMapRef<FMaterialVS> MaterialVS;
 
@@ -168,13 +158,21 @@ void FSceneRenderer::Render()
 
 			for (const FStaticMeshDrawCommand& StaticMeshDrawCommand : MeshDrawCommands)
 			{
+				int Index = 0;
+				StaticMeshDrawCommand.OverrideMaterials;
 				for (FStaticMeshRenderData& RenderData : StaticMeshDrawCommand.RenderDatas)
 				{
+					UMaterial* Material = RenderData.Material.get();
+					if (StaticMeshDrawCommand.OverrideMaterials[Index])
+					{
+						Material = StaticMeshDrawCommand.OverrideMaterials[Index].get();
+					}
+
 					GetCommandList().SetBoundShaderState(
 						GDynamicRHI->RHICreateBoundShaderState(
 							RenderData.VertexFactory.GetDeclaration(),
-							RenderData.Material->GetVertexShaderRHI(),
-							RenderData.Material->GetPixelShaderRHI()
+							Material->GetVertexShaderRHI(),
+							Material->GetPixelShaderRHI()
 						).GetReference()
 					);
 
@@ -182,16 +180,41 @@ void FSceneRenderer::Render()
 					ObjectUniformBuffer.Matrix = StaticMeshDrawCommand.Proxy->GetTransform();
 					RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
 					GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+					GetCommandList().SetRasterizerState(Material->GetRasterizerState());
 					GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);
 					GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.GetIndexBufferRHI(), 0, 0,
 						RenderData.NumVertices, 0, RenderData.NumPrimitives, 1);
+
+					++Index;
 				}
 			}
 		}
-	);
+		//);
+		GetCommandList().EndRenderPass();
+		GetCommandList().ExecuteRenderPass();
+	}
 
-	GetCommandList().ExecuteRenderPass();
-	GetCommandList().EndDrawingViewport(ViewFamily.RenderTarget, true, false);
+	// UI Render
+	{
+		GetCommandList().BeginDrawingViewport(ViewFamily.RenderTarget, FTextureRHIRef());
+
+		/*{
+			TShaderMapRef<FTestVS> VertextShader;
+			TShaderMapRef<FTestPS> PixelShader;
+			GetCommandList().SetBoundShaderState(
+				GDynamicRHI->RHICreateBoundShaderState(
+					GTestVertexDeclaration.VertexDeclarationRHI,
+					VertextShader.GetVertexShader(),
+					PixelShader.GetPixelShader()
+				).GetReference()
+			);
+			GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+			GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
+			GetCommandList().DrawPrimitive(0, 1, 1);
+		}*/
+
+		GetCommandList().EndDrawingViewport(ViewFamily.RenderTarget, true, false);
+	}
 }
 
 FViewFamilyInfo::FViewFamilyInfo(const FSceneViewFamily& InViewFamily)

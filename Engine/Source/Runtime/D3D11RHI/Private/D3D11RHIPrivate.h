@@ -151,6 +151,9 @@ public:
     virtual FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer) final override;
     virtual void RHISetRasterizerState(FRHIRasterizerState* NewState) final override;
 
+    virtual void RHIBeginRenderPass(const FRHIRenderPassInfo& InInfo, const TCHAR* InName) final override;
+    virtual void RHIEndRenderPass() final override;
+
 public:
     void SetRenderTargets(uint32 NumSimultaneousRenderTargets, const FRHIRenderTargetView* NewRenderTargets, const FRHIDepthRenderTargetView* NewDepthStencilTarget);
     void SetRenderTargetsAndClear(const FRHISetRenderTargetsInfo& RenderTargetsInfo);
@@ -234,4 +237,7 @@ protected:
     FD3D11Adapter Adapter;
 
     FD3D11StateCache StateCache;
+
+protected:
+    FRHIRenderPassInfo RenderPassInfo;
 };
