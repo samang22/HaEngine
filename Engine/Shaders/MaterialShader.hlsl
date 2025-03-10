@@ -11,6 +11,14 @@ cbuffer FSceneUniformBuffer : register(b1)
     matrix ViewProjectionMatrix;
 }
 
+cbuffer FLightShaderParameters : register(b2)
+{
+    float4 LightColor;
+    float3 LightDirection;
+    float FLightShaderParameters_Padding;
+}
+
+
 struct FVSOutput
 {
     float4 SVPosition : SV_Position;
@@ -35,8 +43,8 @@ FVSOutput VS(float3 Position : ATTRIBUTE0, float3 Normal : ATTRIBUTE1)
 float4 PS(FVSOutput Input) : SV_Target0
 {
     float3 N = normalize(Input.NormalW);
-    float3 L = float3(-1.f, 0, 0);
+    float3 L = LightDirection;
     
     float Diffuse = max(dot(N, L), 0.1f);
-    return float4(Diffuse, Diffuse, Diffuse, 1.f);
+    return float4((LightColor * Diffuse).xyz, 1.f);
 }

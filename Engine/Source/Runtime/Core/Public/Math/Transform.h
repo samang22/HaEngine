@@ -17,6 +17,33 @@ public:
     FTransform(const FRotator& InRotator, FVector3D InTranslation, FVector3D InScale3D);
 
     FMatrix GetMatrix() const;
+    FMatrix GetMatrixNoScale() const;
+    FMatrix GetRotationMatrix() const;
+
+    FMatrix ToMatrix() const;
+    FMatrix ToMatrixNoScale() const;
+    FMatrix ToRotationMatrix() const;
+
+    FVector3D TransformVectorNoScale(const FVector3D& V) const
+    {
+        FVector3D RotatedVec = FVector3D::Transform(V, GetRotationMatrix());
+        return RotatedVec;
+    }
+
+    FORCEINLINE FVector3D GetUnitAxis(EAxis::Type InAxis) const
+    {
+        if (InAxis == EAxis::X)
+        {
+            return TransformVectorNoScale(FVector3D(1.f, 0.f, 0.f));
+        }
+        else if (InAxis == EAxis::Y)
+        {
+            return TransformVectorNoScale(FVector3D(0.f, 1.f, 0.f));
+        }
+
+        return TransformVectorNoScale(FVector3D(0.f, 0.f, 1.f));
+    }
+
 
     void SetPosition(const FVector3D& NewTranslation) { Translation = NewTranslation; }
     void SetRotation(const FRotator& NewRotation) { Rotation = NewRotation; }

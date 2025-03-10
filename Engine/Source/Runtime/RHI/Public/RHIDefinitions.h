@@ -1,6 +1,9 @@
 #pragma once
 #include "CoreMinimal.h"
 
+/** 셰이더 매개변수 구조체의 정렬은 16바이트 경계여야 합니다. */
+#define SHADER_PARAMETER_STRUCT_ALIGNMENT 16
+
 enum class EGpuVendorId : uint32
 {
     Unknown = 0xffffffff,

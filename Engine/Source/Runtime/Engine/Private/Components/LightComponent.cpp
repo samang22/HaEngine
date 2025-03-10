@@ -2,10 +2,20 @@
 #include "Engine/World.h"
 #include "SceneInterface.h"
 
+ULightComponent::~ULightComponent()
+{
+    if (bRegistered)
+    {
+        if (GetWorld() && GetWorld()->Scene)
+        {
+            GetWorld()->Scene->RemoveLight(this);
+        }
+    }
+}
+
 FVector ULightComponent::GetDirection() const
 {
-    _ASSERT(false); // 구현 해야함
-    return FVector();
+    return GetComponentTransform().GetUnitAxis(EAxis::X);
 }
 
 void ULightComponent::CreateRenderState_Concurrent(FRegisterComponentContext* Context)
@@ -13,5 +23,5 @@ void ULightComponent::CreateRenderState_Concurrent(FRegisterComponentContext* Co
     Super::CreateRenderState_Concurrent(Context);
 
     UWorld* World = GetWorld();
-    //World->Scene->AddLight(this);
+    World->Scene->AddLight(this);
 }

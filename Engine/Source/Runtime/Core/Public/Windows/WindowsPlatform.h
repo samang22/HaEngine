@@ -36,3 +36,5 @@ typedef FWindowsPlatformTypes FPlatformTypes;
 #else
 #define E_DEBUG_BREAK() ((void)(IsDebuggerPresent() && ([] () { E_DEBUG_BREAK_IMPL(); } (), 1)))
 #endif
+
+#define MS_ALIGN(n) __declspec(align(n))

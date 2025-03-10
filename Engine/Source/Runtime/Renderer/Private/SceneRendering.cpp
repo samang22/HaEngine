@@ -7,6 +7,9 @@
 #include "Engine/StaticMesh.h"
 #include "RHIStaticStates.h"
 
+#include "Components/DirectionalLightComponent.h"
+#include "LightSceneProxy.h"
+
 FRendererModule::FRendererModule()
 {
 }
@@ -129,34 +132,57 @@ void FSceneRenderer::Render()
 		TArray<FStaticMeshDrawCommand> MeshDrawCommands;
 
 		FScene* Scene = (FScene*)ViewFamily.Scene;
-		for (FPrimitiveSceneProxy* Proxy : Scene->Proxies)
+		TShaderMapRef<FMaterialVS> MaterialVS;
+		TShaderMapRef<FMaterialPS> MaterialPS; 
+		
 		{
-			UPrimitiveComponent* PrimitiveComponent = Proxy->GetPrimitiveComponent();
-			PrimitiveComponent->UpdateComponentToWorld();
+			const FConstantBufferInfo& ConstantBufferInfo = MaterialPS->GetConstantBufferInfo(TEXT("FLightShaderParameters"));
+			FLightShaderParameters DirectionalLightShaderParameters;
 
-			if (UStaticMeshComponent* StaticMeshComponent = dynamic_cast<UStaticMeshComponent*>(PrimitiveComponent))
+			int32 DirectionalLightCount = 0;
+			for (FLightSceneProxy* Proxy : Scene->LightSceneProxies) 
 			{
-				TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
-				TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
-				TArray<TObjectPtr<UMaterial>>& OverrideMaterials = StaticMeshComponent->GetOverrideMaterials();
-				FMatrix RenderMatrix = StaticMeshComponent->GetRenderMatrix();
-				Proxy->SetTransform(RenderMatrix);
-				MeshDrawCommands.emplace_back(Proxy, RenderDatas, OverrideMaterials);
+				TEnginePtr<UDirectionalLightComponent> DirectionalLightComponent = Cast<UDirectionalLightComponent>(Proxy->GetLightComponent());
+				if (DirectionalLightComponent)
+				{
+					if (DirectionalLightCount > 1)
+					{
+						E_LOG(Warning, TEXT("UDirectionalLightComponent: {}. 1개만 지원합니다."), DirectionalLightCount);
+					}
+
+					++DirectionalLightCount;
+					Proxy->GetLightShaderParameters(DirectionalLightShaderParameters);
+				}
 			}
+
+			FUniformBufferRHIRef LightUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &DirectionalLightShaderParameters, sizeof(DirectionalLightShaderParameters));
+			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, LightUniformBufferRHI);
 		}
 
 		//GetCommandList().BeginRenderPass(
 			//[this, MeshDrawCommands = move(MeshDrawCommands)]()
 		{
-			TShaderMapRef<FMaterialVS> MaterialVS;
+			for (FPrimitiveSceneProxy* Proxy : Scene->PrimitiveSceneProxies)
+			{
+				UPrimitiveComponent* PrimitiveComponent = Proxy->GetPrimitiveComponent();
+				PrimitiveComponent->UpdateComponentToWorld();
+
+				if (UStaticMeshComponent* StaticMeshComponent = dynamic_cast<UStaticMeshComponent*>(PrimitiveComponent))
+				{
+					TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
+					TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
+					TArray<TObjectPtr<UMaterial>>& OverrideMaterials = StaticMeshComponent->GetOverrideMaterials();
+					FMatrix RenderMatrix = StaticMeshComponent->GetRenderMatrix();
+					Proxy->SetTransform(RenderMatrix);
+					MeshDrawCommands.emplace_back(Proxy, RenderDatas, OverrideMaterials);
+				}
+			}
 
 			const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
-			SceneUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
-
 			SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
 			SceneUniformBuffer.ProjectionMatrix = ViewFamily.ProjectionMatrix.Transpose();
 			SceneUniformBuffer.ViewProjectionMatrix = ViewFamily.ViewProjectionMatrix.Transpose();
-			RHIUpdateUniformBuffer(SceneUniformBufferRHI, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
+			SceneUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
 			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
 			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, SceneUniformBufferRHI);
 
@@ -184,7 +210,21 @@ void FSceneRenderer::Render()
 					ObjectUniformBuffer.WorldMatrix = StaticMeshDrawCommand.Proxy->GetTransform();
 					RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
 					GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-					
+
+					// [깊이 반전(근평면 1.f)] 임시로 여기서 일괄 처리
+					//{
+					//    // 반전된 깊이 스텐실 상태 설정
+					//    D3D11_DEPTH_STENCIL_DESC invertedDepthStencilDesc;
+					//    ZeroMemory(&invertedDepthStencilDesc, sizeof(invertedDepthStencilDesc));
+					//    invertedDepthStencilDesc.DepthEnable = TRUE;
+					//    invertedDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+					//    invertedDepthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; // 반전된 깊이 비교 함수
+
+					//    TRefCountPtr<ID3D11DepthStencilState> invertedDepthStencilState;
+					//    Direct3DDevice->CreateDepthStencilState(&invertedDepthStencilDesc, invertedDepthStencilState.GetInitReference());
+					//    Direct3DDeviceIMContext->OMSetDepthStencilState(invertedDepthStencilState, 1);
+					//}
+
 					GetCommandList().SetRasterizerState(Material->GetRasterizerState());
 					GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);
 					GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.GetIndexBufferRHI(), 0, 0,

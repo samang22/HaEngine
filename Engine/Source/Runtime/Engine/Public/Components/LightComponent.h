@@ -8,6 +8,8 @@ class ENGINE_API ULightComponent : public ULightComponentBase
     GENERATED_BODY()
 
 public:
+    virtual ~ULightComponent();
+
     /** The light's scene info. */
     class FLightSceneProxy* SceneProxy;
 

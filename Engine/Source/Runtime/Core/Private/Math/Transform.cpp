@@ -21,6 +21,32 @@ FMatrix FTransform::GetMatrix() const
         FMatrix::CreateTranslation(Translation);
 }
 
+FMatrix FTransform::GetMatrixNoScale() const
+{
+    return FMatrix::CreateFromQuaternion(Rotation.Quaternion()) *
+        FMatrix::CreateTranslation(Translation);
+}
+
+FMatrix FTransform::GetRotationMatrix() const
+{
+    return FMatrix::CreateFromQuaternion(Rotation.Quaternion());
+}
+
+FMatrix FTransform::ToMatrix() const
+{
+    return GetMatrix();
+}
+
+FMatrix FTransform::ToMatrixNoScale() const
+{
+    return GetMatrixNoScale();
+}
+
+FMatrix FTransform::ToRotationMatrix() const
+{
+    return GetRotationMatrix();
+}
+
 FVector3D FTransform::GetSafeScaleReciprocal(const FVector3D& InScale, float Tolerance) const
 {
     FVector3D SafeRecipScale;

@@ -1183,3 +1183,15 @@ FMatrix CORE_API FPerspectiveMatrix(float HalfFOVX, float HalfFOVY, float MultFO
 
 // TInverseRotationMatrix
 FMatrix CORE_API FInverseRotationMatrix(const FRotator& Rot);
+
+// Generic axis enum (mirrored for property use in Object.h)
+namespace EAxis
+{
+    enum Type
+    {
+        None,
+        X,
+        Y,
+        Z,
+    };
+}

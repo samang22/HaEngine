@@ -3,6 +3,7 @@
 #include "RHI.h"
 
 class UPrimitiveComponent;
+class ULightComponent;
 /**
  * 씬의 private scene manager 구현에 대한 인터페이스입니다. GetRendererModule().AllocateScene을 사용하여 생성하세요.
  */
@@ -27,6 +28,21 @@ public:
     virtual void RemovePrimitive(UPrimitiveComponent* Primitive) = 0;
 
     virtual void Release() {}
+
+    /**
+     * 새로운 조명 컴포넌트를 씬에 추가합니다.
+     *
+     * @param Light - 추가할 조명 컴포넌트
+     */
+    virtual void AddLight(ULightComponent* Light) = 0;
+    /**
+     * 조명 컴포넌트를 씬에서 제거합니다.
+     *
+     * @param Light - 제거할 조명 컴포넌트
+     */
+    virtual void RemoveLight(ULightComponent* Light) = 0;
+
+
 
 protected:
     virtual ~FSceneInterface() {}
