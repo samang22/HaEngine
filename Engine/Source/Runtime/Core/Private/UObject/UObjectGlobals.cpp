@@ -372,6 +372,71 @@ bool FObjectInitializer::FOverrides::IsLegalOverride(const UClass* DerivedCompon
 	return true;
 }
 
+void FObjectInitializer::FOverrides::Add(FName InComponentName, UClass* InComponentClass)
+{
+	auto GetSubobjectPath = [InComponentName/*, InFullComponentPath*/]()
+		{
+			/*if (InFullComponentPath)
+			{
+				FString SubobjectPath;
+				for (FName SubobjectName : *InFullComponentPath)
+				{
+					SubobjectPath += (SubobjectPath.IsEmpty() ? TEXT("") : TEXT("."));
+					SubobjectPath += SubobjectName.ToString();
+				}
+				return SubobjectPath;
+			}*/
+
+			return InComponentName.ToString();
+		};
+
+	const int32 Index = Find(InComponentName);
+	if (Index == INDEX_NONE)
+	{
+		FOverride& Override = Overrides.emplace_back(FOverride(InComponentName));
+		Override.ComponentClass = InComponentClass;
+		Override.bDoNotCreate = (InComponentClass == nullptr);
+	}
+	else if (InComponentClass)
+	{
+		if (Overrides[Index].ComponentClass)
+		{
+			// 기본 클래스가 오버라이드를 요청하는 경우, 기존의 오버라이드(우리가 사용할 오버라이드)는 상속되어야 합니다.
+			if (!IsLegalOverride(Overrides[Index].ComponentClass, InComponentClass))
+			{
+				E_LOG(Error, TEXT("{}는 컴포넌트 {}에 대한 합법적인 오버라이드가 아닙니다. {}에서 파생되지 않았기 때문입니다. 컴포넌트를 생성할 때 {}를 사용할 것입니다."),
+					Overrides[Index].ComponentClass->GetName(), GetSubobjectPath(), InComponentClass->GetName(), InComponentClass->GetName());
+
+				Overrides[Index].ComponentClass = InComponentClass;
+			}
+		}
+		else
+		{
+			// 기존에 기록된 컴포넌트 클래스가 null인 경우 서브 오버라이드가 있을 수 있으므로 여전히 클래스를 사용하려고 합니다.
+			// 또는 생성하지 않도록 표시될 수 있지만 기본 클래스가 선택적이 아닌 것으로 생성할 수 있으므로 클래스를 기록하려고 합니다.
+			Overrides[Index].ComponentClass = InComponentClass;
+		}
+
+	}
+	else
+	{
+		// 기존의 오버라이드가 있지만 상위 클래스가 이를 DoNotCreate로 표시하는 경우 경고합니다.
+		// 오류를 보고하더라도, 컴포넌트가 선택 사항이 아닌 것으로 생성되면 이러한 오버라이드가 여전히 사용될 수 있습니다.
+		if (Overrides[Index].ComponentClass)
+		{
+			E_LOG(Error, TEXT("{}는 컴포넌트 {}에 대한 합법적인 오버라이드가 아닙니다. 상위 클래스가 이를 생성하지 않도록 표시했기 때문입니다."),
+				Overrides[Index].ComponentClass->GetName(), GetSubobjectPath());
+		}
+		if (Overrides[Index].SubOverrides)
+		{
+			E_LOG(Error, TEXT("컴포넌트 {}는 기록된 중첩 서브오브젝트 오버라이드를 가지고 있지만, 상위 클래스가 이를 생성하지 않도록 표시했기 때문에 생성되지 않습니다."),
+				GetSubobjectPath());
+		}
+
+		Overrides[Index].bDoNotCreate = true;
+	}
+}
+
 FObjectInitializer::FOverrides::FOverrideDetails FObjectInitializer::FOverrides::Get(FName InComponentName, const UClass* ReturnType, UClass* ClassToConstructByDefault, bool bOptional) const
 {
 	FOverrideDetails Result;

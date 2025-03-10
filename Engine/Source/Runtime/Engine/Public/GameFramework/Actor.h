@@ -241,7 +241,7 @@ private:
 	 * 이 액터가 소유한 모든 ActorComponent입니다. 액터는 많은 수의 컴포넌트를 가질 수 있으므로 Set으로 저장됩니다.
 	 * @see GetComponents()
 	 */
-	TSet<TObjectPtr<UActorComponent>> OwnedComponents;
+	TArray<TObjectPtr<UActorComponent>> OwnedComponents;
 
 private:
 	/** PostRegisterAllComponents()가 호출되기 직전에 true로 설정되고, PostUnregisterAllComponents()가 호출되기 직전에 false로 설정됩니다. */

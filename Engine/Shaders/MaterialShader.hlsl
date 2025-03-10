@@ -37,6 +37,6 @@ float4 PS(FVSOutput Input) : SV_Target0
     float3 N = normalize(Input.NormalW);
     float3 L = float3(-1.f, 0, 0);
     
-    float Diffuse = max(dot(N, L), 0.f);
+    float Diffuse = max(dot(N, L), 0.1f);
     return float4(Diffuse, Diffuse, Diffuse, 1.f);
 }

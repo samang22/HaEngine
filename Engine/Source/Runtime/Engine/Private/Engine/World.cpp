@@ -14,7 +14,7 @@
 #include <boost/archive/text_iarchive.hpp>
 
 #include "Engine/StaticMeshActor.h"
-
+#include "Engine/DirectionalLight.h"
 
 
 FDelegate<UWorld*> WorldCreatedDelegate;
@@ -70,6 +70,7 @@ void UWorld::InitalizeNewWorld()
 	AStaticMeshActor* Actor = SpawnActor<AStaticMeshActor>(nullptr, TransformLeft, ActorSpawnParameters);
 	AStaticMeshActor* Actor2 = SpawnActor<AStaticMeshActor>(nullptr, TransformRight, ActorSpawnParameters);
 
+	SpawnActor<ADirectionalLight>();
 }
 
 void UWorld::InitializeActorsForPlay(FRegisterComponentContext* Context)

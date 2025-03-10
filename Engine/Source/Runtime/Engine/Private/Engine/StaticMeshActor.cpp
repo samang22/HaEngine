@@ -7,8 +7,9 @@
 
 AStaticMeshActor::AStaticMeshActor()
 {
-	TEnginePtr<UStaticMesh> StaticMesh = FAssetManager::Get()->LoadAsset<UStaticMesh>(
-		FPaths::ContentDir() + L"/Cube.FBX");
+	TEnginePtr<UStaticMesh> StaticMesh =
+		FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Cube.FBX");
+
 	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Cone.FBX");
 	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Cylinder.FBX");
 	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Plane.FBX");

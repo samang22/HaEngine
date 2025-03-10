@@ -30,12 +30,35 @@ public:
 	*/
 	UObject* CreateDefaultSubobject(UObject* Outer, FName SubobjectFName, const UClass* ReturnType, /*const*/ UClass* ClassToCreateByDefault, bool bIsRequired = true, bool bIsTransient = false) const;
 
+	/**
+	 * 기본 클래스에서 정의된 서브오브젝트에 사용할 클래스를 설정합니다. 이 클래스는 기본 클래스에서 사용하는 클래스의 서브클래스여야 합니다.
+	 * @param   SubobjectName   새로운 컴포넌트 또는 서브오브젝트의 이름
+	 * @param   Class           지정된 서브오브젝트 또는 컴포넌트에 사용할 클래스
+	 */
+	const FObjectInitializer& SetDefaultSubobjectClass(FName SubobjectName, /*const*/ UClass* Class) const
+	{
+		//AssertIfSubobjectSetupIsNotAllowed(SubobjectName);
+		SubobjectOverrides.Add(SubobjectName, Class);
+		return *this;
+	}
+
+
+	/**
+	 * 기본 클래스에서 정의된 서브오브젝트에 사용할 클래스를 설정합니다. 이 클래스는 기본 클래스에서 사용하는 클래스의 서브클래스여야 합니다.
+	 * @param   SubobjectName   새로운 컴포넌트 또는 서브오브젝트의 이름
+	 */
+	template<class T>
+	const FObjectInitializer& SetDefaultSubobjectClass(FName SubobjectName) const
+	{
+		return SetDefaultSubobjectClass(SubobjectName, T::StaticClass());
+	}
+
 private:
 	/**  파생 클래스에서 오버라이드를 관리하기 위한 작은 도우미 구조체 **/
 	struct FOverrides
 	{
 		///**  오버라이드를 추가하고, 그것이 적법한지 확인 **/
-		//void Add(FName InComponentName, const UClass* InComponentClass, const TArrayView<const FName>* FullPath = nullptr);
+		void Add(FName InComponentName, /*const*/ UClass* InComponentClass/*, const TArrayView<const FName>* FullPath = nullptr*/);
 
 		///**  잠재적으로 중첩된 오버라이드를 추가하고, 그것이 적법한지 확인 **/
 		//void Add(FStringView InComponentPath, const UClass* InComponentClass);

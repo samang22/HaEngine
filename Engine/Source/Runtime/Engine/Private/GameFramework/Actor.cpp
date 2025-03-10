@@ -194,12 +194,7 @@ void AActor::AddOwnedComponent(TObjectPtr<UActorComponent> Component)
 {
 	_ASSERT(Component->GetOwner() == this);
 
-	if (OwnedComponents.contains(Component))
-	{
-		_ASSERT(false);
-	}
-
-	OwnedComponents.insert(Component);
+	OwnedComponents.push_back(Component);
 }
 
 void AActor::SetInstigator(APawn* InInstigator)
@@ -602,7 +597,12 @@ void AActor::PreInitializeComponents()
 bool AActor::OwnsComponent(UActorComponent* Component) const
 {
 	TObjectPtr<UActorComponent> ComponentPtr = Component->As<UActorComponent>();
-	return OwnedComponents.contains(ComponentPtr);
+	return find_if(OwnedComponents.begin(), OwnedComponents.end(),
+		[Component](TEnginePtr<UActorComponent> InComponent)
+		{
+			return InComponent == Component;
+		}
+	) != OwnedComponents.end();
 }
 
 void AActor::Tick(float DeltaSeconds)

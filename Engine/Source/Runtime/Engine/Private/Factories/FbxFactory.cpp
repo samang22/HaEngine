@@ -94,59 +94,59 @@ fbxsdk::FbxScene* UFbxFactory::LoadFbxScene(fbxsdk::FbxManager* InFbxManager, co
 
 void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMeshData)
 {
-	fbxsdk::FbxNodeAttribute* NodeAttribute = InNode->GetNodeAttribute();
-	if (NodeAttribute != nullptr)
-	{
-		fbxsdk::FbxNodeAttribute::EType AttributeType = NodeAttribute->GetAttributeType();
+    fbxsdk::FbxNodeAttribute* NodeAttribute = InNode->GetNodeAttribute();
+    if (NodeAttribute != nullptr)
+    {
+        fbxsdk::FbxNodeAttribute::EType AttributeType = NodeAttribute->GetAttributeType();
 
-		if (AttributeType == fbxsdk::FbxNodeAttribute::eMesh)
-		{
-			const FString FbxNodeName = ANSI_TO_TCHAR(InNode->GetName());
-			E_LOG(Log, TEXT("ExtractFbx Mesh: {}"), FbxNodeName);
+        if (AttributeType == fbxsdk::FbxNodeAttribute::eMesh)
+        {
+            const FString FbxNodeName = ANSI_TO_TCHAR(InNode->GetName());
+            E_LOG(Log, TEXT("ExtractFbx Mesh: {}"), FbxNodeName);
 
-			fbxsdk::FbxMesh* Mesh = static_cast<fbxsdk::FbxMesh*>(NodeAttribute); _ASSERT(Mesh);
-			fbxsdk::FbxLayer* BaseLayer = Mesh->GetLayer(0);
-			if (BaseLayer == nullptr)
-			{
-				E_LOG(Error, TEXT("BaseLayer is nullptr!"));
-				return;
-			}
+            fbxsdk::FbxMesh* Mesh = static_cast<fbxsdk::FbxMesh*>(NodeAttribute);
+            _ASSERT(Mesh);
+            fbxsdk::FbxLayer* BaseLayer = Mesh->GetLayer(0);
+            if (BaseLayer == nullptr)
+            {
+                E_LOG(Error, TEXT("BaseLayer is nullptr!"));
+                return;
+            }
 
-			bool bSuccessed = true;
+            bool bSuccessed = true;
 
-			// 정점(Vertex): Mesh를 구성하는 점(GetControlPoints)
-			// 폴리곤(Polygon): 점들이 모여서 만들어진 도형(보통 삼각형)
-			// GetPolygonSize: 폴리곤 하나의 크기 (삼격형이면 3개; 우리는 삼각형만 지원)
-			// 서로 다른 Polygon에 Vertex가 중첩 될 수 있다. 따라서 Normal도 하나의 Vertex에 여럿 존재할 수 있고 이는 Mode에 따라 달라질 수 있다
+            const int32 PolygonCount = Mesh->GetPolygonCount();
+            const int32 VertexCount = Mesh->GetControlPointsCount();
 
-			const int32 PolygonCount = Mesh->GetPolygonCount();
-			const int32 VertexCount = Mesh->GetControlPointsCount();
+            // Vertices 및 Normals 추출
+            TArray<FPositionNormal> Vertices;
+            TArray<uint32> Indices;
+            Vertices.reserve(PolygonCount); // 적당히 공간 할당
+            map<int32, TArray<int32>> VertexMap; // 같은 위치의 정점을 추적하기 위한 맵
 
-			// Vertices 추출
-			TArray<FPositionNormal> Vertices; 
-			{
-				const uint32 VertexCount = Mesh->GetControlPointsCount();
-				fbxsdk::FbxVector4* FbxVertices = Mesh->GetControlPoints();
+            {
+                fbxsdk::FbxVector4* FbxVertices = Mesh->GetControlPoints();
 
-				Vertices.resize(VertexCount);
+                // Position 정보 추출
+                for (uint32 i = 0; i < VertexCount; ++i)
+                {
+                    FVector3D Position = FVector3D(FbxVertices[i][0], -FbxVertices[i][1], FbxVertices[i][2]);
+                    Vertices.emplace_back(Position, FVector3D::Zero);
 
-				// Position 정보 추출
-				for (uint32 i = 0; i < VertexCount; ++i)
-				{
-					// UE 축에 맞게 변환
-					Vertices[i].Position = FVector3D(FbxVertices[i][0], -FbxVertices[i][1], FbxVertices[i][2]);
-				}
+                    // 같은 위치의 정점을 저장
+                    if (!VertexMap.contains(i))
+                    {
+                        VertexMap.emplace(i, TArray<int32>());
+                    }
+                    VertexMap[i].push_back(Vertices.size() - 1);
+                }
 
-                // Normal이 없는 경우 생성한다
                 if (BaseLayer->GetNormals() == nullptr)
                 {
                     Mesh->InitNormals();
                     Mesh->GenerateNormals();
                 }
 
-                // UE에서 FbxStaticMeshImport.cpp 참조
-                // 
-                // Normal 정보 추출
                 fbxsdk::FbxGeometryElementNormal* LayerElementNormal = Mesh->GetElementNormal();
                 fbxsdk::FbxLayerElement::EMappingMode NormalMappingMode = LayerElementNormal->GetMappingMode();
                 fbxsdk::FbxLayerElement::EReferenceMode NormalReferenceMode = LayerElementNormal->GetReferenceMode();
@@ -164,72 +164,63 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
                     for (int32 CornerIndex = 0; CornerIndex < PolygonVertexCount; ++CornerIndex)
                     {
                         const int32 ControlPointIndex = Mesh->GetPolygonVertex(PolygonIndex, CornerIndex);
-                        int32 RealFbxVertexIndex = /*SkippedVertexInstance +*/ CurrentVertexInstanceIndex + CornerIndex;
-                        // 노멀은 탄젠트와 바이노멀과 다른 참조 및 매핑 모드를 가질 수 있습니다.
+                        int32 RealFbxVertexIndex = CurrentVertexInstanceIndex + CornerIndex;
+
                         int32 NormalMapIndex = (NormalMappingMode == FbxLayerElement::eByControlPoint) ?
                             ControlPointIndex : RealFbxVertexIndex;
                         int32 NormalValueIndex = (NormalReferenceMode == FbxLayerElement::eDirect) ?
                             NormalMapIndex : LayerElementNormal->GetIndexArray().GetAt(NormalMapIndex);
 
                         FbxVector4 TempValue = LayerElementNormal->GetDirectArray().GetAt(NormalValueIndex);
-                        Vertices[ControlPointIndex].Normal = FVector3D(TempValue[0], -TempValue[1], TempValue[2]);
+                        FVector3D Normal = FVector3D(TempValue[0], -TempValue[1], TempValue[2]);
+
+                        // 중복된 위치의 정점을 처리하여 각각의 노멀을 할당
+                        bool bFound = false;
+                        for (int32 VertexIndex : VertexMap[ControlPointIndex])
+                        {
+                            // 아직 Normal이 지정되지 않은 경우 및 Normal이 같은 경우에는 추가로 정점을 넣을 필요가 없다
+                            if (Vertices[VertexIndex].Normal == FVector3D::Zero ||
+                                Vertices[VertexIndex].Normal == Normal)
+                            {
+                                RealFbxVertexIndex = VertexIndex;
+                                bFound = true;
+                                break;
+                            }
+                        }
+
+                        if (!bFound)
+                        {
+                            FPositionNormal NewVertex = Vertices[ControlPointIndex];
+                            NewVertex.Normal = Normal;
+                            Vertices.push_back(NewVertex);
+                            RealFbxVertexIndex = Vertices.size() - 1;
+                            VertexMap[ControlPointIndex].push_back(RealFbxVertexIndex);
+                        }
+
+                        Vertices[RealFbxVertexIndex].Normal = Normal;
+
+                        Indices.push_back(RealFbxVertexIndex);
                     }
                     CurrentVertexInstanceIndex += PolygonVertexCount;
                 }
+            }
 
-			}
-
-			TArray<uint32> Indices;
-            // Indices 추출
-			{
-				// 삼각형의 갯수
-				for (int32 i = 0; i < PolygonCount; ++i)
-				{
-					const int32 PolygonSize = Mesh->GetPolygonSize(i);
-					if (PolygonSize == -1)
-					{
-						E_LOG(Error, TEXT("ExtractFbx PolygonSize Error! (-1)"));
-						bSuccessed = false;
-						break;
-					}
-					else if (PolygonSize != 3)
-					{
-						E_LOG(Warning, TEXT("ExtractFbx not supported PolygonSize: {}"), PolygonSize);
-						bSuccessed = false;
-						break;
-					}
-
-					for (int32 j = 0; j < PolygonSize; ++j) 
-					{
-						const int32 Index = Mesh->GetPolygonVertex(i, j);
-						if (Index == -1)
-						{
-							E_LOG(Error, TEXT("ExtractFbx Index Error! (-1)"));
-							bSuccessed = false;
-							break;
-						}
-						Indices.push_back(Index);
-					}
-				}
-			}
-
-			if (bSuccessed)
-			{
-				FMeshData& NewMeshData = OutMeshData.emplace_back();
-				NewMeshData.Name = FbxNodeName;
-				NewMeshData.Vertices = move(Vertices);
-				NewMeshData.Indices = move(Indices);
+            if (bSuccessed)
+            {
+                FMeshData& NewMeshData = OutMeshData.emplace_back();
+                NewMeshData.Name = FbxNodeName;
+                NewMeshData.Vertices = move(Vertices);
+                NewMeshData.Indices = move(Indices);
                 NewMeshData.NumPrimitives = PolygonCount;
-                // Material 생성
-				{
-					const int MaterialCount = Mesh->GetElementMaterialCount();
-				}
-			}
-		}
-	}
 
-	for (uint32 i = 0; i < InNode->GetChildCount(); ++i)
-	{
-		ExtractFbx(InNode->GetChild(i), OutMeshData);
-	}
+                const int MaterialCount = Mesh->GetElementMaterialCount();
+                // Material 생성 로직 추가 가능
+            }
+        }
+    }
+
+    for (uint32 i = 0; i < InNode->GetChildCount(); ++i)
+    {
+        ExtractFbx(InNode->GetChild(i), OutMeshData);
+    }
 }
