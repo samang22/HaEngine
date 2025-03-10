@@ -32,6 +32,8 @@ void ULocalPlayer::CalcSceneView(FSceneViewFamily* ViewFamily, FVector& OutViewL
         FPlane(0, 0, 0, 1));
 
     FVector ViewOrigin = OutViewLocation;// GetViewLocation();
+    ViewFamily->EyePosition = ViewOrigin;
+
     FMatrix ViewTranslationMatrix = FMatrix::CreateTranslation(-ViewOrigin);
 
     ViewFamily->ViewMatrix = ViewTranslationMatrix * ViewFamily->ViewRotationMatrix;

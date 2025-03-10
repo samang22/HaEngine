@@ -15,6 +15,7 @@ public class FrontendEngineProject : CommonProject
         SourceFilesExtensions.Add(".ini");
         SourceFilesExtensions.Add(".fbx");
         SourceFilesExtensions.Add(".hlsl");
+        SourceFilesExtensions.Add(".fxh");
         StripFastBuildSourceFiles = false;
 
         AddTargets(new EngineTarget(

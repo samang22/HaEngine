@@ -242,6 +242,7 @@ void UEditorViewportClient::CalcSceneView(FSceneViewFamily* ViewFamily)
     FMatrix ViewTranslationMatrix = FMatrix::CreateTranslation(-ViewOrigin);
 
     ViewFamily->ViewMatrix = ViewTranslationMatrix * ViewFamily->ViewRotationMatrix;
+    ViewFamily->EyePosition = ViewOrigin;
 
     constexpr float FOV = 90.0;
     constexpr float RadianFOV = DirectX::XMConvertToRadians(FOV);

@@ -57,8 +57,10 @@ public:
     /** 렌더링 중인 뷰 패밀리. 이 변수는 Views 배열을 참조합니다. */
     FViewFamilyInfo ViewFamily;
 
-    struct FSceneUniformBuffer
+    struct MS_ALIGN(SHADER_PARAMETER_STRUCT_ALIGNMENT) FSceneUniformBuffer
     {
+        FVector3D EyePosition;
+        float Padding;
         FMatrix ViewMatrix = FMatrix::Identity;
         FMatrix ProjectionMatrix = FMatrix::Identity;
         FMatrix ViewProjectionMatrix = FMatrix::Identity;

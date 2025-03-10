@@ -69,6 +69,7 @@ public:
     /** true인 경우 장면 렌더링 결과를 렌더 타겟에 복사/해결함. */
     uint32 bResolveScene : 1;
 
+    FVector3D EyePosition;
     Matrix ViewMatrix = Matrix::Identity;
     Matrix ViewRotationMatrix = Matrix::Identity;
     Matrix ProjectionMatrix = Matrix::Identity;

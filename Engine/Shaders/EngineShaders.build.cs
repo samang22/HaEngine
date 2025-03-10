@@ -12,6 +12,7 @@ public class EngineShaders : CommonProject
     public EngineShaders() 
     {
         SourceFilesExtensions.Add(".hlsl");
+        SourceFilesExtensions.Add(".fxh");
     }
 
     public override void ConfigureAll(Configuration conf, EngineTarget target)
@@ -22,6 +23,6 @@ public class EngineShaders : CommonProject
         conf.TargetPath += "/Shaders";
 
         conf.EventPreBuild.Clear();
-        conf.EventPreBuild.Add(@"(robocopy /s ""[project.SourceRootPath]"" " + @"""" + conf.TargetPath + @"""" + " *.hlsl /njh /njs /ndl /nc /ns) ^& IF %ERRORLEVEL% LEQ 3 exit 0");
+        conf.EventPreBuild.Add(@"(robocopy /s ""[project.SourceRootPath]"" " + @"""" + conf.TargetPath + @"""" + " *.hlsl *.fxh /njh /njs /ndl /nc /ns) ^& IF %ERRORLEVEL% LEQ 3 exit 0");
     }
 }

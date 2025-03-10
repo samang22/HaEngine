@@ -22,8 +22,9 @@ bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TObjectPtr<FS
 
     TRefCountPtr<ID3DBlob> Blob;
     TRefCountPtr<ID3DBlob> ErrorBlob;
-    HRESULT Hr = D3DCompileFromFile(InShaderType->ShaderFilePath.data(), nullptr, nullptr, InShaderType->FunctionName.data()
+    HRESULT Hr = D3DCompileFromFile(InShaderType->ShaderFilePath.data(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, InShaderType->FunctionName.data()
         , TargetName.data(), 0, 0, Blob.GetInitReference(), ErrorBlob.GetInitReference());
+
 
     if (FAILED(Hr))
     {

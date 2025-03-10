@@ -179,6 +179,7 @@ void FSceneRenderer::Render()
 			}
 
 			const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
+			SceneUniformBuffer.EyePosition = ViewFamily.EyePosition;
 			SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
 			SceneUniformBuffer.ProjectionMatrix = ViewFamily.ProjectionMatrix.Transpose();
 			SceneUniformBuffer.ViewProjectionMatrix = ViewFamily.ViewProjectionMatrix.Transpose();
