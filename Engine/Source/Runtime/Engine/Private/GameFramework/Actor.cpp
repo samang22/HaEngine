@@ -38,7 +38,7 @@ static USceneComponent* FixupNativeActorComponents(AActor* Actor)
 }
 
 
-AActor::AActor()
+AActor::AActor(const FObjectInitializer& ObjectInitializer)
 {
 
 }

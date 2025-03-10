@@ -21,7 +21,7 @@ class ENGINE_API AActor : public UObject
 {
 	GENERATED_BODY()
 public:
-	AActor();
+	AActor(const FObjectInitializer& ObjectInitializer);
 
 public:
 	/** bHasRegisteredAllComponents를 반환합니다. 이 값은 이 액터가 모든 컴포넌트를 등록했는지 여부를 나타냅니다.
