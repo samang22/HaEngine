@@ -87,13 +87,6 @@ float3 Specular_BRDF(in float alpha, in float3 specularColor, in float NdotV, in
     return specular_D * specular_F * specular_G;
 }
 
-// Diffuse irradiance
-// 확산 조도
-float3 Diffuse_IBL(in float3 N)
-{
-    return IrradianceTexture.Sample(IBLSampler, N);
-}
-
 float3 ACES_Tonemap(float3 color)
 {
     float a = 2.51;
@@ -103,6 +96,16 @@ float3 ACES_Tonemap(float3 color)
     float e = 0.14;
     return saturate((color * (a * color + b)) / (color * (c * color + d) + e));
 }
+
+// Diffuse irradiance
+// 확산 조도
+float3 Diffuse_IBL(in float3 N)
+{
+    return ACES_Tonemap(IrradianceTexture.Sample(IBLSampler, N));
+    //return IrradianceTexture.Sample(IBLSampler, N);
+}
+
+
 
 // 메탈릭이 높으면 이부분 영향이 커짐 (낮으면 Diffuse_IBL)
 // 러프니스가 높으면 더 낮은 밉맵의 CubeMapTexture를 Sample
