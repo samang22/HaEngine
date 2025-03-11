@@ -3,7 +3,8 @@
 CORE_API double FGenericPlatformTime::InitTiming()
 {
 	LARGE_INTEGER Frequency;
-	_ASSERT(QueryPerformanceFrequency(&Frequency));
+	bool bResult = QueryPerformanceFrequency(&Frequency);
+	_ASSERT(bResult);
 	SecondsPerCycle = 1.0 / (double)Frequency.QuadPart;
 	//SecondsPerCycle64 = 1.0 / (double)Frequency.QuadPart;
 
