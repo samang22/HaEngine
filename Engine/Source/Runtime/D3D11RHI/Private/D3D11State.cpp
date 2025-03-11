@@ -68,6 +68,36 @@ static D3D11_STENCIL_OP TranslateStencilOp(EStencilOp StencilOp)
     };
 }
 
+static D3D11_TEXTURE_ADDRESS_MODE TranslateAddressMode(ESamplerAddressMode AddressMode)
+{
+    switch (AddressMode)
+    {
+    case AM_Clamp: return D3D11_TEXTURE_ADDRESS_CLAMP;
+    case AM_Mirror: return D3D11_TEXTURE_ADDRESS_MIRROR;
+    case AM_Border: return D3D11_TEXTURE_ADDRESS_BORDER;
+    default: return D3D11_TEXTURE_ADDRESS_WRAP;
+    };
+}
+
+static D3D11_COMPARISON_FUNC TranslateSamplerCompareFunction(ESamplerCompareFunction SamplerComparisonFunction)
+{
+    switch (SamplerComparisonFunction)
+    {
+    case SCF_Less: return D3D11_COMPARISON_LESS;
+    case SCF_Never:
+    default: return D3D11_COMPARISON_NEVER;
+    };
+}
+
+inline uint32 ComputeAnisotropyRT(int32 InitializerMaxAnisotropy)
+{
+    //static const auto CVar = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.MaxAnisotropy"));
+    int32 CVarValue = 16;// CVar->GetValueOnAnyThread(); // this is sometimes called from main thread during initialization of static RHI states
+
+    return FMath::Clamp(InitializerMaxAnisotropy > 0 ? InitializerMaxAnisotropy : CVarValue, 1, 16);
+}
+
+
 FDepthStencilStateRHIRef FD3D11DynamicRHI::RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer)
 {
     FD3D11DepthStencilState* DepthStencilState = new FD3D11DepthStencilState;
@@ -112,4 +142,69 @@ FDepthStencilStateRHIRef FD3D11DynamicRHI::RHICreateDepthStencilState(const FDep
 
     VERIFYD3D11RESULT_EX(Direct3DDevice->CreateDepthStencilState(&DepthStencilDesc, DepthStencilState->Resource.GetInitReference()), Direct3DDevice);
     return DepthStencilState;
+}
+
+FSamplerStateRHIRef FD3D11DynamicRHI::RHICreateSamplerState(const FSamplerStateInitializerRHI& Initializer)
+{
+    D3D11_SAMPLER_DESC SamplerDesc = {};
+
+    SamplerDesc.AddressU = TranslateAddressMode(Initializer.AddressU);
+    SamplerDesc.AddressV = TranslateAddressMode(Initializer.AddressV);
+    SamplerDesc.AddressW = TranslateAddressMode(Initializer.AddressW);
+    SamplerDesc.MipLODBias = Initializer.MipBias;
+    SamplerDesc.MaxAnisotropy = ComputeAnisotropyRT(Initializer.MaxAnisotropy);
+    SamplerDesc.MinLOD = Initializer.MinMipLevel;
+    SamplerDesc.MaxLOD = Initializer.MaxMipLevel;
+
+    // Determine whether we should use one of the comparison modes
+    const bool bComparisonEnabled = Initializer.SamplerComparisonFunction != SCF_Never;
+    switch (Initializer.Filter)
+    {
+    case SF_AnisotropicLinear:
+    case SF_AnisotropicPoint:
+        if (SamplerDesc.MaxAnisotropy == 1)
+        {
+            SamplerDesc.Filter = bComparisonEnabled ? D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        }
+        else
+        {
+            // D3D11 doesn't allow using point filtering for mip filter when using anisotropic filtering
+            SamplerDesc.Filter = bComparisonEnabled ? D3D11_FILTER_COMPARISON_ANISOTROPIC : D3D11_FILTER_ANISOTROPIC;
+        }
+
+        break;
+    case SF_Trilinear:
+        SamplerDesc.Filter = bComparisonEnabled ? D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR : D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+        break;
+    case SF_Bilinear:
+        SamplerDesc.Filter = bComparisonEnabled ? D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT : D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+        break;
+    case SF_Point:
+        SamplerDesc.Filter = bComparisonEnabled ? D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT : D3D11_FILTER_MIN_MAG_MIP_POINT;
+        break;
+    }
+    const FLinearColor LinearBorderColor = FLinearColor(Initializer.BorderColor, Initializer.BorderColor, Initializer.BorderColor);
+    SamplerDesc.BorderColor[0] = LinearBorderColor.x;
+    SamplerDesc.BorderColor[1] = LinearBorderColor.y;
+    SamplerDesc.BorderColor[2] = LinearBorderColor.z;
+    SamplerDesc.BorderColor[3] = LinearBorderColor.w;
+    SamplerDesc.ComparisonFunc = TranslateSamplerCompareFunction(Initializer.SamplerComparisonFunction);
+
+    // D3D11 will return the same pointer if the particular state description was already created
+    TRefCountPtr<ID3D11SamplerState> SamplerStateHandle;
+    VERIFYD3D11RESULT_EX(Direct3DDevice->CreateSamplerState(&SamplerDesc, SamplerStateHandle.GetInitReference()), Direct3DDevice);
+
+    //FScopeLock Lock(&GSamplerStateCacheCS);
+    /*auto Found = GSamplerStateCache.find(SamplerStateHandle);
+    if (Found != GSamplerStateCache.end())
+    {
+        return Found->second;
+    }*/
+
+    FD3D11SamplerState* SamplerState = new FD3D11SamplerState;
+    SamplerState->Resource = SamplerStateHandle;
+    // Manually add reference as we control the creation/destructions
+    //SamplerState->AddRef();
+    //GSamplerStateCache.emplace(SamplerStateHandle.GetReference(), SamplerState);
+    return SamplerState;
 }

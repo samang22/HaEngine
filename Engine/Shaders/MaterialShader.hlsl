@@ -1,28 +1,5 @@
 #include "PBRCommon.fxh"
 
-cbuffer FObjectUniformBuffer : register(b0)
-{
-    matrix WorldMatrix;
-    matrix WorldInverseTransposeMatrix;
-};
-
-cbuffer FSceneUniformBuffer : register(b1)
-{
-    float3 EyePosition;
-    float FSceneUniformBuffer_Padding;
-    matrix ViewMatrix;
-    matrix ProjectionMatrix;
-    matrix ViewProjectionMatrix;
-}
-
-cbuffer FLightShaderParameters : register(b2)
-{
-    float4 LightColor;
-    float3 LightDirection;
-    float FLightShaderParameters_Padding;
-}
-
-
 struct FVSOutput
 {
     float4 SVPosition : SV_Position;
@@ -69,8 +46,8 @@ float4 PS(FVSOutput Input) : SV_Target0
     
     // BaseColor
     float3 ConstantAlbedo = float3(1.f, 1.f, 1.f);
-    float ConstantRoughness = 0.05f; // 0이면 내부 결과가 0으로 처리되기 떄문에 약간 큰 값
-    float ConstantMetallic = 0.7f;
+    float ConstantRoughness = 0.8f;
+    float ConstantMetallic = 0.f;
     
     const float3 Color = LightSurface(V, N, LightColor.xyz, LightDirection, ConstantAlbedo, ConstantRoughness, ConstantMetallic, AO);
 

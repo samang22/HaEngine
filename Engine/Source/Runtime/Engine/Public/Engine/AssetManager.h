@@ -14,13 +14,13 @@ public:
 
 public:
     template<typename T>
-    TEnginePtr<T> LoadAsset(const FString& InFilePath)
+    TEnginePtr<T> LoadAsset(const FString& InFilePath, const TCHAR* Params = nullptr)
     {
-        return Cast<T>(LoadAsset(typeid(T), InFilePath));
+        return Cast<T>(LoadAsset(typeid(T), InFilePath, Params));
     }
 
 protected:
-    TEnginePtr<UObject> LoadAsset(const type_info& InAssetType, const FString& InFilePath);
+    TEnginePtr<UObject> LoadAsset(const type_info& InAssetType, const FString& InFilePath, const TCHAR* Params);
     // void UnloadAsset();
 
 protected:

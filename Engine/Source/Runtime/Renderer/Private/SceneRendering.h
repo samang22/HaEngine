@@ -60,7 +60,7 @@ public:
     struct MS_ALIGN(SHADER_PARAMETER_STRUCT_ALIGNMENT) FSceneUniformBuffer
     {
         FVector3D EyePosition;
-        float Padding;
+        int NumRadianceMipLevels;
         FMatrix ViewMatrix = FMatrix::Identity;
         FMatrix ProjectionMatrix = FMatrix::Identity;
         FMatrix ViewProjectionMatrix = FMatrix::Identity;

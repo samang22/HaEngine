@@ -1,3 +1,32 @@
+
+cbuffer FObjectUniformBuffer : register(b0)
+{
+    matrix WorldMatrix;
+    matrix WorldInverseTransposeMatrix;
+};
+
+cbuffer FSceneUniformBuffer : register(b1)
+{
+    float3 EyePosition;
+    int NumRadianceMipLevels;
+    matrix ViewMatrix;
+    matrix ProjectionMatrix;
+    matrix ViewProjectionMatrix;
+}
+
+cbuffer FLightShaderParameters : register(b2)
+{
+    float4 LightColor;
+    float3 LightDirection;
+    float FLightShaderParameters_Padding;
+}
+
+TextureCube<float3> RadianceTexture : register(t4);
+TextureCube<float3> IrradianceTexture : register(t5);
+
+sampler IBLSampler : register(s1);
+
+
 static const float PI = 3.14159265f;
 static const float EPSILON = 1e-6f;
 
@@ -62,8 +91,17 @@ float3 Specular_BRDF(in float alpha, in float3 specularColor, in float NdotV, in
 // 확산 조도
 float3 Diffuse_IBL(in float3 N)
 {
-    //return IrradianceTexture.Sample(IBLSampler, N);
-    return float3(0.2f, 0.2f, 0.2f);
+    return IrradianceTexture.Sample(IBLSampler, N);
+}
+
+float3 ACES_Tonemap(float3 color)
+{
+    float a = 2.51;
+    float b = 0.03;
+    float c = 2.43;
+    float d = 0.59;
+    float e = 0.14;
+    return saturate((color * (a * color + b)) / (color * (c * color + d) + e));
 }
 
 // 메탈릭이 높으면 이부분 영향이 커짐 (낮으면 Diffuse_IBL)
@@ -74,10 +112,34 @@ float3 Diffuse_IBL(in float3 N)
 // 그런 다음 프레넬 항으로 변조합니다.
 float3 Specular_IBL(in float3 N, in float3 V, in float lodBias)
 {
-    //float mip = lodBias * NumRadianceMipLevels;
-    //float3 dir = reflect(-V, N);
-    //return RadianceTexture.SampleLevel(IBLSampler, dir, mip);
-    return float3(0.2f, 0.2f, 0.2f);
+    float mip = lodBias * NumRadianceMipLevels;
+    float3 Dir = reflect(-V, N);
+    // 언리얼 스타일로 View를 돌려둔걸 고려해서 DirectX 기준으로 돌려준다
+    // 샘플 이미지가 DirectX축 기준으로 고려되어 있음
+    // Origin
+    // FPlane(0, 0, 1, 0),
+    // FPlane(1, 0, 0, 0),
+    // FPlane(0, 1, 0, 0),
+    
+    // Inverse
+    // FPlane(0, 1, 0, 0),
+    // FPlane(0, 0, 1, 0),
+    // FPlane(1, 0, 0, 0),
+    
+    // Transpose
+    // FPlane(0, 0, 1, 0),
+    // FPlane(1, 0, 0, 0),
+    // FPlane(0, 1, 0, 0),
+    
+    float3x3 RotationMatrix = float3x3(
+        0, 0, 1,
+        1, 0, 0,
+        0, 1, 0
+    );
+    Dir = mul(Dir, RotationMatrix);
+    
+    float3 Color = RadianceTexture.SampleLevel(IBLSampler, Dir, mip);
+    return ACES_Tonemap(Color);
 }
 
 // Disney 스타일의 물리 기반 렌더링을 표면에 적용하기:
@@ -97,6 +159,7 @@ float3 LightSurface(
 
     const float NdotV = saturate(dot(N, V));
 
+    roughness = max(roughness, 0.0001f);
     // Burley 러프니스 바이어스
     const float alpha = roughness * roughness;
 

@@ -2,11 +2,14 @@
 
 #include "Templates/RefCounting.h"
 
+struct FSamplerStateInitializerRHI; 
 struct FRasterizerStateInitializerRHI;
 struct FDepthStencilStateInitializerRHI;
 
+class FRHISamplerState;
 class FRHIRasterizerState;
 class FRHIDepthStencilState;
+
 class FRHITexture;
 class FRHIPixelShader;
 class FRHIVertexShader;
@@ -16,8 +19,10 @@ class FRHIVertexDeclaration;
 class FRHIBoundShaderState;
 class FRHIBuffer;
 
+using FSamplerStateRHIRef = TRefCountPtr<FRHISamplerState>; 
 using FRasterizerStateRHIRef = TRefCountPtr<FRHIRasterizerState>;
 using FDepthStencilStateRHIRef = TRefCountPtr<FRHIDepthStencilState>;
+
 using FTextureRHIRef = TRefCountPtr<FRHITexture>;
 using FPixelShaderRHIRef = TRefCountPtr<FRHIPixelShader>;
 using FVertexShaderRHIRef = TRefCountPtr<FRHIVertexShader>;

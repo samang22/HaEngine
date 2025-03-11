@@ -40,8 +40,10 @@ public:
 	virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) = 0;
 
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader) = 0;
-	virtual FTextureRHIRef RHICreateTexture(FRHICommandList& RHICmdList, const FRHITextureCreateDesc& CreateDesc) = 0;
+	virtual FTextureRHIRef RHICreateTexture(const FRHITextureCreateDesc& CreateDesc) = 0;
+	virtual FTextureRHIRef RHICreateTexture(const FString& InFilePath) = 0;
 
+	virtual FSamplerStateRHIRef RHICreateSamplerState(const FSamplerStateInitializerRHI& Initializer) = 0;
 	virtual FDepthStencilStateRHIRef RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer) = 0;
 	virtual FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer) = 0;
 };
@@ -73,12 +75,11 @@ public:
 */
 FDynamicRHI* PlatformCreateDynamicRHI();
 
-
-
 FORCEINLINE class IRHICommandContext* RHIGetDefaultContext()
 {
 	return GDynamicRHI->RHIGetDefaultContext();
 }
 
+FSamplerStateRHIRef RHI_API RHICreateSamplerState(const FSamplerStateInitializerRHI& Initializer);
 FRasterizerStateRHIRef RHI_API RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer);
 FDepthStencilStateRHIRef RHI_API RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer);

@@ -1997,6 +1997,17 @@ protected:
 	FConstantBufferInfo Layout;
 };
 
+//
+// State blocks
+//
+class FRHISamplerState : public FRHIResource
+{
+public:
+	FRHISamplerState() : FRHIResource(RRT_SamplerState) {}
+	virtual bool IsImmutable() const { return false; }
+	//virtual FRHIDescriptorHandle GetBindlessHandle() const { return FRHIDescriptorHandle(); }
+};
+
 class FRHIRasterizerState : public FRHIResource
 {
 public:

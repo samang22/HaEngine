@@ -135,6 +135,7 @@ void FSceneRenderer::Render()
 		TShaderMapRef<FMaterialVS> MaterialVS;
 		TShaderMapRef<FMaterialPS> MaterialPS; 
 		
+		// Light
 		{
 			const FConstantBufferInfo& ConstantBufferInfo = MaterialPS->GetConstantBufferInfo(TEXT("FLightShaderParameters"));
 			FLightShaderParameters DirectionalLightShaderParameters;
@@ -159,9 +160,18 @@ void FSceneRenderer::Render()
 			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, LightUniformBufferRHI);
 		}
 
-		//GetCommandList().BeginRenderPass(
-			//[this, MeshDrawCommands = move(MeshDrawCommands)]()
+		// MeshDrawCommand
 		{
+			FTextureRHIRef DiffuseIBL = GetCommandList().CreateTexture(FPaths::ContentDir() + L"/Texture/SunSubMixer_diffuseIBL.dds");
+			FTextureRHIRef SpecularIBL = GetCommandList().CreateTexture(FPaths::ContentDir() + L"/Texture/SunSubMixer_specularIBL.dds");
+			
+			FRHISamplerState* SamplerState = TStaticSamplerState<SF_Trilinear, AM_Wrap, AM_Wrap, AM_Wrap, 0, 16>::GetRHI();
+			TArray<FRHIShaderParameterResource> Parameters;
+			Parameters.emplace_back(SamplerState, 1);
+			Parameters.emplace_back(SpecularIBL, 4);
+			Parameters.emplace_back(DiffuseIBL, 5);
+			GetCommandList().SetShaderParameters(MaterialPS.GetPixelShader(), Parameters);
+
 			for (FPrimitiveSceneProxy* Proxy : Scene->PrimitiveSceneProxies)
 			{
 				UPrimitiveComponent* PrimitiveComponent = Proxy->GetPrimitiveComponent();
@@ -178,60 +188,63 @@ void FSceneRenderer::Render()
 				}
 			}
 
-			const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
-			SceneUniformBuffer.EyePosition = ViewFamily.EyePosition;
-			SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
-			SceneUniformBuffer.ProjectionMatrix = ViewFamily.ProjectionMatrix.Transpose();
-			SceneUniformBuffer.ViewProjectionMatrix = ViewFamily.ViewProjectionMatrix.Transpose();
-			SceneUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
-			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
-			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, SceneUniformBufferRHI);
-
-			for (const FStaticMeshDrawCommand& StaticMeshDrawCommand : MeshDrawCommands)
 			{
-				int Index = 0;
-				StaticMeshDrawCommand.OverrideMaterials;
-				for (FStaticMeshRenderData& RenderData : StaticMeshDrawCommand.RenderDatas)
+				const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
+				SceneUniformBuffer.NumRadianceMipLevels = SpecularIBL->GetDesc().NumMips;
+				SceneUniformBuffer.EyePosition = ViewFamily.EyePosition;
+				SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
+				SceneUniformBuffer.ProjectionMatrix = ViewFamily.ProjectionMatrix.Transpose();
+				SceneUniformBuffer.ViewProjectionMatrix = ViewFamily.ViewProjectionMatrix.Transpose();
+				SceneUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
+				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
+				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, SceneUniformBufferRHI);
+
+				for (const FStaticMeshDrawCommand& StaticMeshDrawCommand : MeshDrawCommands)
 				{
-					UMaterial* Material = RenderData.Material.get();
-					if (StaticMeshDrawCommand.OverrideMaterials[Index])
+					int Index = 0;
+					StaticMeshDrawCommand.OverrideMaterials;
+					for (FStaticMeshRenderData& RenderData : StaticMeshDrawCommand.RenderDatas)
 					{
-						Material = StaticMeshDrawCommand.OverrideMaterials[Index].get();
+						UMaterial* Material = RenderData.Material.get();
+						if (StaticMeshDrawCommand.OverrideMaterials[Index])
+						{
+							Material = StaticMeshDrawCommand.OverrideMaterials[Index].get();
+						}
+
+						GetCommandList().SetBoundShaderState(
+							GDynamicRHI->RHICreateBoundShaderState(
+								RenderData.VertexFactory.GetDeclaration(),
+								Material->GetVertexShaderRHI(),
+								Material->GetPixelShaderRHI()
+							).GetReference()
+						);
+
+						FObjectUniformBuffer ObjectUniformBuffer;
+						ObjectUniformBuffer.WorldMatrix = StaticMeshDrawCommand.Proxy->GetTransform();
+						RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
+						GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+
+						// [깊이 반전(근평면 1.f)] 임시로 여기서 일괄 처리
+						//{
+						//    // 반전된 깊이 스텐실 상태 설정
+						//    D3D11_DEPTH_STENCIL_DESC invertedDepthStencilDesc;
+						//    ZeroMemory(&invertedDepthStencilDesc, sizeof(invertedDepthStencilDesc));
+						//    invertedDepthStencilDesc.DepthEnable = TRUE;
+						//    invertedDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+						//    invertedDepthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; // 반전된 깊이 비교 함수
+
+						//    TRefCountPtr<ID3D11DepthStencilState> invertedDepthStencilState;
+						//    Direct3DDevice->CreateDepthStencilState(&invertedDepthStencilDesc, invertedDepthStencilState.GetInitReference());
+						//    Direct3DDeviceIMContext->OMSetDepthStencilState(invertedDepthStencilState, 1);
+						//}
+
+						GetCommandList().SetRasterizerState(Material->GetRasterizerState());
+						GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);
+						GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.GetIndexBufferRHI(), 0, 0,
+							RenderData.NumVertices, 0, RenderData.NumPrimitives, 1);
+
+						++Index;
 					}
-
-					GetCommandList().SetBoundShaderState(
-						GDynamicRHI->RHICreateBoundShaderState(
-							RenderData.VertexFactory.GetDeclaration(),
-							Material->GetVertexShaderRHI(),
-							Material->GetPixelShaderRHI()
-						).GetReference()
-					);
-
-					FObjectUniformBuffer ObjectUniformBuffer;
-					ObjectUniformBuffer.WorldMatrix = StaticMeshDrawCommand.Proxy->GetTransform();
-					RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
-					GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-
-					// [깊이 반전(근평면 1.f)] 임시로 여기서 일괄 처리
-					//{
-					//    // 반전된 깊이 스텐실 상태 설정
-					//    D3D11_DEPTH_STENCIL_DESC invertedDepthStencilDesc;
-					//    ZeroMemory(&invertedDepthStencilDesc, sizeof(invertedDepthStencilDesc));
-					//    invertedDepthStencilDesc.DepthEnable = TRUE;
-					//    invertedDepthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-					//    invertedDepthStencilDesc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL; // 반전된 깊이 비교 함수
-
-					//    TRefCountPtr<ID3D11DepthStencilState> invertedDepthStencilState;
-					//    Direct3DDevice->CreateDepthStencilState(&invertedDepthStencilDesc, invertedDepthStencilState.GetInitReference());
-					//    Direct3DDeviceIMContext->OMSetDepthStencilState(invertedDepthStencilState, 1);
-					//}
-
-					GetCommandList().SetRasterizerState(Material->GetRasterizerState());
-					GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);
-					GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.GetIndexBufferRHI(), 0, 0,
-						RenderData.NumVertices, 0, RenderData.NumPrimitives, 1);
-
-					++Index;
 				}
 			}
 		}

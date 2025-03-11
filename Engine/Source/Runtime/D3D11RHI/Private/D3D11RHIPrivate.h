@@ -9,7 +9,9 @@
 #include "D3D11StateCache.h"
 #include "D3D11Resources.h"
 #include "D3D11Viewport.h"
+
 #include "RHIContext.h"
+#include "RHIShaderParameters.h"
 
 // DX11 doesn't support higher MSAA count
 #define DX_MAX_MSAA_COUNT 8
@@ -116,6 +118,21 @@ public:
         return Result;
     }
 
+    template<EShaderFrequency ShaderFrequency>
+    void SetShaderParametersCommon(/*FD3D11ConstantBuffer* StageConstantBuffer, TConstArrayView<uint8> InParametersData, TConstArrayView<FRHIShaderParameter> InParameters,*/
+        const TArray<FRHIShaderParameterResource>& InResourceParameters);
+
+    template <EShaderFrequency ShaderFrequency>
+    void SetShaderResourceView(FD3D11ViewableResource* Resource, ID3D11ShaderResourceView* SRV, int32 ResourceIndex)
+    {
+        InternalSetShaderResourceView<ShaderFrequency>(Resource, SRV, ResourceIndex);
+    }
+
+private:
+    template <EShaderFrequency ShaderFrequency>
+    void InternalSetShaderResourceView(FD3D11ViewableResource* Resource, ID3D11ShaderResourceView* SRV, int32 ResourceIndex);
+
+
 public:
     virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader);
 
@@ -135,7 +152,8 @@ public:
     virtual void RHIUpdateUniformBuffer(FRHIUniformBuffer* UniformBufferRHI, const void* Contents, const uint32 ContentsSize) final override;
     virtual void RHISetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer) final override;
 
-    virtual FTextureRHIRef RHICreateTexture(FRHICommandList& RHICmdList, const FRHITextureCreateDesc& CreateDesc) final override;
+    virtual FTextureRHIRef RHICreateTexture(const FRHITextureCreateDesc& CreateDesc) final override;
+    virtual FTextureRHIRef RHICreateTexture(const FString& InFilePath) final override;
 
     virtual void RHISetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ) override;
     virtual void RHISetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY) final override;
@@ -148,6 +166,7 @@ public:
     virtual void RHIDrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances) final override;
     virtual void RHIDrawIndexedPrimitive(FRHIBuffer* IndexBufferRHI, int32 BaseVertexIndex, uint32 FirstInstance, uint32 NumVertices, uint32 StartIndex, uint32 NumPrimitives, uint32 NumInstances) final override;
 
+    virtual FSamplerStateRHIRef RHICreateSamplerState(const FSamplerStateInitializerRHI& Initializer) final override;
     virtual FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer) final override;
     virtual FDepthStencilStateRHIRef RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer) final override; 
     virtual void RHISetRasterizerState(FRHIRasterizerState* NewState) final override;
@@ -157,6 +176,8 @@ public:
     virtual void RHIEndRenderPass() final override;
 
     virtual void RHICopyTexture(FRHITexture* SourceTextureRHI, FRHITexture* DestTextureRHI, const FRHICopyTextureInfo& CopyInfo) final override;
+
+    virtual void RHISetShaderParameters(FRHIGraphicsShader* Shader, TArray<FRHIShaderParameterResource>& InResourceParameters) final override;
 
 public:
     void SetRenderTargets(uint32 NumSimultaneousRenderTargets, const FRHIRenderTargetView* NewRenderTargets, const FRHIDepthRenderTargetView* NewDepthStencilTarget);
@@ -184,6 +205,8 @@ public:
     virtual void Init() override;
     virtual void Shutdown() override;
 
+public:
+    void ClearState();
     //void ConditionalClearShaderResource(FD3D11ViewableResource* Resource, bool bCheckBoundInputAssembler);
     void ClearAllShaderResources();
 
@@ -193,9 +216,6 @@ public:
 protected:
     FD3D11Texture* CreateD3D11Texture2D(const FRHITextureCreateDesc& CreateDesc, TArray<D3D11_SUBRESOURCE_DATA> InitialData = {});
     void ValidateExclusiveDepthStencilAccess(FExclusiveDepthStencil Src) const;
-
-public:
-    void ClearState();
 
 private:
     void TrackResourceBoundAsVB(FD3D11ViewableResource* Resource, int32 StreamIndex);
@@ -221,14 +241,14 @@ protected:
 
     TRefCountPtr<ID3D11DepthStencilView> CurrentDepthStencilTarget;
     TRefCountPtr<FD3D11Texture> CurrentDepthTexture;
-    FD3D11ViewableResource* CurrentResourcesBoundAsSRVs[SF_NumStandardFrequencies][D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT];
-    FD3D11ViewableResource* CurrentResourcesBoundAsVBs[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
-    FD3D11ViewableResource* CurrentResourceBoundAsIB;
-    //int32 MaxBoundShaderResourcesIndex[SF_NumStandardFrequencies];
-    int32 MaxBoundVertexBufferIndex;
-    uint32 NumSimultaneousRenderTargets;
-    uint32 CurrentRTVOverlapMask;
-    uint32 CurrentUAVMask;
+    FD3D11ViewableResource* CurrentResourcesBoundAsSRVs[SF_NumStandardFrequencies][D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
+    FD3D11ViewableResource* CurrentResourcesBoundAsVBs[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT] = {};
+    FD3D11ViewableResource* CurrentResourceBoundAsIB = nullptr;
+    int32 MaxBoundShaderResourcesIndex[SF_NumStandardFrequencies] = {};
+    int32 MaxBoundVertexBufferIndex = -1;
+    uint32 NumSimultaneousRenderTargets = 0;
+    uint32 CurrentRTVOverlapMask = 0;
+    uint32 CurrentUAVMask = 0;
 
     /** 현재 깊이 스텐실 접근 유형을 추적합니다. */
     FExclusiveDepthStencil CurrentDSVAccessType;

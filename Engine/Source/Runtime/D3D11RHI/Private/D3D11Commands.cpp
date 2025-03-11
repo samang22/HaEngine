@@ -1,4 +1,6 @@
 #include "D3D11RHIPrivate.h"
+#include "D3D11Viewport.h"
+#include <DirectXTex.h>
 
 IRHICommandContext* FD3D11DynamicRHI::RHIGetDefaultContext()
 {
@@ -377,7 +379,7 @@ void FD3D11DynamicRHI::RHISetScissorRect(bool bEnable, uint32 MinX, uint32 MinY,
 
 unordered_map<FString, FTextureRHIRef> Textures;
 
-FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(FRHICommandList& RHICmdList, const FRHITextureCreateDesc& CreateDesc)
+FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(const FRHITextureCreateDesc& CreateDesc)
 {
     const FString TextureName = CreateDesc.DebugName;
     if (!TextureName.empty())
@@ -415,6 +417,71 @@ FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(FRHICommandList& RHICmdList, c
 
     return NewTexture;
 }
+
+FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(const FString& InFilePath)
+{
+    if (Textures.contains(InFilePath))
+    {
+        return Textures[InFilePath];
+    }
+
+    DirectX::ScratchImage Image;
+    HRESULT Hr = DirectX::LoadFromDDSFile(InFilePath.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, Image);
+    if (FAILED(Hr))
+    {
+        E_LOG(Error, TEXT("Failed to Load From DDS File: {}"), InFilePath);
+        return FTextureRHIRef();
+    }
+
+    class FCubeTextureBulkData : public FResourceBulkDataInterface
+    {
+    public:
+        FCubeTextureBulkData(DirectX::ScratchImage& InImage)
+            : ImageBulkData(InImage.GetPixels()), Size(InImage.GetPixelsSize()) { }
+        /**
+         * @return 미리 할당된 리소스 메모리에 대한 포인터를 반환합니다.
+         */
+        virtual const void* GetResourceBulkData() const
+        {
+            return ImageBulkData;
+        }
+
+        /**
+         * @return 리소스 메모리의 크기를 반환합니다.
+         */
+        virtual uint32 GetResourceBulkDataSize() const
+        {
+            return Size;
+        }
+
+        /**
+         * RHI 리소스를 초기화한 후 메모리를 해제합니다.
+         */
+        virtual void Discard()
+        {
+            ImageBulkData = nullptr;
+            Size = 0;
+        }
+
+    private:
+        uint8* ImageBulkData = nullptr;
+        uint32 Size = 0;
+    };
+
+    FCubeTextureBulkData BulkData(Image);
+
+    const DirectX::TexMetadata& Meta = Image.GetMetadata();
+    const FRHITextureCreateDesc Desc =
+        FRHITextureCreateDesc::CreateCube(InFilePath.data())
+        .SetExtent(Meta.width, Meta.height)
+        .SetFormat(GPixelFormats[Meta.format].UnrealFormat)
+        .SetNumMips(Meta.mipLevels)
+        .SetBulkData(&BulkData);
+
+    FTextureRHIRef NewTexture = RHICreateTexture(Desc);
+    return NewTexture;
+}
+
 
 struct FRTVDesc
 {
@@ -599,5 +666,68 @@ void FD3D11DynamicRHI::SetRenderTargets(
         D3D11_TEXTURE2D_DESC DTTDesc;
         DepthTargetTexture->GetDesc(&DTTDesc);
         RHISetViewport(0.0f, 0.0f, 0.0f, (float)DTTDesc.Width, (float)DTTDesc.Height, 1.0f);
+    }
+}
+
+template<EShaderFrequency ShaderFrequency>
+void FD3D11DynamicRHI::SetShaderParametersCommon(const TArray<FRHIShaderParameterResource>& InResourceParameters)
+{
+    for (const FRHIShaderParameterResource& Parameter : InResourceParameters)
+    {
+        switch (Parameter.Type)
+        {
+        case FRHIShaderParameterResource::EType::Texture:
+        {
+            FD3D11Texture* D3D11Texture = FD3D11DynamicRHI::ResourceCast(static_cast<FRHITexture*>(Parameter.Resource));
+            ID3D11ShaderResourceView* ShaderResourceView = D3D11Texture ? D3D11Texture->GetShaderResourceView() : nullptr;
+            uint8 Index = Parameter.Index;
+            ////Binder.SetTexture(static_cast<FRHITexture*>(Parameter.Resource), Parameter.Index);
+            SetShaderResourceView<ShaderFrequency>(
+                D3D11Texture,
+                ShaderResourceView,
+                Index
+            );
+            break;
+        }
+        //case FRHIShaderParameterResource::EType::ResourceView:
+        //	//Binder.SetSRV(static_cast<FRHIShaderResourceView*>(Parameter.Resource), Parameter.Index);
+        //	break;
+        /*case FRHIShaderParameterResource::EType::UnorderedAccessView:
+            break;*/
+        case FRHIShaderParameterResource::EType::Sampler:
+        {
+            ID3D11SamplerState* Sampler = FD3D11DynamicRHI::ResourceCast(static_cast<FRHISamplerState*>(Parameter.Resource))->Resource;
+            StateCache.SetSamplerState<ShaderFrequency>(Sampler, Parameter.Index);
+            //Binder.SetSampler(static_cast<FRHISamplerState*>(Parameter.Resource), Parameter.Index);
+            break;
+        }
+        //case FRHIShaderParameterResource::EType::UniformBuffer:
+        //	//BindUniformBuffer<ShaderFrequency>(Parameter.Index, static_cast<FRHIUniformBuffer*>(Parameter.Resource));
+        //	break;
+        default:
+            _ASSERT(false, TEXT("Unhandled resource type?"));
+            break;
+        }
+    }
+}
+
+void FD3D11DynamicRHI::RHISetShaderParameters(FRHIGraphicsShader* Shader, TArray<FRHIShaderParameterResource>& InResourceParameters)
+{
+    switch (Shader->GetFrequency())
+    {
+    case SF_Vertex:
+        //VALIDATE_BOUND_SHADER(static_cast<FRHIVertexShader*>(Shader));
+        SetShaderParametersCommon<SF_Vertex>(InResourceParameters);
+        break;
+        //case SF_Geometry:
+        //    //VALIDATE_BOUND_SHADER(static_cast<FRHIGeometryShader*>(Shader));
+        //    //SetShaderParametersCommon<SF_Geometry>(nullptr/*GSConstantBuffer*/, InParametersData, InParameters, InResourceParameters);
+        //    break;
+    case SF_Pixel:
+        //VALIDATE_BOUND_SHADER(static_cast<FRHIPixelShader*>(Shader));
+        SetShaderParametersCommon<SF_Pixel>(InResourceParameters);
+        break;
+    default:
+        _ASSERT(0, TEXT("Undefined FRHIGraphicsShader Type %d!"), (int32)Shader->GetFrequency());
     }
 }

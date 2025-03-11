@@ -8,15 +8,13 @@
 AStaticMeshActor::AStaticMeshActor()
 {
 	TEnginePtr<UStaticMesh> StaticMesh =
-		FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Cube.FBX");
-
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Cone.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Cylinder.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Plane.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/SK_SMG11_X.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/SK_KA47_X.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Sphere.FBX");
-	
+		FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Cube.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Cone.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Cylinder.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Plane.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/SK_SMG11_X.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/SK_KA47_X.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Sphere.FBX");
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	StaticMeshComponent->SetStaticMesh(StaticMesh);
 	StaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -200.f));

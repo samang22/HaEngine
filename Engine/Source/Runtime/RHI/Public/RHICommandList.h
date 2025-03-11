@@ -5,6 +5,7 @@
 #include "RHIContext.h"
 #include "RHIAccess.h"
 #include "RHIResources.h"
+#include "RHIShaderParameters.h"
 
 /** 주어진 텍스처 생성 플래그에 대한 최적의 기본 리소스 상태를 가져옵니다 */
 extern RHI_API ERHIAccess RHIGetDefaultResourceState(ETextureCreateFlags InUsage, bool bInHasInitialData);
@@ -116,9 +117,14 @@ public:
             FRHITextureCreateDesc NewCreateDesc(CreateDesc);
             NewCreateDesc.SetInitialState(RHIGetDefaultResourceState(CreateDesc.Flags, CreateDesc.BulkData != nullptr));
 
-            return GDynamicRHI->RHICreateTexture(*this, NewCreateDesc);
+            return GDynamicRHI->RHICreateTexture(NewCreateDesc);
         }
-        return GDynamicRHI->RHICreateTexture(*this, CreateDesc);
+        return GDynamicRHI->RHICreateTexture(CreateDesc);
+    }
+
+    FORCEINLINE FTextureRHIRef CreateTexture(const FString& InFilePath)
+    {
+        return GDynamicRHI->RHICreateTexture(InFilePath);
     }
 
     FORCEINLINE void BeginRenderPass(const FRHIRenderPassInfo& InInfo, const TCHAR* Name)
@@ -168,6 +174,14 @@ public:
     //    }
     //    RenderCmds.clear();
     //}
+
+    RHI_API void SetShaderParameters(
+        FRHIGraphicsShader* InShader
+        /*, TArray<uint8>& InParametersData
+        , TArray<FRHIShaderParameter>& InParameters*/
+        , TArray<FRHIShaderParameterResource>& InResourceParameters
+        /*, TArray<FRHIShaderParameterResource> InBindlessParameters*/
+    );
 
 protected:
     void CacheActiveRenderTargets(const FRHIRenderPassInfo& Info)

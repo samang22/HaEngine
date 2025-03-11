@@ -244,7 +244,8 @@ FD3D11Texture* FD3D11DynamicRHI::CreateD3D11Texture2D(const FRHITextureCreateDes
     if (bCubeTexture)
     {
         // 아직 큐브 텍스처는 지원되지 않음
-        _ASSERT(false);
+        _ASSERT(SizeX <= GetMaxCubeTextureDimension(), TEXT("Requested cube texture size too large: %i, Max: %i, DebugName: '%s'"), SizeX, GetMaxCubeTextureDimension(), CreateDesc.DebugName ? CreateDesc.DebugName : TEXT(""));
+        _ASSERT(SizeX == SizeY);
     }
     else
     {

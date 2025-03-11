@@ -7,7 +7,10 @@ class FRHIBuffer;
 class FRHIUniformBuffer;
 class FRHIRasterizerState;
 class FRHIDepthStencilState;
+class FRHIGraphicsShader;
+
 struct FRHIRenderPassInfo;
+struct FRHIShaderParameterResource;
 
 struct FRHICopyTextureInfo
 {
@@ -79,4 +82,6 @@ public:
     virtual void RHIEndRenderPass() = 0;
 
     virtual void RHICopyTexture(FRHITexture* SourceTextureRHI, FRHITexture* DestTextureRHI, const FRHICopyTextureInfo& CopyInfo) = 0;
+
+    virtual void RHISetShaderParameters(FRHIGraphicsShader* Shader, TArray<FRHIShaderParameterResource>& InResourceParameters) = 0;
 };

@@ -12,10 +12,17 @@ public class FrontendEngineProject : CommonProject
     {
         Name = "HE";
 
+        // Config
         SourceFilesExtensions.Add(".ini");
-        SourceFilesExtensions.Add(".fbx");
+
+        // Shaders
         SourceFilesExtensions.Add(".hlsl");
         SourceFilesExtensions.Add(".fxh");
+
+        // Contents
+        SourceFilesExtensions.Add(".fbx");
+        SourceFilesExtensions.Add(".dds");
+
         StripFastBuildSourceFiles = false;
 
         AddTargets(new EngineTarget(

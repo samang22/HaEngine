@@ -56,6 +56,53 @@ struct FVertexElement
 	//RHI_API void FromString(const FStringView& Src);
 };
 
+
+struct FSamplerStateInitializerRHI
+{
+	FSamplerStateInitializerRHI() {}
+	FSamplerStateInitializerRHI(
+		ESamplerFilter InFilter,
+		ESamplerAddressMode InAddressU = AM_Wrap,
+		ESamplerAddressMode InAddressV = AM_Wrap,
+		ESamplerAddressMode InAddressW = AM_Wrap,
+		float InMipBias = 0,
+		int32 InMaxAnisotropy = 0,
+		float InMinMipLevel = 0,
+		float InMaxMipLevel = FLT_MAX,
+		uint32 InBorderColor = 0,
+		/** Only supported in D3D11 */
+		ESamplerCompareFunction InSamplerComparisonFunction = SCF_Never
+	)
+		: Filter(InFilter)
+		, AddressU(InAddressU)
+		, AddressV(InAddressV)
+		, AddressW(InAddressW)
+		, MipBias(InMipBias)
+		, MinMipLevel(InMinMipLevel)
+		, MaxMipLevel(InMaxMipLevel)
+		, MaxAnisotropy(InMaxAnisotropy)
+		, BorderColor(InBorderColor)
+		, SamplerComparisonFunction(InSamplerComparisonFunction)
+	{
+	}
+	ESamplerFilter Filter = SF_Point;
+	ESamplerAddressMode AddressU = AM_Wrap;
+	ESamplerAddressMode AddressV = AM_Wrap;
+	ESamplerAddressMode AddressW = AM_Wrap;
+	float MipBias = 0.0f;
+	/** Smallest mip map level that will be used, where 0 is the highest resolution mip level. */
+	float MinMipLevel = 0.0f;
+	/** Largest mip map level that will be used, where 0 is the highest resolution mip level. */
+	float MaxMipLevel = FLT_MAX;
+	int32 MaxAnisotropy = 0;
+	uint32 BorderColor = 0;
+	ESamplerCompareFunction SamplerComparisonFunction = SCF_Never;
+
+
+	//RHI_API friend uint32 GetTypeHash(const FSamplerStateInitializerRHI& Initializer);
+	//RHI_API friend bool operator== (const FSamplerStateInitializerRHI& A, const FSamplerStateInitializerRHI& B);
+};
+
 struct FRasterizerStateInitializerRHI
 {
 	ERasterizerFillMode FillMode = FM_Point;

@@ -624,3 +624,35 @@ enum EStencilOp : uint8
 	EStencilOp_NumBits = 3,
 };
 static_assert(EStencilOp_Num <= (1 << EStencilOp_NumBits), "EStencilOp_Num will not fit on EStencilOp_NumBits");
+
+enum ESamplerFilter : uint8
+{
+	SF_Point,
+	SF_Bilinear,
+	SF_Trilinear,
+	SF_AnisotropicPoint,
+	SF_AnisotropicLinear,
+
+	ESamplerFilter_Num,
+	ESamplerFilter_NumBits = 3,
+};
+static_assert(ESamplerFilter_Num <= (1 << ESamplerFilter_NumBits), "ESamplerFilter_Num will not fit on ESamplerFilter_NumBits");
+
+enum ESamplerAddressMode : uint8
+{
+	AM_Wrap,
+	AM_Clamp,
+	AM_Mirror,
+	/** Not supported on all platforms */
+	AM_Border,
+
+	ESamplerAddressMode_Num,
+	ESamplerAddressMode_NumBits = 2,
+};
+static_assert(ESamplerAddressMode_Num <= (1 << ESamplerAddressMode_NumBits), "ESamplerAddressMode_Num will not fit on ESamplerAddressMode_NumBits");
+
+enum ESamplerCompareFunction : uint8
+{
+	SCF_Never,
+	SCF_Less
+};

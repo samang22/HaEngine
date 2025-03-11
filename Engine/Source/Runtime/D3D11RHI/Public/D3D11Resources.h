@@ -386,11 +386,11 @@ struct TD3D11ResourceTraits<FRHIBuffer>
 //	typedef FD3D11UnorderedAccessView TConcreteType;
 //};
 //
-//template<>
-//struct TD3D11ResourceTraits<FRHISamplerState>
-//{
-//	typedef FD3D11SamplerState TConcreteType;
-//};
+template<>
+struct TD3D11ResourceTraits<FRHISamplerState>
+{
+	typedef FD3D11SamplerState TConcreteType;
+};
 template<>
 struct TD3D11ResourceTraits<FRHIRasterizerState>
 {

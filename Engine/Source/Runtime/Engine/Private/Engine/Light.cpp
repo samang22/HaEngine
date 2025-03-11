@@ -9,7 +9,7 @@ ALight::ALight(const FObjectInitializer& ObjectInitializer)
     LightComponent = CreateDefaultSubobject<ULightComponent>(TEXT("LightComponent0"));
     RootComponent = LightComponent->As<ULightComponent>();
 
-    TEnginePtr<UStaticMesh> StaticMesh = FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Cone.FBX");
+    TEnginePtr<UStaticMesh> StaticMesh = FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Cone.FBX");
     LightDirectionMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("LightDirectionMesh"));
     LightDirectionMesh->SetStaticMesh(StaticMesh);
     LightDirectionMesh->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f));

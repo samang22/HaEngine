@@ -5,13 +5,13 @@
 #pragma once
 #include "RHIResources.h"
 
-//
-//class FD3D11SamplerState : public FRHISamplerState
-//{
-//public:
-//
-//    TRefCountPtr<ID3D11SamplerState> Resource;
-//};
+
+class FD3D11SamplerState : public FRHISamplerState
+{
+public:
+
+    TRefCountPtr<ID3D11SamplerState> Resource;
+};
 
 class FD3D11RasterizerState : public FRHIRasterizerState
 {

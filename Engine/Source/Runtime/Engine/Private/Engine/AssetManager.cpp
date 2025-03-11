@@ -14,8 +14,7 @@ FAssetManager* FAssetManager::Get(const bool bDestroy)
     return Instance.get();
 }
 
-TEnginePtr<UObject> FAssetManager::LoadAsset(const type_info& InAssetType, const FString& InFilePath)
-{
+TEnginePtr<UObject> FAssetManager::LoadAsset(const type_info& InAssetType, const FString& InFilePath, const TCHAR* Params) {
     if (LoadedAssets[InAssetType.hash_code()].contains(InFilePath))
     {
         return LoadedAssets[InAssetType.hash_code()][InFilePath];
@@ -51,7 +50,7 @@ TEnginePtr<UObject> FAssetManager::LoadAsset(const type_info& InAssetType, const
 
     if (NewFactory)
     {
-        TObjectPtr<UObject> NewAsset = NewFactory->FactoryCreateFile(InFilePath, InFilePath, nullptr);
+        TObjectPtr<UObject> NewAsset = NewFactory->FactoryCreateFile(InFilePath, InFilePath, Params);        
         LoadedAssets[InAssetType.hash_code()][InFilePath] = NewAsset;
         return NewAsset;
     }

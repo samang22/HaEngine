@@ -36,6 +36,7 @@ if not exist "Engine\Source\Programs\vcpkg" (
 	call .\vcpkg\bootstrap-vcpkg.bat
 )
 .\vcpkg\vcpkg install boost:x64-windows
+.\vcpkg\vcpkg install directxtex:x64-windows
 .\vcpkg\vcpkg integrate install
 popd
 

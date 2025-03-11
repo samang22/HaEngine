@@ -33,6 +33,11 @@ FUniformBufferRHIRef RHICreateUniformBuffer(const FConstantBufferInfo& Layout, c
     return GDynamicRHI->RHICreateUniformBuffer(Layout, Contents, ContentsSize);
 }
 
+FSamplerStateRHIRef RHI_API RHICreateSamplerState(const FSamplerStateInitializerRHI& Initializer)
+{
+    return GDynamicRHI->RHICreateSamplerState(Initializer);
+}
+
 FRasterizerStateRHIRef RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer)
 {
     //LLM_SCOPE_BYNAME(TEXT("RHIMisc/CreateRasterizerState"));

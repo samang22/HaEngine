@@ -26,3 +26,8 @@ RHI_API void FRHICommandList::CopyTexture(FRHITexture* SourceTextureRHI, FRHITex
 {
 	GetContext().RHICopyTexture(SourceTextureRHI, DestTextureRHI, CopyInfo);
 }
+
+RHI_API void FRHICommandList::SetShaderParameters(FRHIGraphicsShader* InShader, TArray<FRHIShaderParameterResource>& InResourceParameters)
+{
+	GetContext().RHISetShaderParameters(InShader, InResourceParameters);
+}

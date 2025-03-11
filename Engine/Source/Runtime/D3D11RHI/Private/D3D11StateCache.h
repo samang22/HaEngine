@@ -177,8 +177,69 @@ public:
         }
     }
 
+    template <EShaderFrequency ShaderFrequency>
+    inline void InternalSetShaderResourceView(uint32 ResourceIndex, ID3D11ShaderResourceView*& SRV)
+    {
+        // Set the SRV we have been given (or null).
+        //CA_SUPPRESS(6326);
+        switch (ShaderFrequency)
+        {
+        case SF_Vertex:         Direct3DDeviceIMContext->VSSetShaderResources(ResourceIndex, 1, &SRV); break;
+        case SF_Geometry:       Direct3DDeviceIMContext->GSSetShaderResources(ResourceIndex, 1, &SRV); break;
+        case SF_Pixel:          Direct3DDeviceIMContext->PSSetShaderResources(ResourceIndex, 1, &SRV); break;
+        case SF_Compute:        Direct3DDeviceIMContext->CSSetShaderResources(ResourceIndex, 1, &SRV); break;
+        }
+    }
+
+    template <EShaderFrequency ShaderFrequency>
+    inline void InternalSetShaderResourceView(ID3D11ShaderResourceView*& SRV, uint32 ResourceIndex)
+    {
+        _ASSERT(ResourceIndex < ARRAYSIZE(CurrentShaderResourceViews[ShaderFrequency]));
+        if (CurrentShaderResourceViews[ShaderFrequency][ResourceIndex] != SRV)
+        {
+            if (SRV)
+            {
+                SRV->AddRef();
+            }
+            if (CurrentShaderResourceViews[ShaderFrequency][ResourceIndex])
+            {
+                CurrentShaderResourceViews[ShaderFrequency][ResourceIndex]->Release();
+            }
+            CurrentShaderResourceViews[ShaderFrequency][ResourceIndex] = SRV;
+            InternalSetShaderResourceView<ShaderFrequency>(ResourceIndex, SRV);
+        }
+    }
+
+    template <EShaderFrequency ShaderFrequency>
+    inline void SetShaderResourceView(ID3D11ShaderResourceView* SRV, uint32 ResourceIndex)
+    {
+        InternalSetShaderResourceView<ShaderFrequency>(SRV, ResourceIndex);
+    }
+
+    template <EShaderFrequency ShaderFrequency>
+    inline void InternalSetSamplerState(uint32 SamplerIndex, ID3D11SamplerState*& SamplerState)
+    {
+        //CA_SUPPRESS(6326);
+        switch (ShaderFrequency)
+        {
+        case SF_Vertex:         Direct3DDeviceIMContext->VSSetSamplers(SamplerIndex, 1, &SamplerState); break;
+        case SF_Geometry:       Direct3DDeviceIMContext->GSSetSamplers(SamplerIndex, 1, &SamplerState); break;
+        case SF_Pixel:          Direct3DDeviceIMContext->PSSetSamplers(SamplerIndex, 1, &SamplerState); break;
+        case SF_Compute:        Direct3DDeviceIMContext->CSSetSamplers(SamplerIndex, 1, &SamplerState); break;
+        }
+    }
+
+    template <EShaderFrequency ShaderFrequency>
+    inline void SetSamplerState(ID3D11SamplerState* SamplerState, uint32 SamplerIndex)
+    {
+        InternalSetSamplerState<ShaderFrequency>(SamplerIndex, SamplerState);
+    }
+
 protected:
 	ID3D11DeviceContext* Direct3DDeviceIMContext = nullptr;
+
+    // Shader Resource Views Cache
+    ID3D11ShaderResourceView* CurrentShaderResourceViews[SF_NumStandardFrequencies][D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
 
     // Input Layout State
     ID3D11InputLayout* CurrentInputLayout = nullptr;

@@ -16,7 +16,7 @@ void FD3D11StateCache::ClearState()
 	}
 
     // Shader Resource View State Cache
-    /*for (uint32 ShaderFrequency = 0; ShaderFrequency < SF_NumStandardFrequencies; ShaderFrequency++)
+    for (uint32 ShaderFrequency = 0; ShaderFrequency < SF_NumStandardFrequencies; ShaderFrequency++)
     {
         for (uint32 Index = 0; Index < D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT; Index++)
         {
@@ -26,7 +26,7 @@ void FD3D11StateCache::ClearState()
                 CurrentShaderResourceViews[ShaderFrequency][Index] = NULL;
             }
         }
-    }*/
+    }
     
     // Rasterizer State Cache
     CurrentRasterizerState = nullptr;
