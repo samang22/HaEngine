@@ -5,6 +5,7 @@
 class APawn;
 class UInputComponent;
 class UPlayer;
+class UPlayerInput;
 class UPrimitiveComponent;
 
 /**
@@ -24,12 +25,34 @@ class ENGINE_API APlayerController : public AController//, public IWorldPartitio
     GENERATED_BODY()
 
 public:
+    /**
+     * Yaw(회전) 입력을 추가합니다. 이 값은 InputYawScale에 곱해집니다.
+     * @param Val Yaw에 추가할 양입니다. 이 값은 InputYawScale에 곱해집니다.
+     */
+     //UFUNCTION(BlueprintCallable, Category = "Game|Player", meta = (Keywords = "left right turn"))
+    virtual void AddYawInput(float Val);
+
+    /**
+     * Pitch(위/아래 보기) 입력을 추가합니다. 이 값은 InputPitchScale에 곱해집니다.
+     * @param Val Pitch에 추가할 양입니다. 이 값은 InputPitchScale에 곱해집니다.
+     */
+     //UFUNCTION(BlueprintCallable, Category = "Game|Player", meta = (Keywords = "up down"))
+    virtual void AddPitchInput(float Val);
+
+    /**
+     * RotationInput이 적용된 후 ControlRotation을 기반으로 플레이어의 회전을 업데이트합니다.
+     * 이 값은 PlayerCamera에 의해 수정될 수 있으며, Pawn->FaceRotation()에 전달됩니다.
+     */
+    virtual void UpdateRotation(float DeltaTime);
+
+
+public:
     virtual void PostInitializeComponents() override;
 
     /** 이 컨트롤러에 대한 PlayerState를 생성하고 초기화합니다. */
     virtual void InitPlayerState();
 
-
+    virtual void Tick(float DeltaSeconds);
 public:
     /** 이 PlayerController에 새 UPlayer를 연결합니다. */
     virtual void SetPlayer(UPlayer* InPlayer);
@@ -38,6 +61,13 @@ public:
     //UPROPERTY()
     //TObjectPtr<UPlayer> Player;
     UPlayer* Player = nullptr;
+
+    /** 플레이어 입력을 관리하는 객체입니다. */
+    //UPROPERTY(Transient)
+    TObjectPtr<UPlayerInput> PlayerInput;
+
+    /** 매 틱마다 누적된 입력 축 값입니다. */
+    FRotator RotationInput;
 
 public:
     /**
@@ -61,6 +91,10 @@ protected:
 protected:
     /** PlayerController가 사용자 정의 입력 바인딩을 설정할 수 있도록 합니다. */
     virtual void SetupInputComponent();
+
+    void TickPlayerInput(const float DeltaSeconds, const bool bGamePaused);
+    virtual void ProcessPlayerInput(const float DeltaTime, const bool bGamePaused);
+    virtual void BuildInputStack(TArray<UInputComponent*>& InputStack);
 
 public:
     /** 입력이 활성화된 경우, 이 액터의 입력을 처리하는 컴포넌트입니다. */

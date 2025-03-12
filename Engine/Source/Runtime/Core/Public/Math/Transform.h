@@ -30,7 +30,7 @@ public:
         return RotatedVec;
     }
 
-    FORCEINLINE FVector3D GetUnitAxis(EAxis::Type InAxis) const
+    FORCEINLINE FVector3D GetScaledAxis(EAxis::Type InAxis) const
     {
         if (InAxis == EAxis::X)
         {
@@ -42,6 +42,13 @@ public:
         }
 
         return TransformVectorNoScale(FVector3D(0.f, 0.f, 1.f));
+    }
+
+    FORCEINLINE FVector3D GetUnitAxis(EAxis::Type InAxis) const
+    {
+        FVector ScaledAxis = GetScaledAxis(InAxis);
+        ScaledAxis.Normalize();
+        return ScaledAxis;
     }
 
 

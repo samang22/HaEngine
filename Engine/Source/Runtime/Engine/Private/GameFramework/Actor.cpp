@@ -52,6 +52,24 @@ void AActor::OnPropertyChanged(FProperty& InProperty)
 	}
 }
 
+bool AActor::SetActorLocation(const FVector& NewLocation)
+{
+	if (RootComponent)
+	{
+		//const FVector Delta = NewLocation - GetActorLocation();
+		//return RootComponent->MoveComponent(Delta, GetActorQuat(), bSweep, OutSweepHitResult, MOVECOMP_NoFlags, Teleport);
+		RootComponent->SetWorldLocation(NewLocation);
+		return true;
+	}
+	//else if (OutSweepHitResult)
+	//{
+	//    *OutSweepHitResult = FHitResult();
+	//}
+
+	return false;
+}
+
+
 void AActor::Save(FArchive& Ar)
 {
 	uint64 ComponentSize = OwnedComponents.size();

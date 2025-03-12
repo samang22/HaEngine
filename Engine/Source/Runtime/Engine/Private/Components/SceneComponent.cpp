@@ -137,6 +137,22 @@ void USceneComponent::SetWorldTransform(const FTransform& NewTransform)
     }
 }
 
+void USceneComponent::SetWorldLocation(FVector NewLocation)
+{
+    FVector NewRelLocation = NewLocation;
+
+    // If attached to something, transform into local space
+    if (GetAttachParent() != nullptr /*&& !IsUsingAbsoluteLocation()*/)
+    {
+        _ASSERT(false); // 미구현
+        //FTransform ParentToWorld = GetAttachParent()->GetSocketTransform(GetAttachSocketName());
+        //NewRelLocation = ParentToWorld.InverseTransformPosition(NewLocation);
+    }
+
+    SetRelativeLocation(NewRelLocation/*, bSweep, OutSweepHitResult, Teleport*/);
+}
+
+
 void USceneComponent::SetupAttachment(USceneComponent* InParent)
 {
     if (InParent != AttachParent /*|| InSocketName != AttachSocketName*/)

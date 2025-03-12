@@ -240,6 +240,10 @@ namespace DirectX
 
             Pa1 = 0xfd,
             OemClear = 0xfe,
+
+            // 직접 추가
+            MouseX,
+            MouseY,
         };
 
         struct State
@@ -534,3 +538,6 @@ namespace DirectX
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+
+using FKey = DirectX::Keyboard::Keys;
+using EKeys = DirectX::Keyboard::Keys;

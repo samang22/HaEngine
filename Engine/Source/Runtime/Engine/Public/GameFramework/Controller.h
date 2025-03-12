@@ -23,6 +23,14 @@ class ENGINE_API AController : public AActor//, public INavAgentInterface
     GENERATED_BODY()
 
 public:
+    /**
+     * 컨트롤 회전을 가져옵니다. 이것은 전체 조준 회전이며, 카메라 방향과 다를 수 있습니다 (예: 3인칭 뷰).
+     * 그리고 제어된 폰의 회전과 다를 수 있습니다 (예: 시각적으로 pitch나 roll을 선택하지 않을 수 있음).
+     */
+     //UFUNCTION(BlueprintCallable, Category = Pawn)
+    virtual FRotator GetControlRotation() const;
+
+public:
     /** 이 컨트롤러를 사용하는 플레이어에 대한 복제된 정보를 포함하는 PlayerState입니다 (NPC에는 존재하지 않습니다). */
 //UPROPERTY(replicatedUsing = OnRep_PlayerState, BlueprintReadOnly, Category = Controller)
     TEnginePtr<APlayerState> PlayerState;
@@ -59,6 +67,11 @@ protected:
      * @param InPawn 소유할 폰입니다.
      */
     virtual void OnPossess(APawn* InPawn);
+
+protected:
+    /** 컨트롤러의 컨트롤 회전입니다. GetControlRotation을 참조하십시오. */
+    UPROPERTY()
+    FRotator ControlRotation;
 
 private:
     /** 이 컨트롤러가 현재 제어 중인 폰입니다. 폰을 제어하려면 Pawn.Possess()를 사용하십시오. */

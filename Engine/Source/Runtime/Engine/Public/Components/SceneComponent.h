@@ -43,10 +43,28 @@ public:
 		return ComponentToWorld;
 	}
 
-    /** Return rotation of the component, in world space */
+    /** 컴포넌트의 회전을 월드 공간에서 반환합니다. */
     FORCEINLINE FRotator GetComponentRotation() const
     {
         return WorldRotationCache.NormalizedQuatToRotator(GetComponentTransform().GetQuaternion());
+    }
+
+    /** 컴포넌트의 위치를 월드 공간에서 반환합니다. */
+    FORCEINLINE FVector GetComponentLocation() const
+    {
+        return GetComponentTransform().GetLocation();
+    }
+
+    /** 컴포넌트의 회전 쿼터니언을 월드 공간에서 반환합니다. */
+    FORCEINLINE FQuat GetComponentQuat() const
+    {
+        return GetComponentTransform().GetQuaternion();
+    }
+
+    /** 컴포넌트의 크기를 월드 공간에서 반환합니다. */
+    FORCEINLINE FVector GetComponentScale() const
+    {
+        return GetComponentTransform().GetScale3D();
     }
 
     /**
@@ -144,6 +162,7 @@ public:
     void SetRelativeScale3D(FVector NewScale3D);
 
     void SetWorldTransform(const FTransform& NewTransform/*, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None*/);
+    void SetWorldLocation(FVector NewLocation/*, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None*/);
 
 public:
     virtual void UpdateComponentToWorld()

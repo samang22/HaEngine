@@ -2,10 +2,57 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerState.h"
+#include "GameFramework/PlayerInput.h"
 #include "Components/InputComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Engine/Player.h"
 #include "Engine/World.h"
+
+void APlayerController::AddYawInput(float Val)
+{
+    RotationInput.Yaw += Val;
+}
+
+void APlayerController::AddPitchInput(float Val)
+{
+    RotationInput.Pitch += Val;
+}
+
+void APlayerController::UpdateRotation(float DeltaTime)
+{
+    // Calculate Delta to be applied on ViewRotation
+    FRotator DeltaRot(RotationInput);
+
+    FRotator ViewRotation = GetControlRotation();
+
+    /*if (PlayerCameraManager)
+    {
+        PlayerCameraManager->ProcessViewRotation(DeltaTime, ViewRotation, DeltaRot);
+    }
+
+    AActor* ViewTarget = GetViewTarget();
+    if (!PlayerCameraManager || !ViewTarget || !ViewTarget->HasActiveCameraComponent() || ViewTarget->HasActivePawnControlCameraComponent())
+    {
+        if (IsLocalPlayerController() && GEngine->XRSystem.IsValid() && GetWorld() != nullptr && GEngine->XRSystem->IsHeadTrackingAllowedForWorld(*GetWorld()))
+        {
+            auto XRCamera = GEngine->XRSystem->GetXRCamera();
+            if (XRCamera.IsValid())
+            {
+                XRCamera->ApplyHMDRotation(this, ViewRotation);
+            }
+        }
+    }
+    */
+
+    SetControlRotation(ViewRotation);
+    /*
+    APawn* const P = GetPawnOrSpectator();
+    if (P)
+    {
+        P->FaceRotation(ViewRotation, DeltaTime);
+    }*/
+}
+
 
 void APlayerController::PostInitializeComponents()
 {
@@ -75,6 +122,149 @@ void APlayerController::InitPlayerState()
 
 }
 
+
+void APlayerController::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+
+    TickPlayerInput(DeltaSeconds, DeltaSeconds == 0.f);
+
+    UpdateRotation(DeltaSeconds);
+}
+
+void APlayerController::TickPlayerInput(const float DeltaSeconds, const bool bGamePaused)
+{
+    // PlayerInput->Tick();
+
+    //if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+    //{
+    //    if (bEnableMouseOverEvents)
+    //    {
+    //        FVector2D MousePosition;
+    //        FHitResult HitResult;
+    //        bool bHit = false;
+
+    //        UGameViewportClient* ViewportClient = LocalPlayer->ViewportClient;
+
+    //        // Only send mouse hit events if we're directly over the viewport.
+    //        if (IsInViewportClient(ViewportClient))
+    //        {
+    //            if (ViewportClient->GetMousePosition(MousePosition))
+    //            {
+    //                bHit = GetHitResultAtScreenPosition(MousePosition, CurrentClickTraceChannel, true, /*out*/ HitResult);
+    //            }
+    //        }
+
+    //        UPrimitiveComponent* PreviousComponent = CurrentClickablePrimitive.Get();
+    //        UPrimitiveComponent* CurrentComponent = (bHit ? HitResult.Component.Get() : NULL);
+
+    //        UPrimitiveComponent::DispatchMouseOverEvents(PreviousComponent, CurrentComponent);
+
+    //        CurrentClickablePrimitive = CurrentComponent;
+    //    }
+
+    //    if (bEnableTouchOverEvents)
+    //    {
+    //        for (int32 TouchIndexInt = 0; TouchIndexInt < EKeys::NUM_TOUCH_KEYS; ++TouchIndexInt)
+    //        {
+    //            const ETouchIndex::Type FingerIndex = ETouchIndex::Type(TouchIndexInt);
+
+    //            FHitResult HitResult;
+    //            const bool bHit = GetHitResultUnderFinger(FingerIndex, CurrentClickTraceChannel, true, /*out*/ HitResult);
+
+    //            UPrimitiveComponent* PreviousComponent = CurrentTouchablePrimitives[TouchIndexInt].Get();
+    //            UPrimitiveComponent* CurrentComponent = (bHit ? HitResult.Component.Get() : NULL);
+
+    //            UPrimitiveComponent::DispatchTouchOverEvents(FingerIndex, PreviousComponent, CurrentComponent);
+
+    //            CurrentTouchablePrimitives[TouchIndexInt] = CurrentComponent;
+    //        }
+    //    }
+    //}
+
+    ProcessPlayerInput(DeltaSeconds, bGamePaused);
+    //ProcessForceFeedbackAndHaptics(DeltaSeconds, bGamePaused);
+}
+
+void APlayerController::ProcessPlayerInput(const float DeltaTime, const bool bGamePaused)
+{
+    TArray<UInputComponent*> InputStack;
+
+    // 스택에 있는 모든 입력 컴포넌트를 상단부터 처리합니다.
+    {
+        //SCOPE_CYCLE_COUNTER(STAT_PC_BuildInputStack);
+        BuildInputStack(InputStack);
+    }
+
+    // 원하는 컴포넌트를 처리합니다
+    {
+        //SCOPE_CYCLE_COUNTER(STAT_PC_ProcessInputStack);
+        PlayerInput->ProcessInputStack(InputStack, DeltaTime, bGamePaused);
+    }
+}
+
+void APlayerController::BuildInputStack(TArray<UInputComponent*>& InputStack)
+{
+    // 제어되는 폰(pawn)은 입력 스택에서 마지막으로 처리됩니다
+    //APawn* ControlledPawn = GetPawnOrSpectator();
+    APawn* ControlledPawn = GetPawn();
+    if (ControlledPawn)
+    {
+        //if (ControlledPawn->InputEnabled())
+        {
+            // 폰 소유 시 생성된 명시적 입력 컴포넌트를 가져옵니다. 이 컴포넌트는 마지막으로 처리됩니다.
+            if (ControlledPawn->InputComponent)
+            {
+                InputStack.push_back(ControlledPawn->InputComponent);
+            }
+
+            // 폰의 컴포넌트 배열에 추가된 다른 InputComponent가 있는지 확인합니다(스크립트에 의해 추가되었을 수 있습니다).
+            for (TEnginePtr<UActorComponent> ActorComponent : ControlledPawn->GetComponents())
+            {
+                UInputComponent* PawnInputComponent = Cast<UInputComponent>(ActorComponent);
+                if (PawnInputComponent && PawnInputComponent != ControlledPawn->InputComponent)
+                {
+                    InputStack.push_back(PawnInputComponent);
+                }
+            }
+        }
+    }
+
+    // LevelScriptActors는 스택에 다음으로 추가됩니다
+    //for (ULevel* Level : GetWorld()->GetLevels())
+    //{
+    //    ALevelScriptActor* ScriptActor = Level->GetLevelScriptActor();
+    //    if (ScriptActor)
+    //    {
+    //        if (ScriptActor->InputEnabled() && ScriptActor->InputComponent)
+    //        {
+    //            InputStack.Push(ScriptActor->InputComponent);
+    //        }
+    //    }
+    //}
+
+    //if (InputEnabled())
+    {
+        InputStack.push_back(InputComponent.get());
+    }
+
+    // 스택에 푸시된 컴포넌트가 우선 순위를 가집니다
+    /*for (int32 Idx = 0; Idx < CurrentInputStack.Num(); ++Idx)
+    {
+        UInputComponent* IC = CurrentInputStack[Idx].Get();
+        if (IC)
+        {
+            InputStack.Push(IC);
+        }
+        else
+        {
+            CurrentInputStack.RemoveAt(Idx--);
+        }
+    }*/
+}
+
+
+
 void APlayerController::SetPlayer(UPlayer* InPlayer)
 {
     // Set the viewport.
@@ -98,12 +288,13 @@ void APlayerController::SetPlayer(UPlayer* InPlayer)
 
 void APlayerController::InitInputSystem()
 {
-    /*if (PlayerInput == nullptr)
+    if (PlayerInput == nullptr)
     {
-        const UClass* OverrideClass = OverridePlayerInputClass.Get();
+        //const UClass* OverrideClass = OverridePlayerInputClass.Get();
+        //PlayerInput = NewObject<UPlayerInput>(this, OverrideClass ? OverrideClass : UInputSettings::GetDefaultPlayerInputClass());
 
-        PlayerInput = NewObject<UPlayerInput>(this, OverrideClass ? OverrideClass : UInputSettings::GetDefaultPlayerInputClass());
-    }*/
+        PlayerInput = NewObject<UPlayerInput>(this, UPlayerInput::StaticClass());
+    }
 
     SetupInputComponent();
 }

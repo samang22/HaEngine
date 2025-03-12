@@ -45,11 +45,53 @@ public:
 		return (RootComponent != nullptr) ? RootComponent->GetComponentRotation() : FRotator::ZeroRotator;
 	}
 
+	template<class T>
+	static FORCEINLINE FVector TemplateGetActorLocation(const T* RootComponent)
+	{
+		return (RootComponent != nullptr) ? RootComponent->GetComponentLocation() : FVector::Zero;
+	}
+
+	template<class T>
+	static FORCEINLINE FVector TemplateGetActorScale(const T* RootComponent)
+	{
+		return (RootComponent != nullptr) ? RootComponent->GetComponentScale() : FVector(1.f, 1.f, 1.f);
+	}
+
+
 	/** 이 액터의 RootComponent의 회전을 반환합니다. */
 	FORCEINLINE FRotator GetActorRotation() const
 	{
 		return TemplateGetActorRotation(RootComponent.Get());
 	}
+
+	/** 이 액터의 RootComponent의 위치를 반환합니다. */
+	FORCEINLINE FVector GetActorLocation() const
+	{
+		return TemplateGetActorLocation(RootComponent.Get());
+	}
+
+	/** 이 액터의 RootComponent의 크기를 반환합니다. */
+	FORCEINLINE FVector GetActorScale() const
+	{
+		return TemplateGetActorScale(RootComponent.Get());
+	}
+
+	/**
+	 * 액터를 지정된 위치로 즉시 이동시킵니다.
+	 *
+	 * @param NewLocation   액터를 텔레포트할 새 위치입니다.
+	 * @param bSweep        목적지 위치로 이동할 때 장애물에 의해 막히면 중간에 멈추고 겹침을 유발하는지 여부를 결정합니다.
+	 *                      루트 컴포넌트만 이동하며 차단 충돌을 검사합니다. 자식 컴포넌트는 이동 시 검사되지 않습니다. 충돌이 꺼져 있으면 이 옵션은 영향을 미치지 않습니다.
+	 * @param Teleport      물리 상태를 어떻게 텔레포트할 것인지 결정합니다(이 객체에 대해 물리 충돌이 활성화된 경우).
+	 *                      ETeleportType::TeleportPhysics와 같으면 이 객체의 물리 속도는 변경되지 않습니다(따라서 래그돌 부분은 위치 변경의 영향을 받지 않습니다).
+	 *                      ETeleportType::None와 같으면 물리 속도는 위치 변경에 따라 업데이트됩니다(래그돌 부분에 영향을 줍니다).
+	 *                      CCD가 켜져 있고 텔레포트하지 않으면 전체 이동 볼륨에 영향을 미칩니다.
+	 *                      텔레포트할 때는 자식/부착된 컴포넌트도 텔레포트되며, 현재 오프셋을 유지합니다. 시뮬레이션되고 있는 경우에도 마찬가지입니다.
+	 *                      텔레포트하지 않고 위치를 설정하면 시뮬레이션된 자식/부착된 컴포넌트의 위치는 업데이트되지 않습니다.
+	 * @param OutSweepHitResult 이동 시 겹침이 발생한 경우의 히트 결과입니다.
+	 * @return  스위핑되지 않은 경우 위치가 성공적으로 설정되었는지, 스위핑된 경우 이동이 발생했는지 여부를 반환합니다.
+	 */
+	bool SetActorLocation(const FVector& NewLocation/*, bool bSweep = false, FHitResult* OutSweepHitResult = nullptr, ETeleportType Teleport = ETeleportType::None*/);
 
 public:
 	void AddOwnedComponent(TObjectPtr<UActorComponent> Component);
@@ -180,6 +222,16 @@ public:
 				E_LOG(Error, TEXT("OwnedComponent is nullptr"));
 			}
 		}
+	}
+
+	/**
+	 * null 포인터가 제거된 복사본이 아닌 Components 집합에 대한 직접 참조를 가져옵니다.
+	 * 경고: 컴포넌트의 소유권 변경 또는 파괴를 유발할 수 있는 모든 작업은 이 배열을 무효화하므로,
+	 * 이 집합을 반복할 때 주의하십시오!
+	 */
+	const TArray<TObjectPtr<UActorComponent>>& GetComponents() const
+	{
+		return OwnedComponents;
 	}
 
 	/** 컴포넌트가 올바르게 소유자의 OwnedComponents 배열에 포함되어 있는지 확인하는 유틸리티 함수 */

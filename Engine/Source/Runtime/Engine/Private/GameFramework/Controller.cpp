@@ -1,6 +1,11 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/Pawn.h"
 
+FRotator AController::GetControlRotation() const
+{
+    return ControlRotation;
+}
+
 void AController::SetPawn(APawn* InPawn)
 {
     //RemovePawnTickDependency(Pawn);
