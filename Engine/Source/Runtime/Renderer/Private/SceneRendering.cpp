@@ -178,131 +178,14 @@ void FSceneRenderer::Render()
 
 	{
 		FRHITexture* RenderTargets[1] = { SceneTextures.Color.Target };
-		FRHIRenderPassInfo RPInfo(1, RenderTargets, ERenderTargetActions::Clear_Store, SceneTextures.Depth.Target, EDepthStencilTargetActions::ClearDepthStencil_StoreDepthStencil);
+		FRHIRenderPassInfo RPInfo(ARRAYSIZE(RenderTargets), RenderTargets, ERenderTargetActions::Clear_Store, SceneTextures.Depth.Target, EDepthStencilTargetActions::ClearDepthStencil_StoreDepthStencil);
+
 		GetCommandList().BeginRenderPass(RPInfo, TEXT("BasePass"));
 
-		FRHIDepthStencilState* DepthStencilState = TStaticDepthStencilState<true>().GetRHI();
-		GetCommandList().SetDepthStencilState(DepthStencilState);
-
-		TArray<FStaticMeshDrawCommand> MeshDrawCommands;
-
 		FScene* Scene = (FScene*)ViewFamily.Scene;
-		TShaderMapRef<FMaterialVS> MaterialVS;
-		TShaderMapRef<FMaterialPS> MaterialPS; 
-		
-		// Light
-		{
-			const FConstantBufferInfo& ConstantBufferInfo = MaterialPS->GetConstantBufferInfo(TEXT("FLightShaderParameters"));
-			FLightShaderParameters DirectionalLightShaderParameters;
-
-			int32 DirectionalLightCount = 0;
-			for (FLightSceneProxy* Proxy : Scene->LightSceneProxies) 
-			{
-				TEnginePtr<UDirectionalLightComponent> DirectionalLightComponent = Cast<UDirectionalLightComponent>(Proxy->GetLightComponent());
-				if (DirectionalLightComponent)
-				{
-					if (DirectionalLightCount > 1)
-					{
-						E_LOG(Warning, TEXT("UDirectionalLightComponent: {}. 1개만 지원합니다."), DirectionalLightCount);
-					}
-
-					++DirectionalLightCount;
-					Proxy->GetLightShaderParameters(DirectionalLightShaderParameters);
-				}
-			}
-
-			FUniformBufferRHIRef LightUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &DirectionalLightShaderParameters, sizeof(DirectionalLightShaderParameters));
-			GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, LightUniformBufferRHI);
-		}
-
-		// MeshDrawCommand
-		{
-			FTextureRHIRef DiffuseIBL = GetCommandList().GetTexture(FPaths::ContentDir() + L"/Engine/Textures/SunSubMixer_diffuseIBL.dds");
-			FTextureRHIRef SpecularIBL = GetCommandList().GetTexture(FPaths::ContentDir() + L"/Engine/Textures/SunSubMixer_specularIBL.dds");
-
-			FRHISamplerState* IBLSamplerState = TStaticSamplerState<SF_Trilinear, AM_Wrap, AM_Wrap, AM_Wrap, 0, 16>::GetRHI();
-
-			for (FPrimitiveSceneProxy* Proxy : Scene->PrimitiveSceneProxies)
-			{
-				UPrimitiveComponent* PrimitiveComponent = Proxy->GetPrimitiveComponent();
-				PrimitiveComponent->UpdateComponentToWorld();
-
-				if (UStaticMeshComponent* StaticMeshComponent = dynamic_cast<UStaticMeshComponent*>(PrimitiveComponent))
-				{
-					TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
-					TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
-					TArray<TEnginePtr<UMaterial>>& OverrideMaterials = StaticMeshComponent->GetOverrideMaterials();
-					FMatrix RenderMatrix = StaticMeshComponent->GetRenderMatrix();
-					Proxy->SetTransform(RenderMatrix);
-					MeshDrawCommands.emplace_back(Proxy, RenderDatas, OverrideMaterials);
-				}
-			}
-
-			{
-				const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
-				SceneUniformBuffer.NumRadianceMipLevels = SpecularIBL->GetDesc().NumMips;
-				SceneUniformBuffer.EyePosition = ViewFamily.EyePosition;
-				SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
-				SceneUniformBuffer.ProjectionMatrix = ViewFamily.ProjectionMatrix.Transpose();
-				SceneUniformBuffer.ViewProjectionMatrix = ViewFamily.ViewProjectionMatrix.Transpose();
-				SceneUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
-				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
-				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, SceneUniformBufferRHI);
-
-				for (const FStaticMeshDrawCommand& StaticMeshDrawCommand : MeshDrawCommands)
-				{
-					int Index = 0;
-					StaticMeshDrawCommand.OverrideMaterials;
-					for (FStaticMeshRenderData& RenderData : StaticMeshDrawCommand.RenderDatas)
-					{
-						UMaterial* Material = RenderData.Material;
-						if (StaticMeshDrawCommand.OverrideMaterials[Index])
-						{
-							Material = StaticMeshDrawCommand.OverrideMaterials[Index];
-						}
-
-						TArray<FRHIShaderParameterResource> Parameters;
-						// Sampler
-						Parameters.emplace_back(Material->GetTextureSampler(), 0);
-						Parameters.emplace_back(IBLSamplerState, 1);
-
-						// Textures
-						Parameters.emplace_back(Material->GetBaseColorTextureRHI(), 0);
-						Parameters.emplace_back(Material->GetNormalTextureRHI(), 1);
-						Parameters.emplace_back(Material->GetMetallicTextureRHI(), 2);
-						Parameters.emplace_back(Material->GetRoughnessTextureRHI(), 3);
-						Parameters.emplace_back(Material->GetAmbientOcclusionTextureRHI(), 4);
-
-						// CubeTextutes
-						Parameters.emplace_back(SpecularIBL, 5);
-						Parameters.emplace_back(DiffuseIBL, 6);
-
-						GetCommandList().SetShaderParameters(MaterialPS.GetPixelShader(), Parameters);
-
-
-						GetCommandList().SetBoundShaderState(
-							GDynamicRHI->RHICreateBoundShaderState(
-								RenderData.VertexFactory.GetDeclaration(),
-								Material->GetVertexShaderRHI(),
-								Material->GetPixelShaderRHI()
-							).GetReference()
-						);
-
-						FObjectUniformBuffer ObjectUniformBuffer;
-						ObjectUniformBuffer.WorldMatrix = StaticMeshDrawCommand.Proxy->GetTransform();
-						RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
-						GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-
-						GetCommandList().SetRasterizerState(Material->GetRasterizerState());
-						GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);
-						GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.GetIndexBufferRHI(), 0, 0,
-							RenderData.NumVertices, 0, RenderData.NumPrimitives, 1);
-
-						++Index;
-					}
-				}
-			}
-		}
+	
+		RenderLight();
+		RenderMesh();
 		GetCommandList().EndRenderPass();
 	}
 
@@ -381,6 +264,125 @@ void FSceneRenderer::Render()
 	}
 }
 
+void FSceneRenderer::RenderLight()
+{
+	FScene* Scene = (FScene*)ViewFamily.Scene;
+	TShaderMapRef<FMaterialPS> MaterialPS;
+	const FConstantBufferInfo& ConstantBufferInfo = MaterialPS->GetConstantBufferInfo(TEXT("FLightShaderParameters"));
+	FLightShaderParameters DirectionalLightShaderParameters;
+
+	int32 DirectionalLightCount = 0;
+	for (FLightSceneProxy* Proxy : Scene->LightSceneProxies)
+	{
+		TEnginePtr<UDirectionalLightComponent> DirectionalLightComponent = Cast<UDirectionalLightComponent>(Proxy->GetLightComponent());
+		if (DirectionalLightComponent)
+		{
+			if (DirectionalLightCount >= 1)
+			{
+				E_LOG(Warning, TEXT("UDirectionalLightComponent: {}. 1개만 지원합니다."), DirectionalLightCount);
+			}
+
+			++DirectionalLightCount;
+			Proxy->GetLightShaderParameters(DirectionalLightShaderParameters);
+		}
+	}
+
+	FUniformBufferRHIRef LightUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &DirectionalLightShaderParameters, sizeof(DirectionalLightShaderParameters));
+	GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, LightUniformBufferRHI);
+}
+
+void FSceneRenderer::RenderMesh()
+{
+	FRHIDepthStencilState* DepthStencilState = TStaticDepthStencilState<true>().GetRHI();
+	GetCommandList().SetDepthStencilState(DepthStencilState);
+
+	FScene* Scene = (FScene*)ViewFamily.Scene;
+	TShaderMapRef<FMaterialVS> MaterialVS;
+	TShaderMapRef<FMaterialPS> MaterialPS;
+
+	TArray<FStaticMeshDrawCommand> MeshDrawCommands;
+	MeshDrawCommands.reserve(Scene->PrimitiveSceneProxies.size());
+
+	FTextureRHIRef DiffuseIBL = GetCommandList().GetTexture(FPaths::ContentDir() + L"/Engine/Textures/SunSubMixer_diffuseIBL.dds");
+	FTextureRHIRef SpecularIBL = GetCommandList().GetTexture(FPaths::ContentDir() + L"/Engine/Textures/SunSubMixer_specularIBL.dds");
+	FRHISamplerState* IBLSamplerState = TStaticSamplerState<SF_Trilinear, AM_Wrap, AM_Wrap, AM_Wrap, 0, 16>::GetRHI();
+
+	for (FPrimitiveSceneProxy* Proxy : Scene->PrimitiveSceneProxies)
+	{
+		UPrimitiveComponent* PrimitiveComponent = Proxy->GetPrimitiveComponent();
+		PrimitiveComponent->UpdateComponentToWorld();
+
+		if (UStaticMeshComponent* StaticMeshComponent = dynamic_cast<UStaticMeshComponent*>(PrimitiveComponent))
+		{
+			TEnginePtr<UStaticMesh> StaticMesh = StaticMeshComponent->GetStaticMesh();
+			TArray<FStaticMeshRenderData>& RenderDatas = StaticMesh->GetRenderData();
+			TArray<TEnginePtr<UMaterial>>& OverrideMaterials = StaticMeshComponent->GetOverrideMaterials();
+			FMatrix RenderMatrix = StaticMeshComponent->GetRenderMatrix();
+			Proxy->SetTransform(RenderMatrix);
+			MeshDrawCommands.emplace_back(Proxy, RenderDatas, OverrideMaterials);
+		}
+	}
+
+	{
+		const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
+		SceneUniformBuffer.NumRadianceMipLevels = SpecularIBL->GetDesc().NumMips;
+		SceneUniformBuffer.EyePosition = ViewFamily.EyePosition;
+		SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
+		SceneUniformBuffer.ProjectionMatrix = ViewFamily.ProjectionMatrix.Transpose();
+		SceneUniformBuffer.ViewProjectionMatrix = ViewFamily.ViewProjectionMatrix.Transpose();
+		SceneUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &SceneUniformBuffer, sizeof(SceneUniformBuffer));
+		GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Vertex, SceneUniformBufferRHI);
+		GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, SceneUniformBufferRHI);
+
+		for (const FStaticMeshDrawCommand& StaticMeshDrawCommand : MeshDrawCommands)
+		{
+			int Index = 0;
+			for (FStaticMeshRenderData& RenderData : StaticMeshDrawCommand.RenderDatas)
+			{
+				UMaterial* Material = RenderData.Material;
+				if (StaticMeshDrawCommand.OverrideMaterials[Index])
+				{
+					Material = StaticMeshDrawCommand.OverrideMaterials[Index];
+				}
+				TArray<FRHIShaderParameterResource> Parameters;
+				// Sampler
+				Parameters.emplace_back(Material->GetTextureSampler(), 0);
+				Parameters.emplace_back(IBLSamplerState, 1);
+
+				// Textures
+				Parameters.emplace_back(Material->GetBaseColorTextureRHI(), 0);
+				Parameters.emplace_back(Material->GetNormalTextureRHI(), 1);
+				Parameters.emplace_back(Material->GetMetallicTextureRHI(), 2);
+				Parameters.emplace_back(Material->GetRoughnessTextureRHI(), 3);
+				Parameters.emplace_back(Material->GetAmbientOcclusionTextureRHI(), 4);
+
+				// CubeTextutes
+				Parameters.emplace_back(SpecularIBL, 5);
+				Parameters.emplace_back(DiffuseIBL, 6);
+
+				GetCommandList().SetShaderParameters(MaterialPS.GetPixelShader(), Parameters);
+				GetCommandList().SetBoundShaderState(
+					GDynamicRHI->RHICreateBoundShaderState(
+						RenderData.VertexFactory.GetDeclaration(),
+						Material->GetVertexShaderRHI(),
+						Material->GetPixelShaderRHI()
+					).GetReference()
+				);
+
+				FObjectUniformBuffer ObjectUniformBuffer;
+				ObjectUniformBuffer.WorldMatrix = StaticMeshDrawCommand.Proxy->GetTransform();
+				RenderData.VertexFactory.UpdateObjectUniformBuffer(GetCommandList(), ObjectUniformBuffer);
+				GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+				GetCommandList().SetRasterizerState(Material->GetRasterizerState());
+				GetCommandList().SetStreamSource(0, RenderData.VertexFactory.GetVertexBufferRHI(), 0);
+				GetCommandList().DrawIndexedPrimitive(RenderData.VertexFactory.GetIndexBufferRHI(), 0, 0,
+					RenderData.NumVertices, 0, RenderData.NumPrimitives, 1);
+
+				++Index;
+			}
+		}
+	}
+}
 FViewFamilyInfo::FViewFamilyInfo(const FSceneViewFamily& InViewFamily)
 	: FSceneViewFamily(InViewFamily)
 {

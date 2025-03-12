@@ -54,6 +54,11 @@ public:
 
     FORCEINLINE FSceneTextures& GetActiveSceneTextures() { return ViewFamily.GetSceneTextures(); }
 
+protected:
+    void RenderLight();
+    void RenderMesh();
+
+protected:
     /** 렌더링 중인 뷰 패밀리. 이 변수는 Views 배열을 참조합니다. */
     FViewFamilyInfo ViewFamily;
 
