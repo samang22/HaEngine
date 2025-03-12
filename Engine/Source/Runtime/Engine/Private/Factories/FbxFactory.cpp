@@ -119,11 +119,10 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
             const int32 VertexCount = Mesh->GetControlPointsCount();
 
             // Vertices 및 Normals 추출
-            TArray<FPositionNormal> Vertices;
+            TArray<FPositionNormalUV> Vertices;
             TArray<uint32> Indices;
             Vertices.reserve(PolygonCount); // 적당히 공간 할당
-            map<int32, TArray<int32>> VertexMap; // 같은 위치의 정점을 추적하기 위한 맵
-
+            std::map<int32, TArray<int32>> VertexMap; // 같은 위치의 정점을 추적하기 위한 맵
             {
                 fbxsdk::FbxVector4* FbxVertices = Mesh->GetControlPoints();
 
@@ -151,6 +150,10 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
                 fbxsdk::FbxLayerElement::EMappingMode NormalMappingMode = LayerElementNormal->GetMappingMode();
                 fbxsdk::FbxLayerElement::EReferenceMode NormalReferenceMode = LayerElementNormal->GetReferenceMode();
 
+                fbxsdk::FbxGeometryElementUV* LayerElementUV = Mesh->GetElementUV(0);
+                fbxsdk::FbxLayerElement::EMappingMode UVMappingMode = LayerElementUV->GetMappingMode();
+                fbxsdk::FbxLayerElement::EReferenceMode UVReferenceMode = LayerElementUV->GetReferenceMode();
+
                 int32 CurrentVertexInstanceIndex = 0;
                 for (int32 PolygonIndex = 0; PolygonIndex < PolygonCount; ++PolygonIndex)
                 {
@@ -174,13 +177,30 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
                         FbxVector4 TempValue = LayerElementNormal->GetDirectArray().GetAt(NormalValueIndex);
                         FVector3D Normal = FVector3D(TempValue[0], -TempValue[1], TempValue[2]);
 
+                        // UV 좌표 추출
+                        int32 UVMapIndex = (UVMappingMode == FbxLayerElement::eByControlPoint) ?
+                            ControlPointIndex : RealFbxVertexIndex;
+                        int32 UVIndex = (UVReferenceMode == FbxLayerElement::eDirect) ?
+                            UVMapIndex : LayerElementUV->GetIndexArray().GetAt(UVMapIndex);
+
+                        FbxVector2 UVValue = LayerElementUV->GetDirectArray().GetAt(UVIndex);
+                        FVector2D UV = FVector2D(UVValue[0], 1.0 - UVValue[1]); // flip the Y of UVs for DirectX
+
+
                         // 중복된 위치의 정점을 처리하여 각각의 노멀을 할당
                         bool bFound = false;
                         for (int32 VertexIndex : VertexMap[ControlPointIndex])
                         {
                             // 아직 Normal이 지정되지 않은 경우 및 Normal이 같은 경우에는 추가로 정점을 넣을 필요가 없다
-                            if (Vertices[VertexIndex].Normal == FVector3D::Zero ||
-                                Vertices[VertexIndex].Normal == Normal)
+                            if (
+                                (
+                                    Vertices[VertexIndex].Normal == FVector3D::Zero ||
+                                    Vertices[VertexIndex].Normal == Normal
+                                    ) &&
+                                (
+                                    Vertices[VertexIndex].UV == FVector2D::Zero ||
+                                    Vertices[VertexIndex].UV == UV)
+                                )
                             {
                                 RealFbxVertexIndex = VertexIndex;
                                 bFound = true;
@@ -190,7 +210,7 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
 
                         if (!bFound)
                         {
-                            FPositionNormal NewVertex = Vertices[ControlPointIndex];
+                            FPositionNormalUV NewVertex = Vertices[ControlPointIndex];
                             NewVertex.Normal = Normal;
                             Vertices.push_back(NewVertex);
                             RealFbxVertexIndex = Vertices.size() - 1;
@@ -198,6 +218,7 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
                         }
 
                         Vertices[RealFbxVertexIndex].Normal = Normal;
+                        Vertices[RealFbxVertexIndex].UV = UV;
 
                         Indices.push_back(RealFbxVertexIndex);
                     }

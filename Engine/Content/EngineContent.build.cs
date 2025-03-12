@@ -11,6 +11,7 @@ public class EngineContent : CommonProject
     {
         SourceFilesExtensions.Add(".fbx");
         SourceFilesExtensions.Add(".dds");
+        SourceFilesExtensions.Add(".png");
     }
 
     public override void ConfigureAll(Configuration conf, EngineTarget target)
@@ -21,6 +22,6 @@ public class EngineContent : CommonProject
         conf.TargetPath += "/Content";
 
         conf.EventPreBuild.Clear();
-        conf.EventPreBuild.Add(@"(robocopy /s ""[project.SourceRootPath]"" " + @"""" + conf.TargetPath + @"""" + " *.fbx *.dds /njh /njs /ndl /nc /ns) ^& IF %ERRORLEVEL% LEQ 3 exit 0");
+        conf.EventPreBuild.Add(@"(robocopy /s ""[project.SourceRootPath]"" " + @"""" + conf.TargetPath + @"""" + " *.fbx *.dds *.png /njh /njs /ndl /nc /ns) ^& IF %ERRORLEVEL% LEQ 3 exit 0");
     }
 }

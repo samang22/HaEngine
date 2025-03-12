@@ -30,7 +30,7 @@ TEnginePtr<UMaterial> UStaticMeshComponent::GetMaterial(int32 MaterialIndex)
     }
 }
 
-void UStaticMeshComponent::SetMaterial(TObjectPtr<UMaterial> NewMaterial, int32 MaterialIndex)
+void UStaticMeshComponent::SetMaterial(TEnginePtr<UMaterial> NewMaterial, int32 MaterialIndex) 
 {
     OverrideMaterials[MaterialIndex] = NewMaterial;
 }
@@ -58,6 +58,23 @@ bool UStaticMeshComponent::ShouldCreateRenderState() const
     }
 
     return true;
+}
+
+void UStaticMeshComponent::OnPropertyChanged(FProperty& InProperty)
+{
+    Super::OnPropertyChanged(InProperty);
+
+    if (InProperty.Name == "RasterizerState")
+    {
+        for (auto& It : OverrideMaterials)
+        {
+            It->SetRasterizerState((ERasterizerState)RasterizerState);
+        }
+    }
+    else if (InProperty.Name == "OverrideMaterial1")
+    {
+        SetMaterial(OverrideMaterial1, 0);
+    }
 }
 
 FPrimitiveSceneProxy* UStaticMeshComponent::CreateSceneProxy()

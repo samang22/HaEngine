@@ -16,12 +16,14 @@ public:
 
 	TEnginePtr<UStaticMesh> GetStaticMesh() const { return StaticMesh; }
 	TEnginePtr<UMaterial> GetMaterial(int32 MaterialIndex);
-	TArray<TObjectPtr<UMaterial>>& GetOverrideMaterials() { return OverrideMaterials; }
-	void SetMaterial(TObjectPtr<UMaterial> NewMaterial, int32 MaterialIndex);
+
+	TArray<TEnginePtr<UMaterial>>& GetOverrideMaterials() { return OverrideMaterials; }
+	void SetMaterial(TEnginePtr<UMaterial> NewMaterial, int32 MaterialIndex);
 	uint32 GetMaterialCount();
 
 protected:
 	virtual bool ShouldCreateRenderState() const;
+	virtual void OnPropertyChanged(FProperty& InProperty) override;
 
 private:
 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
@@ -29,5 +31,12 @@ private:
 private:
 	UPROPERTY(EditAnywhere)
 	TEnginePtr<UStaticMesh> StaticMesh;
-	TArray<TObjectPtr<UMaterial>> OverrideMaterials;
+
+	TArray<TEnginePtr<UMaterial>> OverrideMaterials;
+
+	UPROPERTY(EditAnywhere)
+	TEnginePtr<UMaterial> OverrideMaterial1;
+
+	UPROPERTY(EditAnywhere)
+	int RasterizerState = 1;
 };

@@ -278,7 +278,7 @@ LRESULT CDetailsPanel::OnPropertyChanged(WPARAM wparam, LPARAM lparam)
 	{
 		TEnginePtr<UObject>* Value = (TEnginePtr<UObject>*)PropertyInfo->PropertyAddress;
 		TEnginePtr<UObject> EnginePtr = *Value;
-		UClass* Class = EnginePtr->GetClass();
+		UClass* Class = UClass::FindClass(PropertyInfo->Property.ClassName);
 		multimap<FString, TEnginePtr<UObject>> Objects = ObjectMap[Class];
 
 		BSTR CurrentValue = Prop->GetValue().bstrVal;

@@ -3,7 +3,7 @@
 
 inline uint32 GetMax2DTextureDimension()
 {
-    return 4096;
+    return 8192;
     //return GRHIGlobals.MaxTextureDimensions;
 }
 

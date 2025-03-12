@@ -595,12 +595,16 @@ void CWorldOutliner::FillDetails(const bool bSameActor, CMFCPropertyGridProperty
 						{
 							TEnginePtr<UObject>* Value = (TEnginePtr<UObject>*)Data.get(handle(Type.GetNode(), InObject)).data();
 							TEnginePtr<UObject> EnginePtr = *Value;
-							UClass* Class = EnginePtr->GetClass();
-							multimap<FString, TEnginePtr<UObject>> Objects = ObjectMap[Class];
-							NewPropUI = new CMFCPropertyGridProperty(PropName.data(), EnginePtr->GetName().c_str(), TEXT(""));
+							FString Name;
+							if (EnginePtr)
+							{
+								Name = EnginePtr->GetName();
+							}
+							UClass* Class = UClass::FindClass(Property.ClassName);							multimap<FString, TEnginePtr<UObject>> Objects = ObjectMap[Class];
+							NewPropUI = new CMFCPropertyGridProperty(PropName.data(), Name.c_str(), TEXT(""));
 							for (auto& It : Objects)
 							{
-								NewPropUI->AddOption(It.first.c_str());
+								NewPropUI->AddOption(It.first.c_str(), TRUE);
 							}
 							NewPropUI->AllowEdit(FALSE);
 							{

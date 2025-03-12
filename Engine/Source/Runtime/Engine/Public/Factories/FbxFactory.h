@@ -14,7 +14,7 @@ namespace fbxsdk
 struct FMeshData
 {
     FString Name;
-    TArray<FPositionNormal> Vertices;
+    TArray<FPositionNormalUV> Vertices;
     TArray<uint32> Indices;
 
     uint32 NumPrimitives = 0;

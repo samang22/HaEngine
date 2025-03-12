@@ -16,7 +16,7 @@ TGlobalResource<FStaticMeshVertexDeclaration> GStaticMeshVertexDeclaration;
 class ENGINE_API FStaticMeshVertexBuffer : public FVertexBuffer
 {
 public:
-    TResourceArray<FPositionNormal> VertexData;
+    TResourceArray<FPositionNormalUV> VertexData;
 
     virtual void InitRHI(FRHICommandList& RHICmdList) override
     {
@@ -56,17 +56,15 @@ void FStaticMeshRenderData::Create(UStaticMesh* Outer, const FMeshData& NewMeshD
 {
     Name = NewMeshData.Name;
 
-    TShaderMapRef<FMaterialVS> VertexShader;
-    TShaderMapRef<FMaterialPS> PixelShader;
-    Material = NewObject<UMaterial>(Outer, UMaterial::StaticClass());
-    Material->SetVertexShader(VertexShader);
-    Material->SetPixelShader(PixelShader);
+    Material = GetDefault<UMaterial>()->DefaultMaterial;
 
     TObjectPtr<FStaticMeshVertexBuffer> VertexBuffer = make_shared<FStaticMeshVertexBuffer>();
     VertexBuffer->VertexData = NewMeshData.Vertices;
 
     TObjectPtr<FStaticMeshIndexBuffer> IndexBuffer = make_shared<FStaticMeshIndexBuffer>();
     IndexBuffer->IndexData = NewMeshData.Indices;
+
+    TShaderMapRef<FMaterialVS> VertexShader;
 
     VertexFactory.Create(VertexBuffer, IndexBuffer, VertexShader->GetConstantBufferInfo(TEXT("FObjectUniformBuffer")));
 

@@ -8,43 +8,39 @@
 AStaticMeshActor::AStaticMeshActor()
 {
 	TEnginePtr<UStaticMesh> StaticMesh =
-		FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Cube.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Cone.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Cylinder.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Plane.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/SK_SMG11_X.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/SK_KA47_X.FBX");
-	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Mesh/Sphere.FBX");
+		FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Engine/Mesh/Cube.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Engine/Mesh/Cone.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Engine/Mesh/Cylinder.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Engine/Mesh/Plane.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Engine/Mesh/SK_SMG11_X.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Engine/Mesh/SK_KA47_X.FBX");
+	FAssetManager::Get()->LoadAsset<UStaticMesh>(FPaths::ContentDir() + L"/Engine/Mesh/Sphere.FBX");
+
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	StaticMeshComponent->SetStaticMesh(StaticMesh);
-	StaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -200.f));
-
-	for (int i = 0; i < StaticMeshComponent->GetMaterialCount(); ++i)
-	{
-		TObjectPtr<UMaterial> NewMaterial = NewObject<UMaterial>(StaticMeshComponent, nullptr, TEXT("Material"), RF_NoFlags, StaticMesh->GetMaterial(i));
-		StaticMeshComponent->SetMaterial(NewMaterial, i);
-	}
 
 	ChildStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ChildStaticMeshComponent"));
 	ChildStaticMeshComponent->SetStaticMesh(StaticMesh);
-	ChildStaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -200.f));
+	ChildStaticMeshComponent->SetRelativeLocation(FVector(0.f, 0.f, -100.f));
 	ChildStaticMeshComponent->SetupAttachment(StaticMeshComponent);
 
 	RootComponent = Cast<USceneComponent>(StaticMeshComponent);
 }
 
-void AStaticMeshActor::OnPropertyChanged(FProperty&)
+void AStaticMeshActor::OnPropertyChanged(FProperty& InProperty) 
 {
-	for (uint32 i = 0; i < StaticMeshComponent->GetMaterialCount(); ++i)
-	{
-		UMaterial* Material = StaticMeshComponent->GetMaterial(i);
-		Material->SetRasterizerState((ERasterizerState)RasterizerState);
-	}
+	Super::OnPropertyChanged(InProperty);
 }
 
 void AStaticMeshActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//for (uint32 i = 0; i < StaticMeshComponent->GetMaterialCount(); ++i)
+	//{
+	//    UMaterial* Material = StaticMeshComponent->GetMaterial(i);
+	//    Material->SetRasterizerState((ERasterizerState)RasterizerState);
+	//}
 }
 
 void AStaticMeshActor::Tick(float DeltaSeconds)

@@ -43,6 +43,15 @@ AActor::AActor(const FObjectInitializer& ObjectInitializer)
 
 }
 
+void AActor::OnPropertyChanged(FProperty& InProperty) 
+{
+	Super::OnPropertyChanged(InProperty);
+	for (TEnginePtr<UActorComponent> It : OwnedComponents)
+	{
+		It->OnPropertyChanged(InProperty);
+	}
+}
+
 void AActor::Save(FArchive& Ar)
 {
 	uint64 ComponentSize = OwnedComponents.size();

@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Shader.h"
+#include "Engine/Texture2D.h"
 #include "Material.generated.h"
 
 class FMaterialVS : public FShader
@@ -11,6 +12,8 @@ class FMaterialPS : public FShader
 {
     DECLARE_SHADER_TYPE(FMaterialPS)
 };
+
+class UTexture2D;
 
 /**
  * 재질(Material)은 씬의 시각적 외형을 제어하기 위해 메쉬에 적용할 수 있는 에셋입니다.
@@ -24,7 +27,14 @@ class ENGINE_API UMaterial : public UObject
     GENERATED_BODY()
 
 public:
+    static inline TEnginePtr<UMaterial> DefaultMaterial;
+    static TEnginePtr<UMaterial> CreateMaterial(const FString& MaterialName,
+        const FString& BaseColorTexturePath, const FString& MetallicTexturePath,
+        const FString& RoughnessTexturePath, const FString& NormalTexturePath, const FString& AmbientOcclusionTexturePath);
+
+public:
     UMaterial();
+    ~UMaterial();
     virtual void PostInitProperties() override;
     void SetVertexShader(TShaderMapRef<FMaterialVS> InShader);
     void SetPixelShader(TShaderMapRef<FMaterialPS> InShader);
@@ -38,7 +48,36 @@ public:
     void SetRasterizerState(FRHIRasterizerState* InRasterizerState) { RHIRasterizerState = InRasterizerState; }
     FRHIRasterizerState* GetRasterizerState() { return RHIRasterizerState; }
 
-private:
+    void SetBaseColorTexture(UTexture2D* InTexture) { BaseColorTexture = InTexture; }
+    void SetMetallicTexture(UTexture2D* InTexture) { MetallicTexture = InTexture; }
+    void SetRoughnessTexture(UTexture2D* InTexture) { RoughnessTexture = InTexture; }
+    void SetNormalTexture(UTexture2D* InTexture) { NormalTexture = InTexture; }
+    void SetAmbientOcclusionTexture(UTexture2D* InTexture) { AmbientOcclusionTexture = InTexture; }
+
+    UTexture2D* GetBaseColorTexture() const { return BaseColorTexture; }
+    UTexture2D* GetMetallicTexture() const { return MetallicTexture; }
+    UTexture2D* GetRoughnessTexture() const { return RoughnessTexture; }
+    UTexture2D* GetNormalTexture() const { return NormalTexture; }
+    UTexture2D* GetAmbientOcclusionTexture() const { return AmbientOcclusionTexture; }
+
+    FRHITexture* GetBaseColorTextureRHI() const { return BaseColorTexture ? BaseColorTexture->GetTextureRHI() : nullptr; }
+    FRHITexture* GetMetallicTextureRHI() const { return MetallicTexture ? MetallicTexture->GetTextureRHI() : nullptr; }
+    FRHITexture* GetRoughnessTextureRHI() const { return RoughnessTexture ? RoughnessTexture->GetTextureRHI() : nullptr; }
+    FRHITexture* GetNormalTextureRHI() const { return NormalTexture ? NormalTexture->GetTextureRHI() : nullptr; }
+    FRHITexture* GetAmbientOcclusionTextureRHI() const { return AmbientOcclusionTexture ? AmbientOcclusionTexture->GetTextureRHI() : nullptr; }
+
+    FRHISamplerState* GetTextureSampler() const { return TextureSampler; }
+
+protected:
+    UTexture2D* BaseColorTexture = nullptr;
+    UTexture2D* MetallicTexture = nullptr;
+    UTexture2D* RoughnessTexture = nullptr;
+    UTexture2D* NormalTexture = nullptr;
+    UTexture2D* AmbientOcclusionTexture = nullptr;
+
+    FRHISamplerState* TextureSampler = nullptr;
+
+protected:
     TShaderMapRef<FMaterialVS> VertexShader;
     TShaderMapRef<FMaterialPS> PixelShader;
     FRHIRasterizerState* RHIRasterizerState = nullptr;

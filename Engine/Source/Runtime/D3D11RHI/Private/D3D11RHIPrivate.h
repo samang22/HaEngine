@@ -153,7 +153,8 @@ public:
     virtual void RHISetShaderUniformBuffer(EShaderFrequency Frequency, uint8 RegisterIndex, FRHIUniformBuffer* InUniformBuffer) final override;
 
     virtual FTextureRHIRef RHICreateTexture(const FRHITextureCreateDesc& CreateDesc) final override;
-    virtual FTextureRHIRef RHICreateTexture(const FString& InFilePath) final override;
+    virtual FTextureRHIRef RHICreateTexture(const FString& InFilePath, const FString& InExtension) final override;
+    virtual FTextureRHIRef RHICreateCubeTexture(const FString& InFilePath, const FString& InExtension) final override;
 
     virtual void RHISetViewport(float MinX, float MinY, float MinZ, float MaxX, float MaxY, float MaxZ) override;
     virtual void RHISetScissorRect(bool bEnable, uint32 MinX, uint32 MinY, uint32 MaxX, uint32 MaxY) final override;

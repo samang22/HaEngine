@@ -41,7 +41,8 @@ public:
 
 	virtual bool RHICompileShader(class FShaderType* InShaderType, TObjectPtr<class FShader>& OutShader) = 0;
 	virtual FTextureRHIRef RHICreateTexture(const FRHITextureCreateDesc& CreateDesc) = 0;
-	virtual FTextureRHIRef RHICreateTexture(const FString& InFilePath) = 0;
+	virtual FTextureRHIRef RHICreateTexture(const FString& InFilePath, const FString& InExtension) = 0;
+	virtual FTextureRHIRef RHICreateCubeTexture(const FString& InFilePath, const FString& InExtension) = 0;
 
 	virtual FSamplerStateRHIRef RHICreateSamplerState(const FSamplerStateInitializerRHI& Initializer) = 0;
 	virtual FDepthStencilStateRHIRef RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer) = 0;

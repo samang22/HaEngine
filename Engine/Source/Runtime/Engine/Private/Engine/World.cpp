@@ -65,12 +65,13 @@ void UWorld::InitalizeNewWorld()
 
 	FActorSpawnParameters ActorSpawnParameters;
 	ActorSpawnParameters.TransformScaleMethod = ESpawnActorScaleMethod::OverrideRootScale;
-	FTransform TransformLeft = FTransform(FRotator::ZeroRotator, FVector3D(200.f, -100.f, 0.f), FVector3D(0.5f, 0.5f, 0.5f));
-	FTransform TransformRight = FTransform(FRotator::ZeroRotator, FVector3D(200.f, 100.f, 0.f), FVector3D(0.5f, 0.5f, 0.5f));	
+	FTransform TransformLeft = FTransform(FRotator::ZeroRotator, FVector3D(200.f, -50.f, 0.f), FVector3D(1.f, 1.f, 1.f));
+	FTransform TransformRight = FTransform(FRotator::ZeroRotator, FVector3D(200.f, 50.f, 0.f), FVector3D(1.f, 1.f, 1.f));
 	AStaticMeshActor* Actor = SpawnActor<AStaticMeshActor>(nullptr, TransformLeft, ActorSpawnParameters);
 	AStaticMeshActor* Actor2 = SpawnActor<AStaticMeshActor>(nullptr, TransformRight, ActorSpawnParameters);
 
-	SpawnActor<ADirectionalLight>();
+	ADirectionalLight* DirectionalLight = SpawnActor<ADirectionalLight>();
+	DirectionalLight->SetLightColor(FLinearColor(0.5f, 0.5f, 0.5f));
 }
 
 void UWorld::InitializeActorsForPlay(FRegisterComponentContext* Context)

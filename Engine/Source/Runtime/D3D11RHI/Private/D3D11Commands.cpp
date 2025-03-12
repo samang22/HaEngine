@@ -418,70 +418,219 @@ FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(const FRHITextureCreateDesc& C
     return NewTexture;
 }
 
-FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(const FString& InFilePath)
+class FTextureBulkData : public FResourceBulkDataInterface
+{
+public:
+    FTextureBulkData() = default;
+    FTextureBulkData(DirectX::ScratchImage& InImage)
+        : ImageBulkData(InImage.GetPixels()), Size(InImage.GetPixelsSize())
+    {
+    }
+
+    /**
+     * @return 미리 할당된 리소스 메모리에 대한 포인터를 반환합니다.
+     */
+    virtual const void* GetResourceBulkData() const
+    {
+        return ImageBulkData;
+    }
+
+    /**
+     * @return 리소스 메모리의 크기를 반환합니다.
+     */
+    virtual uint32 GetResourceBulkDataSize() const
+    {
+        return Size;
+    }
+
+    /**
+     * RHI 리소스를 초기화한 후 메모리를 해제합니다.
+     */
+    virtual void Discard()
+    {
+        ImageBulkData = nullptr;
+        Size = 0;
+    }
+
+private:
+    uint8* ImageBulkData = nullptr;
+    uint32 Size = 0;
+};
+
+FString ChangeFileExtension(const FString& filePath, const FString& newExtension)
+{
+    FString::size_type dotPos = filePath.find_last_of(TEXT("."));
+    if (dotPos == std::string::npos) {
+        // 확장자가 없을 경우 그냥 새로운 확장자를 덧붙임
+        return filePath + newExtension;
+    }
+    // 확장자를 변경한 새로운 파일 경로 반환
+    return filePath.substr(0, dotPos) + newExtension;
+}
+
+EPixelFormat ConvertDXGIFormatToUEFormat(DXGI_FORMAT dxgiFormat)
+{
+    switch (dxgiFormat)
+    {
+    case DXGI_FORMAT_R8G8B8A8_UNORM:
+        return PF_R8G8B8A8;
+    case DXGI_FORMAT_B8G8R8A8_UNORM:
+        return PF_B8G8R8A8;
+    case DXGI_FORMAT_R16G16B16A16_FLOAT:
+        return PF_FloatRGBA;
+    case DXGI_FORMAT_R32G32B32A32_FLOAT:
+        return PF_A32B32G32R32F;
+    case DXGI_FORMAT_D24_UNORM_S8_UINT:
+        return PF_DepthStencil;
+    case DXGI_FORMAT_R32_FLOAT:
+        return PF_R32_FLOAT;
+    case DXGI_FORMAT_R8_UNORM:
+        return PF_G8;
+    case DXGI_FORMAT_R16G16_FLOAT:
+        return PF_G16R16F;
+    case DXGI_FORMAT_R16G16B16A16_UNORM:
+        return PF_R16G16B16A16_UNORM;
+    case DXGI_FORMAT_BC1_UNORM:
+        return PF_DXT1;
+    case DXGI_FORMAT_BC2_UNORM:
+        return PF_DXT3;
+    case DXGI_FORMAT_BC3_UNORM:
+        return PF_DXT5;
+    case DXGI_FORMAT_R16_UNORM:
+        return PF_R16_UINT;
+    case DXGI_FORMAT_R11G11B10_FLOAT:
+        return PF_FloatR11G11B10;
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+        return PF_B8G8R8A8;
+    default:
+        _ASSERT(false); // 필요하면 추가 할 것
+        return PF_Unknown;
+    }
+}
+
+
+FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(const FString& InFilePath, const FString& InExtension) 
 {
     if (Textures.contains(InFilePath))
     {
         return Textures[InFilePath];
     }
 
-    DirectX::ScratchImage Image;
-    HRESULT Hr = DirectX::LoadFromDDSFile(InFilePath.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, Image);
-    if (FAILED(Hr))
+    if (InExtension.empty())
     {
-        E_LOG(Error, TEXT("Failed to Load From DDS File: {}"), InFilePath);
+        E_LOG(Error, TEXT("확장자가 없는 파일 경로: {}"), InFilePath);
         return FTextureRHIRef();
     }
 
-    class FCubeTextureBulkData : public FResourceBulkDataInterface
+    DirectX::ScratchImage* ScratchImage = nullptr;
+    DirectX::ScratchImage Image;
+    DirectX::ScratchImage GeneratedWIthMipImage;
+    FTextureBulkData BulkData;
+
+    if (InExtension == TEXT("png"))
     {
-    public:
-        FCubeTextureBulkData(DirectX::ScratchImage& InImage)
-            : ImageBulkData(InImage.GetPixels()), Size(InImage.GetPixelsSize()) { }
-        /**
-         * @return 미리 할당된 리소스 메모리에 대한 포인터를 반환합니다.
-         */
-        virtual const void* GetResourceBulkData() const
+        HRESULT Hr = DirectX::LoadFromWICFile(InFilePath.c_str(), DirectX::WIC_FLAGS_NONE, nullptr, Image);
+        if (FAILED(Hr))
         {
-            return ImageBulkData;
+            E_LOG(Error, TEXT("Failed to Load From WIC File: {}"), InFilePath);
+            return FTextureRHIRef();
         }
-
-        /**
-         * @return 리소스 메모리의 크기를 반환합니다.
-         */
-        virtual uint32 GetResourceBulkDataSize() const
+    }
+    else if (InExtension == TEXT("dds"))
+    {
+        HRESULT Hr = DirectX::LoadFromDDSFile(InFilePath.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, Image);
+        if (FAILED(Hr))
         {
-            return Size;
+            E_LOG(Error, TEXT("Failed to Load From DDS File: {}"), InFilePath);
+            return FTextureRHIRef();
         }
+    }
+    else
+    {
+        E_LOG(Error, TEXT("지원하지 않는 Texture Format: {}"), InFilePath);
+    }
 
-        /**
-         * RHI 리소스를 초기화한 후 메모리를 해제합니다.
-         */
-        virtual void Discard()
+    {
+        const DirectX::TexMetadata& Meta = Image.GetMetadata();
+        if (Meta.mipLevels == 1 && Meta.width >= 16 && Meta.height >= 16)
         {
-            ImageBulkData = nullptr;
-            Size = 0;
+            HRESULT Hr = DirectX::GenerateMipMaps(Image.GetImages(), Image.GetImageCount(), Image.GetMetadata(), DirectX::TEX_FILTER_DEFAULT, 0, GeneratedWIthMipImage);
+            if (FAILED(Hr))
+            {
+                E_LOG(Error, TEXT("Failed to GenerateMipMaps : {}"), InFilePath);
+                return FTextureRHIRef();
+            }
+
+            FString NewFilePath = ChangeFileExtension(InFilePath, TEXT(".dds"));
+            Hr = DirectX::SaveToDDSFile(GeneratedWIthMipImage.GetImages(), GeneratedWIthMipImage.GetMetadata().mipLevels, GeneratedWIthMipImage.GetMetadata(), DirectX::DDS_FLAGS_NONE, NewFilePath.c_str());
+            if (FAILED(Hr))
+            {
+                E_LOG(Error, TEXT("Failed to SaveToDDSFile : {}"), InFilePath);
+                return FTextureRHIRef();
+            }
+            E_LOG(Warning, TEXT("MipMap을 추가한 다음 DDS File을 사용하세요. {}"), NewFilePath);
+            ScratchImage = &GeneratedWIthMipImage;
         }
+        else
+        {
+            ScratchImage = &Image;
+        }
+    }
 
-    private:
-        uint8* ImageBulkData = nullptr;
-        uint32 Size = 0;
-    };
+    BulkData = FTextureBulkData(*ScratchImage);
 
-    FCubeTextureBulkData BulkData(Image);
+    const DirectX::TexMetadata& Meta = ScratchImage->GetMetadata();
+    const EPixelFormat Format = ConvertDXGIFormatToUEFormat(Meta.format);
 
-    const DirectX::TexMetadata& Meta = Image.GetMetadata();
     const FRHITextureCreateDesc Desc =
-        FRHITextureCreateDesc::CreateCube(InFilePath.data())
+        FRHITextureCreateDesc::Create2D(InFilePath.data())
         .SetExtent(Meta.width, Meta.height)
-        .SetFormat(GPixelFormats[Meta.format].UnrealFormat)
+        .SetFormat(Format)
         .SetNumMips(Meta.mipLevels)
+        .SetFlags(TexCreate_ShaderResource)
         .SetBulkData(&BulkData);
 
     FTextureRHIRef NewTexture = RHICreateTexture(Desc);
     return NewTexture;
 }
 
+
+FTextureRHIRef FD3D11DynamicRHI::RHICreateCubeTexture(const FString& InFilePath, const FString& InExtension)
+{
+    if (Textures.contains(InFilePath))
+    {
+        return Textures[InFilePath];
+    }
+
+    if (InExtension != TEXT("dds"))
+    {
+        E_LOG(Error, TEXT("지원하지 않는 CubeTexture Format: {}"), InFilePath);
+        return FTextureRHIRef();
+    }
+
+    DirectX::ScratchImage Image;
+
+    HRESULT Hr = DirectX::LoadFromDDSFile(InFilePath.c_str(), DirectX::DDS_FLAGS_NONE, nullptr, Image);
+    if (FAILED(Hr))
+    {
+        E_LOG(Error, TEXT("Failed to Load From DDS File: {}"), InFilePath);
+        return FTextureRHIRef();
+    }
+    FTextureBulkData BulkData(Image);
+
+    const DirectX::TexMetadata& Meta = Image.GetMetadata();
+    const EPixelFormat Format = ConvertDXGIFormatToUEFormat(Meta.format);
+    const FRHITextureCreateDesc Desc =
+        FRHITextureCreateDesc::CreateCube(InFilePath.data())
+        .SetExtent(Meta.width, Meta.height)
+        .SetFormat(Format)
+        .SetNumMips(Meta.mipLevels)
+        .SetFlags(TexCreate_ShaderResource)
+        .SetBulkData(&BulkData);
+
+    FTextureRHIRef NewTexture = RHICreateTexture(Desc);
+    return NewTexture;
+}
 
 struct FRTVDesc
 {

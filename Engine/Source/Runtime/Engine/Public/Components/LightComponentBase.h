@@ -10,7 +10,7 @@ class ENGINE_API ULightComponentBase : public USceneComponent
     GENERATED_BODY()
 public:
     FLinearColor GetLightColor() const { return FLinearColor(LightColor); }
-
+    void SetLightColor(const FLinearColor& InColor) { LightColor = FVector(InColor.x, InColor.y, InColor.z); }
 protected:
     /**
      * 빛의 색을 필터링합니다.

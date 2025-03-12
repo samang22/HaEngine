@@ -22,6 +22,7 @@ public class FrontendEngineProject : CommonProject
         // Contents
         SourceFilesExtensions.Add(".fbx");
         SourceFilesExtensions.Add(".dds");
+        SourceFilesExtensions.Add(".png");
 
         StripFastBuildSourceFiles = false;
 

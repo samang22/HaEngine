@@ -122,9 +122,14 @@ public:
         return GDynamicRHI->RHICreateTexture(CreateDesc);
     }
 
-    FORCEINLINE FTextureRHIRef CreateTexture(const FString& InFilePath)
+    FORCEINLINE FTextureRHIRef CreateTexture(const FString& InFilePath, const FString& InExtension)
     {
-        return GDynamicRHI->RHICreateTexture(InFilePath);
+        return GDynamicRHI->RHICreateTexture(InFilePath, InExtension);
+    }
+
+    FORCEINLINE FTextureRHIRef GetTexture(const FString& InFilePath)
+    {
+        return GDynamicRHI->RHICreateTexture(InFilePath, FString());
     }
 
     FORCEINLINE void BeginRenderPass(const FRHIRenderPassInfo& InInfo, const TCHAR* Name)

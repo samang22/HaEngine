@@ -67,4 +67,11 @@ public:
     };
     FSceneUniformBuffer SceneUniformBuffer;
     FUniformBufferRHIRef SceneUniformBufferRHI;
+
+    struct MS_ALIGN(SHADER_PARAMETER_STRUCT_ALIGNMENT) FXAAConstants
+    {
+        FVector2D ScreenSize;
+    };
+    FXAAConstants FXAAUniformBuffer;
+    FUniformBufferRHIRef FXAAUniformBufferRHI;
 };

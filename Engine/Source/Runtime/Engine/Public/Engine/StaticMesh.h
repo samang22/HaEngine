@@ -16,7 +16,7 @@ public:
 
 	FVertexFactory VertexFactory;
 
-	TObjectPtr<UMaterial> Material;
+	TEnginePtr<UMaterial> Material;
 	uint32 NumVertices = 0;
 	uint32 NumPrimitives = 0;
 };

@@ -7,9 +7,10 @@ public:
     virtual void InitRHI(FRHICommandList& RHICmdList) override
     {
         FVertexDeclarationElementList Elements;
-		const uint16 Stride = sizeof(FPositionNormal);
-		Elements.push_back(FVertexElement(0, STRUCT_OFFSET(FPositionNormal, Position), VET_Float3, 0, Stride));
-		Elements.push_back(FVertexElement(0, STRUCT_OFFSET(FPositionNormal, Normal), VET_Float3, 1, Stride));
+		const uint16 Stride = sizeof(FPositionNormalUV);
+		Elements.push_back(FVertexElement(0, STRUCT_OFFSET(FPositionNormalUV, Position), VET_Float3, 0, Stride));
+		Elements.push_back(FVertexElement(0, STRUCT_OFFSET(FPositionNormalUV, Normal), VET_Float3, 1, Stride));
+		Elements.push_back(FVertexElement(0, STRUCT_OFFSET(FPositionNormalUV, UV), VET_Float2, 2, Stride));
 		VertexDeclarationRHI = GDynamicRHI->RHICreateVertexDeclaration(Elements);
     }
 };

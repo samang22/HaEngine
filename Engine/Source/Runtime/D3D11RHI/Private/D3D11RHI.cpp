@@ -8,15 +8,15 @@ void FD3D11DynamicRHI::ClearState()
 template <EShaderFrequency ShaderFrequency>
 void FD3D11DynamicRHI::ClearAllShaderResourcesForFrequency()
 {
-    //int32 MaxIndex = MaxBoundShaderResourcesIndex[ShaderFrequency];
-    //for (int32 ResourceIndex = MaxIndex; ResourceIndex >= 0; --ResourceIndex)
-    //{
-    //    if (CurrentResourcesBoundAsSRVs[ShaderFrequency][ResourceIndex] != nullptr)
-    //    {
-    //        // Unset the SRV from the device context
-    //        //SetShaderResourceView<ShaderFrequency>(nullptr, nullptr, ResourceIndex);
-    //    }
-    //}
+    int32 MaxIndex = MaxBoundShaderResourcesIndex[ShaderFrequency];
+    for (int32 ResourceIndex = MaxIndex; ResourceIndex >= 0; --ResourceIndex)
+    {
+        if (CurrentResourcesBoundAsSRVs[ShaderFrequency][ResourceIndex] != nullptr)
+        {
+            // Unset the SRV from the device context
+            SetShaderResourceView<ShaderFrequency>(nullptr, nullptr, ResourceIndex);
+        }
+    }
     StateCache.ClearConstantBuffers<ShaderFrequency>();
 }
 

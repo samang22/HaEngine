@@ -14,6 +14,7 @@ private:
 
 public:
     ALight(const FObjectInitializer& ObjectInitializer);
+    virtual void SetLightColor(FLinearColor Color);
 
 public:
     class ULightComponent* GetLightComponent() const { return LightComponent; }
