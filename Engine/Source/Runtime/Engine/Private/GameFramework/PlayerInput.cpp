@@ -1,11 +1,40 @@
 #include "GameFramework/PlayerInput.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/InputComponent.h"
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 
 TArray<FInputAxisKeyMapping> UPlayerInput::EngineDefinedAxisMappings;
 
 UPlayerInput::UPlayerInput()
 {
+    if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
+
+    SetLockMouseMode(bLockMouse);
+    LastMouseState = InitialMouseState;
+}
+
+void UPlayerInput::SetLockMouseMode(bool bMode)
+{
+    InitialMouseState = DirectX::Mouse::Get().GetState();
+    bLockMouse = bMode;
+    if (bLockMouse)
+    {
+        HWND hViewportHandle = GEngine->GetCurrentViewClient()->GetNativeWindowHandle();
+        RECT WndRect = {};
+        GetClientRect(hViewportHandle, &WndRect);
+        int CenterX = (WndRect.right + WndRect.left) / 2;
+        int CenterY = (WndRect.bottom + WndRect.top) / 2;
+        InitialMouseState.x = CenterX;
+        InitialMouseState.y = CenterY;
+
+        POINT Point = POINT(InitialMouseState.x, InitialMouseState.y);
+        ClientToScreen(hViewportHandle, &Point);
+        SetCursorPos(Point.x, Point.y); // 변환된 화면 좌표를 사용합니다
+
+        LPARAM lParam = MAKELPARAM(InitialMouseState.x, InitialMouseState.y); // 변환된 화면 좌표를 사용합니다
+        DirectX::Mouse::Get().ProcessMessage(WM_MOUSEMOVE, 0, lParam);
+    }
 }
 
 void UPlayerInput::ProcessInputStack(const TArray<UInputComponent*>& InputComponentStack, const float DeltaTime, const bool bGamePaused)
@@ -18,7 +47,35 @@ void UPlayerInput::ProcessInputStack(const TArray<UInputComponent*>& InputCompon
 
     // EvaluateInputDelegates
     {
+        struct FUpdateLastMouseState
+        {
+            ~FUpdateLastMouseState()
+            {
+                LastMouseState = CurrentMouseState;
+            }
+            DirectX::Mouse::State& LastMouseState;
+            DirectX::Mouse::State& CurrentMouseState;
+        };
+
         DirectX::Keyboard::State KeyboardState = DirectX::Keyboard::Get().GetState();
+
+        DirectX::Mouse::State MouseState = DirectX::Mouse::Get().GetState();
+        FUpdateLastMouseState UpdateLastMouseStateScope{ .LastMouseState = LastMouseState, .CurrentMouseState = MouseState };
+
+        FVector2D Delta = FVector2D(MouseState.x - LastMouseState.x, LastMouseState.y - MouseState.y);
+
+        if (bLockMouse)
+        {
+            Delta = FVector2D(MouseState.x - InitialMouseState.x, InitialMouseState.y - MouseState.y);
+            {
+                HWND hViewportHandle = GEngine->GetCurrentViewClient()->GetNativeWindowHandle();
+                POINT Point = POINT(InitialMouseState.x, InitialMouseState.y);
+                // 우리 윈도우의 상대 좌표를 Windows의 Screen 좌표로 변환한다
+                ClientToScreen(hViewportHandle, &Point);
+                SetCursorPos(Point.x, Point.y);
+            }
+        }
+
         for (UInputComponent* const InputComponent : InputComponentStack)
         {
             if (!InputComponent->AxisBindings.empty())
@@ -40,10 +97,18 @@ void UPlayerInput::ProcessInputStack(const TArray<UInputComponent*>& InputCompon
                     float Scale = 0.f;
                     for (auto& ItFind : Results)
                     {
-                        const bool bKeyDown = KeyboardState.IsKeyDown(ItFind.Key);
-                        if (bKeyDown)
+                        if (ItFind.Key == EKeys::MouseX || ItFind.Key == EKeys::MouseY)
                         {
-                            Scale += ItFind.Scale;
+                            Scale = ItFind.Key == EKeys::MouseX ? Scale += Delta.x : Scale += Delta.y;
+                            Scale *= ItFind.Scale;
+                        }
+                        else
+                        {
+                            const bool bKeyDown = KeyboardState.IsKeyDown(ItFind.Key);
+                            if (bKeyDown)
+                            {
+                                Scale += ItFind.Scale;
+                            }
                         }
                     }
                     ItAxisBinding.AxisDelegate.Broadcast(Scale);

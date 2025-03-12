@@ -20,6 +20,29 @@ UCLASS()
 class ENGINE_API AActor : public UObject
 {
 	GENERATED_BODY()
+
+public:
+	/**
+	 * 이 액터를 볼 때 카메라 뷰포인트를 계산합니다.
+	 *
+	 * @param   DeltaTime   마지막 업데이트 이후 델타 시간(초)
+	 * @param   OutResult   카메라 구성
+	 */
+	virtual void CalcCamera(float DeltaTime, struct FMinimalViewInfo& OutResult);
+
+	/**
+	 * 액터의 시점을 반환합니다.
+	 * 이는 카메라가 아닌, 액터의 '눈'을 의미합니다.
+	 * 예를 들어, Pawn의 경우 이는 눈 높이 위치와
+	 * 뷰 회전을 정의합니다 (Pawn 회전과는 다릅니다. Pawn 회전의 pitch는 0으로 초기화됩니다).
+	 * 1인칭 뷰 카메라는 일반적으로 이 시점을 사용합니다. 대부분의 트레이스(무기, AI)는 이 시점에서 수행됩니다.
+	 *
+	 * @param   OutLocation - 시점의 위치
+	 * @param   OutRotation - 액터의 뷰 회전.
+	 */
+	 //UFUNCTION(BlueprintCallable, Category = Actor)
+	virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const;
+
 public:
 	AActor(const FObjectInitializer& ObjectInitializer);
 	virtual void OnPropertyChanged(struct FProperty&);

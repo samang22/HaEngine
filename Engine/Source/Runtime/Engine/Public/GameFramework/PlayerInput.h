@@ -78,6 +78,8 @@ public:
     /** 재맵핑할 수 없는 엔진 정의 축 매핑을 추가합니다. */
     static void AddEngineDefinedAxisMapping(const FInputAxisKeyMapping& AxisMapping);
 
+    static void SetLockMouseMode(bool bMode);
+
 public:
     UPlayerInput();
 
@@ -92,4 +94,8 @@ public:
 private:
     /** 엔진 시스템에 의해 정의된 축 매핑으로, 사용자가 다시 매핑할 수 없습니다 */
     static TArray<FInputAxisKeyMapping> EngineDefinedAxisMappings;
+    DirectX::Mouse::State LastMouseState;
+
+    static inline bool bLockMouse = true;
+    static inline DirectX::Mouse::State InitialMouseState;
 };

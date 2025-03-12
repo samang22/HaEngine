@@ -14,6 +14,8 @@ class ENGINE_API ADefaultPawn : public APawn
 public:
     ADefaultPawn();
 
+    virtual void Tick(float DeltaSeconds);
+
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
     /**
@@ -50,11 +52,18 @@ public:
      //UFUNCTION(BlueprintCallable, Category = "Pawn|Input", meta = (Keywords = "up down addpitch"))
     virtual void AddControllerPitchInput(float Val);
 
+    // BindAction 대체
+    virtual void ControlYawPitch(float Val);
+
 private:
     /** The mesh associated with this Pawn. */
     //UPROPERTY(Category = Pawn, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     UStaticMeshComponent* MeshComponent = nullptr;
 
     // MovementComponent가 미구현 이므로 Speed 값을 여기에 둠
-    float Speed = 20.f;
+    UPROPERTY(EditAnywhere)
+    float Speed = 200.f;
+
+    // F8을 누르면 회전 풀립니다
+    bool bControlYawPitch = true;
 };

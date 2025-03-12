@@ -110,9 +110,21 @@ void UWorld::Tick(float DeltaSeconds)
 {
 	if (WorldType == EWorldType::PIE)
 	{
+		APlayerController* PlayerController = nullptr;
+
 		for (TObjectPtr<AActor> Actor : PersistentLevel->Actors)
 		{
 			Actor->Tick(DeltaSeconds);
+			if (Actor->GetClass()->IsChildOf(APlayerController::StaticClass()))
+			{
+				_ASSERT(!PlayerController); // PC가 하나만 있어야 합니다.
+				PlayerController = Actor->As<APlayerController>().get();
+			}
+		}
+
+		if (PlayerController)
+		{
+			PlayerController->UpdateCameraManager(DeltaSeconds);
 		}
 	}
 }

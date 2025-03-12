@@ -11,14 +11,16 @@ void InitializeDefaultPawnInputBindings()
     {
         bBindingsAdded = true;
 
-        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_MoveForward"), EKeys::W, 1.f));
-        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_MoveForward"), EKeys::S, -1.f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_ControlYawPitch"), EKeys::F8, 1.f));
 
-        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_MoveRight"), EKeys::A, -1.f));
-        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_MoveRight"), EKeys::D, 1.f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_MoveForward"), EKeys::W, 1.0f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_MoveForward"), EKeys::S, -1.0f));
 
-        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_Turn"), EKeys::MouseX, 1.f));
-        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_LookUp"), EKeys::MouseY, -1.f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_MoveRight"), EKeys::A, -1.0f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_MoveRight"), EKeys::D, 1.0f));
+
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_Turn"), EKeys::MouseX, 0.2f));
+        UPlayerInput::AddEngineDefinedAxisMapping(FInputAxisKeyMapping(TEXT("DefaultPawn_LookUp"), EKeys::MouseY, 0.2f));
     }
 }
 
@@ -28,11 +30,18 @@ ADefaultPawn::ADefaultPawn()
     RootComponent = MeshComponent->As<USceneComponent>();
 }
 
+void ADefaultPawn::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+}
+
 void ADefaultPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
     InitializeDefaultPawnInputBindings();
+
+    PlayerInputComponent->BindAxis(TEXT("DefaultPawn_ControlYawPitch"), this, &ADefaultPawn::ControlYawPitch);
 
     PlayerInputComponent->BindAxis(TEXT("DefaultPawn_MoveForward"), this, &ADefaultPawn::MoveForward);
     PlayerInputComponent->BindAxis(TEXT("DefaultPawn_MoveRight"), this, &ADefaultPawn::MoveRight);
@@ -51,7 +60,9 @@ void ADefaultPawn::MoveForward(float Val)
             FVector3D ForwardVector = Transform.GetScaledAxis(EAxis::X);
 
             FVector ActorLocation = GetActorLocation();
-            ActorLocation = ActorLocation + ForwardVector * Val * Speed;
+            float DeltaTime = FApp::GetDeltaTime();
+            ActorLocation = ActorLocation + ForwardVector * Val * Speed * DeltaTime;
+
             SetActorLocation(ActorLocation);
 
             // transform to world space and add it
@@ -71,7 +82,9 @@ void ADefaultPawn::MoveRight(float Val)
             FVector3D ForwardVector = Transform.GetScaledAxis(EAxis::Y);
 
             FVector ActorLocation = GetActorLocation();
-            ActorLocation = ActorLocation + ForwardVector * Val * Speed;
+            float DeltaTime = FApp::GetDeltaTime();
+
+            ActorLocation = ActorLocation + ForwardVector * Val * Speed * DeltaTime;
             SetActorLocation(ActorLocation);
 
             // transform to world space and add it
@@ -82,6 +95,8 @@ void ADefaultPawn::MoveRight(float Val)
 
 void ADefaultPawn::AddControllerYawInput(float Val)
 {
+    if (!bControlYawPitch) { return; }
+
     if (Val != 0.f && Controller /*&& Controller->IsLocalPlayerController()*/)
     {
         APlayerController* const PC = CastChecked<APlayerController>(Controller);
@@ -91,9 +106,26 @@ void ADefaultPawn::AddControllerYawInput(float Val)
 
 void ADefaultPawn::AddControllerPitchInput(float Val)
 {
+    if (!bControlYawPitch) { return; }
+
     if (Val != 0.f && Controller /*&& Controller->IsLocalPlayerController()*/)
     {
         APlayerController* const PC = CastChecked<APlayerController>(Controller);
         PC->AddPitchInput(Val);
+    }
+}
+
+void ADefaultPawn::ControlYawPitch(float Val)
+{
+    static bool bTransition = false;
+    if (bTransition && Val == 1.f)
+    {
+        bTransition = false;
+        bControlYawPitch = !bControlYawPitch;
+        UPlayerInput::SetLockMouseMode(bControlYawPitch);
+    }
+    else if (Val == 0.f)
+    {
+        bTransition = true;
     }
 }

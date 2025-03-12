@@ -192,7 +192,12 @@ void AGameModeBase::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* S
     {
         // 이 플레이어를 위한 기본 클래스를 사용하여 폰을 생성하려고 시도합니다.
         //APawn* NewPawn = SpawnDefaultPawnFor(NewPlayer, StartSpot);
-        UClass* DefaultPawn = ADefaultPawn::StaticClass();
+        UClass* DefaultPawn = DefaultPawnClass;
+        if (!DefaultPawn)
+        {
+            DefaultPawn = ADefaultPawn::StaticClass();
+        }
+
         APawn* NewPawn = GetWorld()->SpawnActor<APawn>(DefaultPawn);
 
         if (NewPawn)

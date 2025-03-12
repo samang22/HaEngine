@@ -1,5 +1,6 @@
 #pragma once
 #include "GameFramework/Controller.h"
+#include "Camera/PlayerCameraManager.h"
 #include "PlayerController.generated.h"
 
 class APawn;
@@ -23,6 +24,18 @@ UCLASS(/*config = Game, BlueprintType, Blueprintable, meta = (ShortTooltip = "Pl
 class ENGINE_API APlayerController : public AController//, public IWorldPartitionStreamingSourceProvider
 {
     GENERATED_BODY()
+
+public:
+    // ******************************************************************************
+    // 카메라/뷰 관련 변수들
+
+    /** 이 플레이어 컨트롤러에 연결된 카메라 매니저입니다. */
+    //UPROPERTY(BlueprintReadOnly, Category = PlayerController)
+    APlayerCameraManager* PlayerCameraManager = nullptr;
+
+    /** 각 게임마다 PlayerCamera 클래스를 설정해야 하며, 그렇지 않으면 Engine.PlayerCameraManager가 사용됩니다. */
+    //UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = PlayerController)
+    TSubclassOf<APlayerCameraManager> PlayerCameraManagerClass;
 
 public:
     /**
@@ -53,6 +66,13 @@ public:
     virtual void InitPlayerState();
 
     virtual void Tick(float DeltaSeconds);
+
+    /** 서버 및 소유한 플레이어를 위한 카메라를 생성합니다. */
+    virtual void SpawnPlayerCameraManager();
+
+    /** 카메라 매니저를 업데이트합니다. 모든 액터가 틱 후 호출됩니다. */
+    virtual void UpdateCameraManager(float DeltaSeconds);
+
 public:
     /** 이 PlayerController에 새 UPlayer를 연결합니다. */
     virtual void SetPlayer(UPlayer* InPlayer);
@@ -104,6 +124,6 @@ public:
 protected:
     /** 컨트롤러의 제어 회전입니다. GetControlRotation을 참조하십시오. */
     //UPROPERTY()
-    FRotator ControlRotation;
+    //FRotator ControlRotation;
 
 };

@@ -77,7 +77,7 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
         PlayWorld->InitializeActorsForPlay(&Context);
         Context.Process();
     }
-    // @todo, 그냥 WorldContext.GamePlayer[0]을 사용?
+
     if (LocalPlayer)
     {
         LocalPlayer->SpawnPlayActor(/*URL.ToString(1), Error,*/ PlayWorld);

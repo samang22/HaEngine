@@ -119,4 +119,5 @@ public:
     //UPROPERTY(EditAnywhere, NoClear, BlueprintReadOnly, Category = Classes)
     TSubclassOf<APlayerState> PlayerStateClass;
 
+    TSubclassOf<APawn> DefaultPawnClass;
 };

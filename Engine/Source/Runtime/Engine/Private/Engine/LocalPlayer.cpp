@@ -15,9 +15,13 @@ void ULocalPlayer::SpawnPlayActor(UWorld* InWorld)
 
 void ULocalPlayer::CalcSceneView(FSceneViewFamily* ViewFamily, FVector& OutViewLocation, FRotator& OutViewRotation)
 {
-    // 이부분 우선 간소화 나중에 고려..
+    FMinimalViewInfo ViewInfo;
+    GetViewPoint(ViewInfo);
 
-    FRotator ViewRotation = OutViewRotation;// GetViewRotation();
+    OutViewLocation = ViewInfo.Location;
+    OutViewRotation = ViewInfo.Rotation;
+
+    FRotator ViewRotation = OutViewRotation;
 
     ViewFamily->ViewRotationMatrix = FInverseRotationMatrix(ViewRotation);
 
@@ -31,7 +35,7 @@ void ULocalPlayer::CalcSceneView(FSceneViewFamily* ViewFamily, FVector& OutViewL
         FPlane(0, 1, 0, 0),
         FPlane(0, 0, 0, 1));
 
-    FVector ViewOrigin = OutViewLocation;// GetViewLocation();
+    FVector ViewOrigin = OutViewLocation;
     ViewFamily->EyePosition = ViewOrigin;
 
     FMatrix ViewTranslationMatrix = FMatrix::CreateTranslation(-ViewOrigin);
@@ -60,4 +64,22 @@ void ULocalPlayer::CalcSceneView(FSceneViewFamily* ViewFamily, FVector& OutViewL
     ViewFamily->ProjectionMatrix = FReversedZPerspectiveMatrix(HalfRadianFOV, HalfRadianFOV, XAxisMultiplier, YAxisMultiplier, 10.f, 10.f);
 
     ViewFamily->ViewProjectionMatrix = ViewFamily->ViewMatrix * ViewFamily->ProjectionMatrix;
+}
+
+void ULocalPlayer::GetViewPoint(FMinimalViewInfo& OutViewInfo) 
+{
+    _ASSERT(PlayerController);
+    if (PlayerController != NULL)
+    {
+        _ASSERT(PlayerController->PlayerCameraManager);
+        if (PlayerController->PlayerCameraManager != NULL)
+        {
+            OutViewInfo = PlayerController->PlayerCameraManager->GetCameraCacheView();
+            //PlayerController->GetPlayerViewPoint(/*out*/ OutViewInfo.Location, /*out*/ OutViewInfo.Rotation);
+        }
+        else
+        {
+            //PlayerController->GetPlayerViewPoint(/*out*/ OutViewInfo.Location, /*out*/ OutViewInfo.Rotation);
+        }
+    }
 }

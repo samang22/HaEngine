@@ -37,6 +37,8 @@ public:
     virtual TObjectPtr<UWorld> CreatePIEWorldByDuplication(UWorld* InWorld);
     virtual void PostCreatePIEWorld(UWorld* InWorld);
 
+    UViewportClient* GetCurrentViewClient() { return CurrentViewportClient.Get(); }
+
 protected:
     /** 틱 레이트 제한기를 가져옵니다. */
     double GetMaxTickRate(double DeltaTime);

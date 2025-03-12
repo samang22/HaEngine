@@ -22,6 +22,8 @@ public:
     virtual void Draw();
     virtual void RequestResize(const uint32 NewSizeX, const uint32 NewSizeY);
 
+    HWND GetNativeWindowHandle() const { return hViewportHandle; }
+
 public:
     /**
      * @return 이 뷰포트에서 렌더링되는 장면을 반환

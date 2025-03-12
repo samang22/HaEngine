@@ -3,6 +3,41 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/InputComponent.h"
 
+void APawn::GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const
+{
+	OutLocation = GetPawnViewLocation();
+	OutRotation = GetViewRotation();
+}
+
+FVector APawn::GetPawnViewLocation() const
+{
+	return GetActorLocation() + FVector(0.f, 0.f, BaseEyeHeight);
+}
+
+FRotator APawn::GetViewRotation() const
+{
+	if (Controller != nullptr)
+	{
+		return Controller->GetControlRotation();
+	}
+	//else if (GetLocalRole() < ROLE_Authority)
+	//{
+	//    // check if being spectated
+	//    for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	//    {
+	//        APlayerController* PlayerController = Iterator->Get();
+	//        if (PlayerController &&
+	//            PlayerController->PlayerCameraManager &&
+	//            PlayerController->PlayerCameraManager->GetViewTargetPawn() == this)
+	//        {
+	//            return PlayerController->BlendedTargetViewRotation;
+	//        }
+	//    }
+	//}
+
+	return GetActorRotation();
+}
+
 AController* APawn::GetController() const
 {
 	return Controller;

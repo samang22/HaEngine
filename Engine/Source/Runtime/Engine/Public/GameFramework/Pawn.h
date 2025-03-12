@@ -9,6 +9,23 @@ class ENGINE_API APawn : public AActor
 {
     GENERATED_BODY()
 public:
+    virtual void GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const;
+
+    /** Returns    Pawn's eye location */
+    virtual FVector GetPawnViewLocation() const;
+    /**
+     * Pawn의 뷰 회전(보는 방향, 일반적으로 Controller->ControlRotation)을 가져옵니다.
+     * @return Pawn의 뷰 회전입니다.
+     */
+    virtual FRotator GetViewRotation() const;
+
+public:
+    /** 충돌 중심 위의 기본 눈 높이입니다. */
+    UPROPERTY(EditAnywhere/*, BlueprintReadWrite, Category = Camera*/)
+    float BaseEyeHeight = 0.f;
+
+
+
     /** Returns controller for this actor. */
     //UFUNCTION(BlueprintCallable, Category = Pawn)
     AController* GetController() const;

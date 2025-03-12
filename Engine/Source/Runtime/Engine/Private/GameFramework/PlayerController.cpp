@@ -25,12 +25,12 @@ void APlayerController::UpdateRotation(float DeltaTime)
 
     FRotator ViewRotation = GetControlRotation();
 
-    /*if (PlayerCameraManager)
+    if (PlayerCameraManager)
     {
         PlayerCameraManager->ProcessViewRotation(DeltaTime, ViewRotation, DeltaRot);
     }
 
-    AActor* ViewTarget = GetViewTarget();
+    /*AActor* ViewTarget = GetViewTarget();
     if (!PlayerCameraManager || !ViewTarget || !ViewTarget->HasActiveCameraComponent() || ViewTarget->HasActivePawnControlCameraComponent())
     {
         if (IsLocalPlayerController() && GEngine->XRSystem.IsValid() && GetWorld() != nullptr && GEngine->XRSystem->IsHeadTrackingAllowedForWorld(*GetWorld()))
@@ -60,7 +60,8 @@ void APlayerController::PostInitializeComponents()
 
     InitPlayerState();
 
-    //_ASSERT(false);
+    SpawnPlayerCameraManager();
+
     // SpawnPlayerCameraManager();
     // ResetCameraMode();
 
@@ -73,6 +74,42 @@ void APlayerController::PostInitializeComponents()
 
     //bPlayerIsWaiting = true;
     //StateName = NAME_Spectating; // ChangeState를 사용하지 마십시오. 플레이어가 수신될 때까지 SpectatorPawn을 생성하는 것을 지연시키기 원합니다.
+}
+
+void APlayerController::SpawnPlayerCameraManager()
+{
+    // 서버와 소유한 클라이언트는 카메라를 받습니다.
+    // 아키타입이 지정되지 않은 경우, Engine.PlayerCameraManager를 생성합니다. 모든 게임은 아키타입을 지정해야 합니다.
+    FActorSpawnParameters SpawnInfo;
+    SpawnInfo.Owner = this;
+    SpawnInfo.Instigator = GetInstigator();
+    SpawnInfo.ObjectFlags |= RF_Transient;  // 카메라 매니저를 맵에 저장하지 않기를 원합니다.
+
+    if (PlayerCameraManagerClass != NULL)
+    {
+        PlayerCameraManager = GetWorld()->SpawnActor<APlayerCameraManager>(PlayerCameraManagerClass, SpawnInfo);
+    }
+    else
+    {
+        PlayerCameraManager = GetWorld()->SpawnActor<APlayerCameraManager>(nullptr, SpawnInfo);
+    }
+
+    if (PlayerCameraManager != NULL)
+    {
+        PlayerCameraManager->InitializeFor(this);
+    }
+    else
+    {
+        E_LOG(Log, TEXT("Couldn't Spawn PlayerCameraManager for Player!!"));
+    }
+}
+
+void APlayerController::UpdateCameraManager(float DeltaSeconds)
+{
+    if (PlayerCameraManager != NULL)
+    {
+        PlayerCameraManager->UpdateCamera(DeltaSeconds);
+    }
 }
 
 void APlayerController::InitPlayerState()
@@ -130,6 +167,8 @@ void APlayerController::Tick(float DeltaSeconds)
     TickPlayerInput(DeltaSeconds, DeltaSeconds == 0.f);
 
     UpdateRotation(DeltaSeconds);
+
+    RotationInput = FRotator::ZeroRotator;
 }
 
 void APlayerController::TickPlayerInput(const float DeltaSeconds, const bool bGamePaused)
@@ -364,7 +403,7 @@ void APlayerController::OnPossess(APawn* PawnToPossess)
 
         PawnToPossess->PossessedBy(this);
 
-        // update rotation to match possessed pawn's rotation
+        // 조종 중인 폰의 회전에 맞게 회전을 업데이트합니다.
         SetControlRotation(PawnToPossess->GetActorRotation());
 
         SetPawn(PawnToPossess);

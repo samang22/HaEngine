@@ -43,6 +43,14 @@ public:
         FRotator& OutViewRotation);
 
 protected:
+    /**
+     * 이 플레이어의 뷰포인트를 가져옵니다.
+     * @param OutViewInfo - 반환 시 플레이어의 뷰 정보를 포함합니다.
+     */
+
+    virtual void GetViewPoint(FMinimalViewInfo& OutViewInfo);
+
+protected:
     /** 이 플레이어의 뷰를 포함하는 기본 뷰포트입니다. */
     //UPROPERTY()
     class UGameViewportClient* ViewportClient = nullptr;

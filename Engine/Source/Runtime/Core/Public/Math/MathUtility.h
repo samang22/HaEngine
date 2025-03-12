@@ -139,4 +139,5 @@ public:
     /** Clamps X to be between Min and Max, inclusive. Overload to support mixed int64/int32 types. */
     [[nodiscard]] static constexpr FORCEINLINE int64 Clamp(const int64 X, const int32 Min, const int32 Max) { return Clamp<int64>(X, Min, Max); }
 
+    static CORE_API float ClampAngle(float AngleDegrees, float MinAngleDegrees, float MaxAngleDegrees);
 };

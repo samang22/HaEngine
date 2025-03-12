@@ -1,5 +1,5 @@
 #include "GameFramework/Actor.h"
-
+#include "Camera/CameraTypes.h"
 #include "Engine/World.h"
 #include "Engine/Level.h"
 
@@ -37,6 +37,32 @@ static USceneComponent* FixupNativeActorComponents(AActor* Actor)
 	return SceneRootComponent;
 }
 
+void AActor::CalcCamera(float DeltaTime, FMinimalViewInfo& OutResult)
+{
+	//if (bFindCameraComponentWhenViewTarget)
+	//{
+	//    // Look for the first active camera component and use that for the view
+	//    TInlineComponentArray<UCameraComponent*> Cameras;
+	//    GetComponents(/*out*/ Cameras);
+
+	//    for (UCameraComponent* CameraComponent : Cameras)
+	//    {
+	//        if (CameraComponent->IsActive())
+	//        {
+	//            CameraComponent->GetCameraView(DeltaTime, OutResult);
+	//            return;
+	//        }
+	//    }
+	//}
+
+	GetActorEyesViewPoint(OutResult.Location, OutResult.Rotation);
+}
+
+void AActor::GetActorEyesViewPoint(FVector& OutLocation, FRotator& OutRotation) const
+{
+	OutLocation = GetActorLocation();
+	OutRotation = GetActorRotation();
+}
 
 AActor::AActor(const FObjectInitializer& ObjectInitializer)
 {
