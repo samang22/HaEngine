@@ -43,6 +43,12 @@ public:
 		return ComponentToWorld;
 	}
 
+    /** Return rotation of the component, in world space */
+    FORCEINLINE FRotator GetComponentRotation() const
+    {
+        return WorldRotationCache.NormalizedQuatToRotator(GetComponentTransform().GetQuaternion());
+    }
+
     /**
      * RelativeRotation의 실제 값을 가져옵니다.
      * 참고로, 이것이 루트 컴포넌트(어떤 것에도 부착되지 않은)일 경우나 GetAbsoluteRotation이 true를 반환할 때는 절대 회전일 수 있습니다.
@@ -229,6 +235,9 @@ private:
 	/** What we are currently attached to. If valid, RelativeLocation etc. are used relative to this object */
 	//UPROPERTY()
 	TEnginePtr<USceneComponent> AttachParent;
+
+    /** 가능하면 Quat<->Rotator 변환을 피하는 캐시입니다. GetComponentTransform().GetRotation()과 함께 사용해야 합니다. */
+    FRotationConversionCache WorldRotationCache;
 
     /**
      * 자식 SceneComponents의 목록입니다.

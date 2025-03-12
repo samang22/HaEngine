@@ -7,6 +7,7 @@ class AController;
 class APlayerController;
 class AGameSession;
 class AGameStateBase;
+class APlayerState;
 
 UCLASS()
 class ENGINE_API AGameModeBase : public AActor
@@ -56,6 +57,21 @@ public:
     /** PostLogin 프로세스의 일부로 호출됩니다. 새로운 플레이어를 생성하기 전의 마지막 단계입니다. */
     void DispatchPostLogin(AController* NewPlayer);
 
+    /** 플레이어가 게임에 참여할 준비가 되었음을 알리며, 이는 게임을 시작할 수 있습니다. */
+    //UFUNCTION(BlueprintNativeEvent, Category = Game)
+    void HandleStartingNewPlayer(APlayerController* NewPlayer);
+
+    /** FindPlayerStart가 반환한 위치에서 플레이어의 폰을 생성하려고 시도합니다. */
+    //UFUNCTION(BlueprintCallable, Category = Game)
+    virtual void RestartPlayer(AController* NewPlayer);
+
+    /** 지정된 액터의 위치에서 플레이어의 폰을 생성하려고 시도합니다. */
+    //UFUNCTION(BlueprintCallable, Category = Game)
+    virtual void RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot);
+
+    /** RestartPlayer의 두 번째 절반을 처리합니다. */
+    virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation);
+
     //~=============================================================================
 
     /**
@@ -87,10 +103,10 @@ protected:
     AGameSession* GameSession = nullptr;
 
     /** GameState는 모든 클라이언트에 관련 속성을 복제하는 데 사용됩니다. */
-//UPROPERTY(Transient)
+    //UPROPERTY(Transient)
     AGameStateBase* GameState = nullptr;
 
-protected:
+public:
     /** 로그인하는 플레이어를 위해 스폰할 PlayerController의 클래스입니다. */
     //UPROPERTY(EditAnywhere, NoClear, BlueprintReadOnly, Category = Classes)
     TSubclassOf<APlayerController> PlayerControllerClass;
@@ -98,4 +114,9 @@ protected:
     /** 이 GameMode와 연관된 GameState의 클래스입니다. */
     //UPROPERTY(EditAnywhere, NoClear, BlueprintReadOnly, Category = Classes)
     TSubclassOf<AGameStateBase> GameStateClass;
+
+    /** 이 클래스의 PlayerState는 모든 플레이어와 연관되어 플레이어의 관련 정보를 모든 클라이언트에 복제합니다. */
+    //UPROPERTY(EditAnywhere, NoClear, BlueprintReadOnly, Category = Classes)
+    TSubclassOf<APlayerState> PlayerStateClass;
+
 };

@@ -240,6 +240,11 @@ void AActor::SetOwner(AActor* NewOwner)
 	}
 }
 
+APawn* AActor::GetInstigator() const
+{
+	return Instigator;
+}
+
 UWorld* AActor::GetWorld() const
 {
 	// CDO 객체는 월드에 속하지 않습니다

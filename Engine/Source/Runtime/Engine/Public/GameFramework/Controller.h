@@ -4,6 +4,7 @@
 
 class ACharacter;
 class APawn;
+class APlayerState;
 
 /**
  * 컨트롤러는 Pawn을 소유하여 그 행동을 제어할 수 있는 비물리적 액터입니다. PlayerController는 인간 플레이어가 Pawn을 제어하는 데 사용되고,
@@ -22,4 +23,46 @@ class ENGINE_API AController : public AActor//, public INavAgentInterface
     GENERATED_BODY()
 
 public:
+    /** 이 컨트롤러를 사용하는 플레이어에 대한 복제된 정보를 포함하는 PlayerState입니다 (NPC에는 존재하지 않습니다). */
+//UPROPERTY(replicatedUsing = OnRep_PlayerState, BlueprintReadOnly, Category = Controller)
+    TEnginePtr<APlayerState> PlayerState;
+
+public:
+    /** Pawn의 설정자입니다. 일반적으로 Pawn을 소유하거나 소유 해제할 때 내부적으로만 사용해야 합니다. */
+    virtual void SetPawn(APawn* InPawn);
+
+    /** Getter for Pawn */
+    FORCEINLINE APawn* GetPawn() const { return Pawn; }
+
+    /** Templated version of GetPawn, will return nullptr if cast fails */
+    template<class T>
+    T* GetPawn() const
+    {
+        return Cast<T>(Pawn);
+    }
+
+    /**
+     * 이 컨트롤러를 지정된 폰에 연결하는 작업을 처리합니다.
+     * 네트워크 권한이 있는 경우에만 실행됩니다(HasAuthority()가 true를 반환하는 경우).
+     * 파생된 네이티브 클래스는 OnPossess를 재정의하여 지정된 폰을 필터링할 수 있습니다.
+     * 소유한 폰이 변경되면 블루프린트 클래스는 ReceivePossess에 의해 알림을 받고
+     * OnNewPawn 델리게이트가 브로드캐스트됩니다.
+     * @param InPawn 소유할 폰입니다.
+     * @see HasAuthority, OnPossess, ReceivePossess
+     */
+     //UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = Pawn, meta = (Keywords = "set controller"))
+    virtual void Possess(APawn* InPawn) final; // DEPRECATED(4.22, "Possess is marked virtual final as you should now be overriding OnPossess instead")
+
+protected:
+    /**
+     * 이 컨트롤러가 폰을 소유하도록 요청받을 때 호출되는 재정의 가능한 네이티브 함수입니다.
+     * @param InPawn 소유할 폰입니다.
+     */
+    virtual void OnPossess(APawn* InPawn);
+
+private:
+    /** 이 컨트롤러가 현재 제어 중인 폰입니다. 폰을 제어하려면 Pawn.Possess()를 사용하십시오. */
+    //UPROPERTY(replicatedUsing = OnRep_Pawn)
+    TEnginePtr<APawn> Pawn;
+
 };

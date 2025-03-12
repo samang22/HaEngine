@@ -2,6 +2,7 @@
 #include "GameFramework/GameSession.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/DefaultPawn.h"
 #include "Engine/World.h"
 
 AGameModeBase::AGameModeBase()
@@ -111,7 +112,7 @@ void AGameModeBase::PostLogin(APlayerController* NewPlayer)
     DispatchPostLogin(NewPlayer);
 
     // 초기화가 완료되었으므로, 플레이어의 폰을 생성하고 경기를 시작하려고 시도합니다.
-    //HandleStartingNewPlayer(NewPlayer);
+    HandleStartingNewPlayer(NewPlayer);
 }
 
 void AGameModeBase::DispatchPostLogin(AController* NewPlayer)
@@ -123,6 +124,120 @@ void AGameModeBase::DispatchPostLogin(AController* NewPlayer)
     //}
 
     OnPostLogin(NewPlayer);
+}
+
+void AGameModeBase::HandleStartingNewPlayer(APlayerController* NewPlayer)
+{
+    // 플레이어가 관전자로 시작해야 한다면, 관전자 상태로 둡니다
+    //if (!bStartPlayersAsSpectators && !MustSpectate(NewPlayer) && PlayerCanRestart(NewPlayer))
+    {
+        // 그렇지 않으면 즉시 플레이어의 폰을 생성합니다
+        RestartPlayer(NewPlayer);
+    }
+}
+
+void AGameModeBase::RestartPlayer(AController* NewPlayer)
+{
+    if (NewPlayer == nullptr /*|| NewPlayer->IsPendingKillPending()*/)
+    {
+        return;
+    }
+
+    AActor* StartSpot = nullptr; // FindPlayerStart(NewPlayer);
+
+    // 시작 위치를 찾지 못한 경우,
+    if (StartSpot == nullptr)
+    {
+        E_LOG(Warning, TEXT("아직 StartSpot이 없습니다"));
+        // 이전에 할당된 위치가 있는지 확인합니다.
+        /*if (NewPlayer->StartSpot != nullptr)
+        {
+            StartSpot = NewPlayer->StartSpot.Get();
+            UE_LOG(LogGameMode, Warning, TEXT("RestartPlayer: Player start not found, using last start spot"));
+        }*/
+    }
+
+    RestartPlayerAtPlayerStart(NewPlayer, StartSpot);
+}
+
+void AGameModeBase::RestartPlayerAtPlayerStart(AController* NewPlayer, AActor* StartSpot)
+{
+    if (NewPlayer == nullptr/* || NewPlayer->IsPendingKillPending()*/)
+    {
+        return;
+    }
+
+    /*if (!StartSpot)
+    {
+        E_LOG(Warning, TEXT("RestartPlayerAtPlayerStart: Player start not found"));
+        return;
+    }*/
+
+    FRotator SpawnRotation = FRotator::ZeroRotator;// StartSpot->GetActorRotation();
+
+    //E_LOG(Log, TEXT("RestartPlayerAtPlayerStart {}"), (NewPlayer && NewPlayer->PlayerState) ? *NewPlayer->PlayerState->GetPlayerName() : TEXT("Unknown"));
+
+    /*if (MustSpectate(Cast<APlayerController>(NewPlayer)))
+    {
+        UE_LOG(LogGameMode, Verbose, TEXT("RestartPlayerAtPlayerStart: Tried to restart a spectator-only player!"));
+        return;
+    }*/
+
+    //if (NewPlayer->GetPawn() != nullptr)
+    //{
+    //    // 기존 폰이 있는 경우, 해당 폰의 회전을 사용합니다.
+    //    SpawnRotation = NewPlayer->GetPawn()->GetActorRotation();
+    //}
+    //else if (GetDefaultPawnClassForController(NewPlayer) != nullptr)
+    {
+        // 이 플레이어를 위한 기본 클래스를 사용하여 폰을 생성하려고 시도합니다.
+        //APawn* NewPawn = SpawnDefaultPawnFor(NewPlayer, StartSpot);
+        UClass* DefaultPawn = ADefaultPawn::StaticClass();
+        APawn* NewPawn = GetWorld()->SpawnActor<APawn>(DefaultPawn);
+
+        if (NewPawn)
+        {
+            NewPlayer->SetPawn(NewPawn);
+        }
+    }
+
+    /*if (!IsValid(NewPlayer->GetPawn()))
+    {
+        FailedToRestartPlayer(NewPlayer);
+    }
+    else*/
+    {
+        // 시작 위치가 사용되었음을 알립니다.
+        //InitStartSpot(StartSpot, NewPlayer);
+
+        FinishRestartPlayer(NewPlayer, SpawnRotation);
+    }
+
+}
+
+void AGameModeBase::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
+{
+    NewPlayer->Possess(NewPlayer->GetPawn());
+
+    // If the Pawn is destroyed as part of possession we have to abort
+    if (!NewPlayer->GetPawn())
+    {
+        _ASSERT(false);
+        //FailedToRestartPlayer(NewPlayer);
+    }
+    else
+    {
+        // Set initial control rotation to starting rotation rotation
+        /*NewPlayer->ClientSetRotation(NewPlayer->GetPawn()->GetActorRotation(), true);
+
+        FRotator NewControllerRot = StartRotation;
+        NewControllerRot.Roll = 0.f;
+        NewPlayer->SetControlRotation(NewControllerRot);
+
+        SetPlayerDefaults(NewPlayer->GetPawn());
+
+        K2_OnRestartPlayer(NewPlayer);*/
+    }
 }
 
 APlayerController* AGameModeBase::SpawnPlayerController()

@@ -39,6 +39,19 @@ public:
 	void PostSpawnInitialize(FTransform const& SpawnTransform, AActor* InOwner, APawn* InInstigator/*, bool bRemoteOwned, bool bNoFail, bool bDeferConstruction*/, ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::MultiplyWithRoot);
 
 public:
+	template<class T>
+	static FORCEINLINE FRotator TemplateGetActorRotation(const T* RootComponent)
+	{
+		return (RootComponent != nullptr) ? RootComponent->GetComponentRotation() : FRotator::ZeroRotator;
+	}
+
+	/** 이 액터의 RootComponent의 회전을 반환합니다. */
+	FORCEINLINE FRotator GetActorRotation() const
+	{
+		return TemplateGetActorRotation(RootComponent.Get());
+	}
+
+public:
 	void AddOwnedComponent(TObjectPtr<UActorComponent> Component);
 
 public:
@@ -64,6 +77,20 @@ public:
 				return true;
 		}
 		return false;
+	}
+
+	/** 이 액터의 instigator를 반환합니다. instigator가 없으면 nullptr를 반환합니다. */
+	//UFUNCTION(BlueprintCallable, meta = (BlueprintProtected = "true"), Category = "Game")
+	APawn* GetInstigator() const;
+
+	/**
+	 * 특정 클래스 유형으로 변환된 instigator를 가져옵니다.
+	 * @return 이 액터의 instigator가 지정된 유형인 경우 instigator를 반환하고, 그렇지 않으면 nullptr를 반환합니다.
+	 */
+	template <class T>
+	T* GetInstigator() const
+	{
+		return Cast<T>(GetInstigator());
 	}
 
 	/** 캐시된 월드 포인터에 대한 게터로, 액터가 실제로 레벨에 생성되지 않은 경우 null을 반환합니다. */
@@ -227,6 +254,11 @@ public:
 	//UPROPERTY(Transient)
 	TArray<TEnginePtr<AActor>> Children;
 
+public:
+	/** 입력이 활성화된 경우, 이 액터에 대한 입력을 처리하는 컴포넌트입니다. */
+	//UPROPERTY(DuplicateTransient)
+	TEnginePtr<class UInputComponent> InputComponent;
+
 protected:
 	/** 이 액터의 트랜스폼(위치, 회전, 스케일)을 정의하는 컴포넌트로, 모든 다른 컴포넌트는 이 컴포넌트에 어떻게든 부착되어야 합니다 */
 	//UPROPERTY(BlueprintGetter = K2_GetRootComponent, Category = "Transformation")
@@ -236,6 +268,8 @@ private:
 	/** 이 액터가 일으킨 피해 및 기타 게임플레이 이벤트에 대한 책임이 있는 폰입니다. */
 	//UPROPERTY(BlueprintReadWrite, ReplicatedUsing = OnRep_Instigator, meta = (ExposeOnSpawn = true, AllowPrivateAccess = true), Category = Actor)
 	TEnginePtr<class APawn> Instigator;
+
+
 
 private:
 	/**
