@@ -62,10 +62,10 @@ struct FSceneTextures : public FMinimalSceneTextures
 //    FRDGTextureRef SmallDepth{};
 //
 //    // (지연) 지연 셰이딩을 위한 기하 정보를 포함하는 텍스처들입니다.
-//    FRDGTextureRef GBufferA{};
-//    FRDGTextureRef GBufferB{};
-//    FRDGTextureRef GBufferC{};
-//    FRDGTextureRef GBufferD{};
+    FTextureRHIRef GBufferA{}; // Normal
+    FTextureRHIRef GBufferB{}; // Albedo(=BaseColor, RGB), Specular(A: 우리는 Specular 없음)
+    FTextureRHIRef GBufferC{}; // Metallic(R), Roughness(G), Ambient Occlusion(B)
+    FTextureRHIRef GBufferD{}; // World Position(RGB)
 //    FRDGTextureRef GBufferE{};
 //    FRDGTextureRef GBufferF{};
 //

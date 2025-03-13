@@ -13,6 +13,16 @@ class FMaterialPS : public FShader
     DECLARE_SHADER_TYPE(FMaterialPS)
 };
 
+class FMaterialDeferredVS : public FShader
+{
+    DECLARE_SHADER_TYPE(FMaterialDeferredVS)
+};
+class FMaterialDeferredPS : public FShader
+{
+    DECLARE_SHADER_TYPE(FMaterialDeferredPS)
+};
+
+
 class UTexture2D;
 
 /**
@@ -36,13 +46,13 @@ public:
     UMaterial();
     ~UMaterial();
     virtual void PostInitProperties() override;
-    void SetVertexShader(TShaderMapRef<FMaterialVS> InShader);
-    void SetPixelShader(TShaderMapRef<FMaterialPS> InShader);
+    void SetVertexShader(FShader* InShader, FRHIVertexShader* InShaderRHI);
+    void SetPixelShader(FShader* InShader, FRHIPixelShader* InShaderRHI);
 
-    FRHIVertexShader* GetVertexShaderRHI() const;
-    FRHIPixelShader* GetPixelShaderRHI() const;
-    FMaterialVS* GetVertexShader() const { return VertexShader.GetShader(); }
-    FMaterialPS* GetPixelShader() const { return PixelShader.GetShader(); }
+    FRHIVertexShader* GetVertexShaderRHI() { return VertexShaderRHI; }
+    FRHIPixelShader* GetPixelShaderRHI() { return PixelShaderRHI; }
+    FShader* GetVertexShader() const { return VertexShader; }
+    FShader* GetPixelShader() const { return PixelShader; }
 
     void SetRasterizerState(const ERasterizerState InRasterizerState);
     void SetRasterizerState(FRHIRasterizerState* InRasterizerState) { RHIRasterizerState = InRasterizerState; }
@@ -78,8 +88,10 @@ protected:
     FRHISamplerState* TextureSampler = nullptr;
 
 protected:
-    TShaderMapRef<FMaterialVS> VertexShader;
-    TShaderMapRef<FMaterialPS> PixelShader;
+    FShader* VertexShader;
+    FShader* PixelShader;
+    FRHIVertexShader* VertexShaderRHI = nullptr;
+    FRHIPixelShader* PixelShaderRHI = nullptr;
     FRHIRasterizerState* RHIRasterizerState = nullptr;
     UPROPERTY()
     int RasterizerState = E_SOLID_BACK; // ERasterizerState

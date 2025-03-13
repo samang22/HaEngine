@@ -20,10 +20,19 @@ bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TObjectPtr<FS
     }
     TargetName += "_5_0";
 
+    DWORD ShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+
+    if (WITH_DEBUG)
+    {
+        // 디버그 정보를 포함하고 최적화를 건너뛰도록 플래그 설정
+        ShaderFlags |= D3DCOMPILE_DEBUG;
+        ShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+    }
+
     TRefCountPtr<ID3DBlob> Blob;
     TRefCountPtr<ID3DBlob> ErrorBlob;
     HRESULT Hr = D3DCompileFromFile(InShaderType->ShaderFilePath.data(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, InShaderType->FunctionName.data()
-        , TargetName.data(), 0, 0, Blob.GetInitReference(), ErrorBlob.GetInitReference());
+        , TargetName.data(), ShaderFlags, 0, Blob.GetInitReference(), ErrorBlob.GetInitReference());
 
 
     if (FAILED(Hr))

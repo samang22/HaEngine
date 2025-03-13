@@ -6,6 +6,9 @@
 IMPLEMENT_SHADER_TYPE(FMaterialVS, FPaths::ShaderDir() + L"/MaterialShader.hlsl", "VS", SF_Vertex)
 IMPLEMENT_SHADER_TYPE(FMaterialPS, FPaths::ShaderDir() + L"/MaterialShader.hlsl", "PS", SF_Pixel)
 
+IMPLEMENT_SHADER_TYPE(FMaterialDeferredVS, FPaths::ShaderDir() + L"/DeferredMaterialShader.hlsl", "VS", SF_Vertex)
+IMPLEMENT_SHADER_TYPE(FMaterialDeferredPS, FPaths::ShaderDir() + L"/DeferredMaterialShader.hlsl", "PS", SF_Pixel)
+
 map<FString, TObjectPtr<UMaterial>> GMaterials;
 
 TEnginePtr<UMaterial> UMaterial::CreateMaterial(const FString& MaterialName,
@@ -22,11 +25,24 @@ TEnginePtr<UMaterial> UMaterial::CreateMaterial(const FString& MaterialName,
     {
         GMaterials.emplace(Material->GetName(), Material);
 
-        TShaderMapRef<FMaterialVS> VertexShader;
-        TShaderMapRef<FMaterialPS> PixelShader;
+        if (GetShadingPath() == EShadingPath::Forward)
+        {
+            TShaderMapRef<FMaterialVS> VertexShader;
+            TShaderMapRef<FMaterialPS> PixelShader;
 
-        Material->SetVertexShader(VertexShader);
-        Material->SetPixelShader(PixelShader);
+            Material->SetVertexShader(VertexShader.GetShader(), VertexShader.GetVertexShader());
+            Material->SetPixelShader(PixelShader.GetShader(), PixelShader.GetPixelShader());
+        }
+        else if (GetShadingPath() == EShadingPath::Deferred)
+        {
+            TShaderMapRef<FMaterialDeferredVS> VertexShader;
+            TShaderMapRef<FMaterialDeferredPS> PixelShader;
+
+            Material->SetVertexShader(VertexShader.GetShader(), VertexShader.GetVertexShader());
+            Material->SetPixelShader(PixelShader.GetShader(), PixelShader.GetPixelShader());
+        }
+        else { _ASSERT(false); }
+
         Material->SetBaseColorTexture(BaseColor);
         Material->SetMetallicTexture(Metallic);
         Material->SetRoughnessTexture(Roughness);
@@ -114,24 +130,20 @@ void UMaterial::PostInitProperties()
     SetRasterizerState((ERasterizerState)RasterizerState);
 }
 
-void UMaterial::SetVertexShader(TShaderMapRef<FMaterialVS> InShader)
+void UMaterial::SetVertexShader(FShader* InShader, FRHIVertexShader* InShaderRHI)
 {
+    _ASSERT(InShader);
+    _ASSERT(InShaderRHI);
     VertexShader = InShader;
+    VertexShaderRHI = InShaderRHI;
 }
 
-void UMaterial::SetPixelShader(TShaderMapRef<FMaterialPS> InShader)
+void UMaterial::SetPixelShader(FShader* InShader, FRHIPixelShader* InShaderRHI)
 {
+    _ASSERT(InShader);
+    _ASSERT(InShaderRHI);
     PixelShader = InShader;
-}
-
-FRHIVertexShader* UMaterial::GetVertexShaderRHI() const
-{
-    return VertexShader.GetVertexShader();
-}
-
-FRHIPixelShader* UMaterial::GetPixelShaderRHI() const
-{
-    return PixelShader.GetPixelShader();
+    PixelShaderRHI = InShaderRHI;
 }
 
 void UMaterial::SetRasterizerState(const ERasterizerState InRasterizerState)

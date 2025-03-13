@@ -7,6 +7,9 @@
 #include "Engine/StaticMesh.h"
 #include "RHIStaticStates.h"
 
+
+#include "Engine/Engine.h"
+#include "GameFramework/Actor.h"
 #include "Components/DirectionalLightComponent.h"
 #include "LightSceneProxy.h"
 #include "RenderCore.h"
@@ -176,18 +179,34 @@ void FSceneRenderer::Render()
 	FSceneTextures::InitializeViewFamily(ViewFamily);
 	FSceneTextures& SceneTextures = GetActiveSceneTextures();
 
+	if (ViewFamily.GetShadingPath() == EShadingPath::Forward) 
 	{
 		FRHITexture* RenderTargets[1] = { SceneTextures.Color.Target };
 		FRHIRenderPassInfo RPInfo(ARRAYSIZE(RenderTargets), RenderTargets, ERenderTargetActions::Clear_Store, SceneTextures.Depth.Target, EDepthStencilTargetActions::ClearDepthStencil_StoreDepthStencil);
 
 		GetCommandList().BeginRenderPass(RPInfo, TEXT("BasePass"));
-
-		FScene* Scene = (FScene*)ViewFamily.Scene;
-	
 		RenderLight();
 		RenderMesh();
 		GetCommandList().EndRenderPass();
 	}
+	else if (ViewFamily.GetShadingPath() == EShadingPath::Deferred)
+	{
+		{
+			FRHITexture* RenderTargets[4] = { SceneTextures.GBufferA, SceneTextures.GBufferB, SceneTextures.GBufferC, SceneTextures.GBufferD };
+			FRHIRenderPassInfo RPInfo(ARRAYSIZE(RenderTargets), RenderTargets, ERenderTargetActions::Clear_Store, SceneTextures.Depth.Target, EDepthStencilTargetActions::ClearDepthStencil_StoreDepthStencil);
+			GetCommandList().BeginRenderPass(RPInfo, TEXT("BasePass"));
+			RenderMesh();
+			GetCommandList().EndRenderPass();
+		}
+		{
+			RenderLight();
+		}
+	}
+	else
+	{
+		_ASSERT(false);
+	}
+
 
 	{
 		GetCommandList().BeginDrawingViewport(ViewFamily.RenderTarget, FTextureRHIRef());
@@ -204,34 +223,19 @@ void FSceneRenderer::Render()
 
 			if (bFXAA /*|| GetAsyncKeyState(VK_F7) & 0x8000*/)
 			{
-				TShaderMapRef<FFXAAVS> VertextShader;
 				TShaderMapRef<FFXAAPS> PixelShader;
 				const FConstantBufferInfo& ConstantBufferInfo = PixelShader->GetConstantBufferInfo(TEXT("FFXAAUniformBuffer"));
 				FXAAUniformBuffer.ScreenSize = ViewFamily.ViewportSize;
 				FXAAUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &FXAAUniformBuffer, sizeof(FXAAUniformBuffer));
 				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, FXAAUniformBufferRHI);
 
-				{
-					GetCommandList().SetBoundShaderState(
-						GDynamicRHI->RHICreateBoundShaderState(
-							GPositionUVVertexDeclaration.VertexDeclarationRHI,
-							VertextShader.GetVertexShader(),
-							PixelShader.GetPixelShader()
-						).GetReference()
-					);
+				TArray<FRHIShaderParameterResource> Parameters;
+				Parameters.emplace_back(TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI(), 0);
+				Parameters.emplace_back(SceneTextures.Color.Target, 0);
+				GetCommandList().SetShaderParameters(PixelShader.GetPixelShader(), Parameters);
 
-					FRHIRasterizerState* RHIRasterizerState = TStaticRasterizerState<FM_Solid, CM_CW>::GetRHI();
-					GetCommandList().SetRasterizerState(RHIRasterizerState);
-					FRHISamplerState* SamplerState = TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
-					TArray<FRHIShaderParameterResource> Parameters;
-					Parameters.emplace_back(SamplerState, 0);
-					Parameters.emplace_back(SceneTextures.Color.Target, 0);
-
-					GetCommandList().SetShaderParameters(PixelShader.GetPixelShader(), Parameters);
-					GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-					GetCommandList().SetStreamSource(0, GNDCSquareVertexBuffer.VertexBufferRHI, 0);
-					GetCommandList().DrawPrimitive(0, 2, 1);
-				}
+				TShaderMapRef<FFXAAVS> VertextShader;
+				DrawRectangle(VertextShader.GetVertexShader(), PixelShader.GetPixelShader());
 			}
 			else
 			{
@@ -264,11 +268,26 @@ void FSceneRenderer::Render()
 	}
 }
 
+class FDeferredLightVS : public FShader
+{
+	DECLARE_SHADER_TYPE(FDeferredLightVS)
+};
+
+class FDeferredLightPS : public FShader
+{
+	DECLARE_SHADER_TYPE(FDeferredLightPS)
+};
+IMPLEMENT_SHADER_TYPE(FDeferredLightVS, FPaths::ShaderDir() + L"/DeferredLightShader.hlsl", "VS", SF_Vertex)
+IMPLEMENT_SHADER_TYPE(FDeferredLightPS, FPaths::ShaderDir() + L"/DeferredLightShader.hlsl", "PS", SF_Pixel)
+
 void FSceneRenderer::RenderLight()
 {
 	FScene* Scene = (FScene*)ViewFamily.Scene;
 	TShaderMapRef<FMaterialPS> MaterialPS;
-	const FConstantBufferInfo& ConstantBufferInfo = MaterialPS->GetConstantBufferInfo(TEXT("FLightShaderParameters"));
+	TShaderMapRef<FDeferredLightPS> DeferredLightPS;
+	FShader* Shader = GetShadingPath() == EShadingPath::Forward ? (FShader*)MaterialPS.GetShader() : (FShader*)DeferredLightPS.GetShader();
+
+	const FConstantBufferInfo& ConstantBufferInfo = Shader->GetConstantBufferInfo(TEXT("FLightShaderParameters"));
 	FLightShaderParameters DirectionalLightShaderParameters;
 
 	int32 DirectionalLightCount = 0;
@@ -277,19 +296,59 @@ void FSceneRenderer::RenderLight()
 		TEnginePtr<UDirectionalLightComponent> DirectionalLightComponent = Cast<UDirectionalLightComponent>(Proxy->GetLightComponent());
 		if (DirectionalLightComponent)
 		{
-			if (DirectionalLightCount >= 1)
+			++DirectionalLightCount;
+			if (DirectionalLightCount > 1)
 			{
-				E_LOG(Warning, TEXT("UDirectionalLightComponent: {}. 1개만 지원합니다."), DirectionalLightCount);
+				E_LOG(Error, TEXT("UDirectionalLightComponent: {}. 1개만 지원합니다."), DirectionalLightCount);
 			}
 
-			++DirectionalLightCount;
 			Proxy->GetLightShaderParameters(DirectionalLightShaderParameters);
 		}
 	}
 
 	FUniformBufferRHIRef LightUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &DirectionalLightShaderParameters, sizeof(DirectionalLightShaderParameters));
 	GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, LightUniformBufferRHI);
+
+	if (ViewFamily.GetShadingPath() == EShadingPath::Deferred)
+	{
+		FSceneTextures& SceneTextures = GetActiveSceneTextures();
+		FRHITexture* RenderTargets[1] = { SceneTextures.Color.Target };
+		FRHIRenderPassInfo RPInfo(ARRAYSIZE(RenderTargets), RenderTargets, ERenderTargetActions::Clear_Store);
+		GetCommandList().BeginRenderPass(RPInfo, TEXT("LightPass"));
+		RenderDeferredLight();
+		GetCommandList().EndRenderPass();
+	}
 }
+
+void FSceneRenderer::RenderDeferredLight()
+{
+	TArray<FRHIShaderParameterResource> Parameters;
+	{
+		// Sampler
+		Parameters.emplace_back(TStaticSamplerState<SF_Point, AM_Clamp, AM_Clamp, AM_Clamp, 0, 16>::GetRHI(), 0); // GBuffer Sampler
+		Parameters.emplace_back(TStaticSamplerState<SF_Trilinear, AM_Wrap, AM_Wrap, AM_Wrap, 0, 16>::GetRHI(), 1); // IBL Sampler
+
+		// Textures
+		FSceneTextures& SceneTextures = GetActiveSceneTextures();
+		Parameters.emplace_back(SceneTextures.GBufferA, 0);
+		Parameters.emplace_back(SceneTextures.GBufferB, 1);
+		Parameters.emplace_back(SceneTextures.GBufferC, 2);
+		Parameters.emplace_back(SceneTextures.GBufferD, 3);
+
+		// CubeTextures
+		FTextureRHIRef DiffuseIBL = GetCommandList().GetTexture(FPaths::ContentDir() + L"/Engine/Textures/SunSubMixer_diffuseIBL.dds");
+		FTextureRHIRef SpecularIBL = GetCommandList().GetTexture(FPaths::ContentDir() + L"/Engine/Textures/SunSubMixer_specularIBL.dds");
+		Parameters.emplace_back(SpecularIBL, 5);
+		Parameters.emplace_back(DiffuseIBL, 6);
+	}
+
+	TShaderMapRef<FDeferredLightVS> VertexShader;
+	TShaderMapRef<FDeferredLightPS> PixelShader;
+	GetCommandList().SetShaderParameters(PixelShader.GetPixelShader(), Parameters);
+	GetCommandList().SetDepthStencilState(TStaticDepthStencilState<false>().GetRHI());
+	DrawRectangle(VertexShader.GetVertexShader(), PixelShader.GetPixelShader());
+}
+
 
 void FSceneRenderer::RenderMesh()
 {
@@ -297,8 +356,11 @@ void FSceneRenderer::RenderMesh()
 	GetCommandList().SetDepthStencilState(DepthStencilState);
 
 	FScene* Scene = (FScene*)ViewFamily.Scene;
+
+	FShader* VertexShader = nullptr;
 	TShaderMapRef<FMaterialVS> MaterialVS;
 	TShaderMapRef<FMaterialPS> MaterialPS;
+	VertexShader = MaterialVS.GetShader();
 
 	TArray<FStaticMeshDrawCommand> MeshDrawCommands;
 	MeshDrawCommands.reserve(Scene->PrimitiveSceneProxies.size());
@@ -307,9 +369,13 @@ void FSceneRenderer::RenderMesh()
 	FTextureRHIRef SpecularIBL = GetCommandList().GetTexture(FPaths::ContentDir() + L"/Engine/Textures/SunSubMixer_specularIBL.dds");
 	FRHISamplerState* IBLSamplerState = TStaticSamplerState<SF_Trilinear, AM_Wrap, AM_Wrap, AM_Wrap, 0, 16>::GetRHI();
 
+
+	const bool bPIE = GEngine->IsPIE();
+
 	for (FPrimitiveSceneProxy* Proxy : Scene->PrimitiveSceneProxies)
 	{
 		UPrimitiveComponent* PrimitiveComponent = Proxy->GetPrimitiveComponent();
+		if (bPIE && PrimitiveComponent->GetOwner()->IsHiddenInGame()) { continue; }
 		PrimitiveComponent->UpdateComponentToWorld();
 
 		if (UStaticMeshComponent* StaticMeshComponent = dynamic_cast<UStaticMeshComponent*>(PrimitiveComponent))
@@ -324,7 +390,7 @@ void FSceneRenderer::RenderMesh()
 	}
 
 	{
-		const FConstantBufferInfo& ConstantBufferInfo = MaterialVS->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
+		const FConstantBufferInfo& ConstantBufferInfo = VertexShader->GetConstantBufferInfo(TEXT("FSceneUniformBuffer"));
 		SceneUniformBuffer.NumRadianceMipLevels = SpecularIBL->GetDesc().NumMips;
 		SceneUniformBuffer.EyePosition = ViewFamily.EyePosition;
 		SceneUniformBuffer.ViewMatrix = ViewFamily.ViewMatrix.Transpose();
@@ -345,22 +411,29 @@ void FSceneRenderer::RenderMesh()
 					Material = StaticMeshDrawCommand.OverrideMaterials[Index];
 				}
 				TArray<FRHIShaderParameterResource> Parameters;
-				// Sampler
-				Parameters.emplace_back(Material->GetTextureSampler(), 0);
-				Parameters.emplace_back(IBLSamplerState, 1);
 
-				// Textures
-				Parameters.emplace_back(Material->GetBaseColorTextureRHI(), 0);
-				Parameters.emplace_back(Material->GetNormalTextureRHI(), 1);
-				Parameters.emplace_back(Material->GetMetallicTextureRHI(), 2);
-				Parameters.emplace_back(Material->GetRoughnessTextureRHI(), 3);
-				Parameters.emplace_back(Material->GetAmbientOcclusionTextureRHI(), 4);
+				{
+					// Sampler
+					Parameters.emplace_back(Material->GetTextureSampler(), 0);
 
-				// CubeTextutes
-				Parameters.emplace_back(SpecularIBL, 5);
-				Parameters.emplace_back(DiffuseIBL, 6);
+					// Textures
+					Parameters.emplace_back(Material->GetBaseColorTextureRHI(), 0);
+					Parameters.emplace_back(Material->GetNormalTextureRHI(), 1);
+					Parameters.emplace_back(Material->GetMetallicTextureRHI(), 2);
+					Parameters.emplace_back(Material->GetRoughnessTextureRHI(), 3);
+					Parameters.emplace_back(Material->GetAmbientOcclusionTextureRHI(), 4);
+				}
 
-				GetCommandList().SetShaderParameters(MaterialPS.GetPixelShader(), Parameters);
+				// CubeTextutes, IBL Sampler
+				if (ViewFamily.GetShadingPath() == EShadingPath::Forward)
+				{
+					Parameters.emplace_back(IBLSamplerState, 1);
+					Parameters.emplace_back(SpecularIBL, 5);
+					Parameters.emplace_back(DiffuseIBL, 6);
+				}
+
+				GetCommandList().SetShaderParameters(Material->GetPixelShaderRHI(), Parameters);
+
 				GetCommandList().SetBoundShaderState(
 					GDynamicRHI->RHICreateBoundShaderState(
 						RenderData.VertexFactory.GetDeclaration(),
@@ -383,8 +456,26 @@ void FSceneRenderer::RenderMesh()
 		}
 	}
 }
+
+void FSceneRenderer::DrawRectangle(FRHIVertexShader* VertexShader, FRHIPixelShader* PixelShader)
+{
+	FRHIRasterizerState* RHIRasterizerState = TStaticRasterizerState<FM_Solid, CM_CW>::GetRHI();
+	GetCommandList().SetRasterizerState(RHIRasterizerState);
+	GetCommandList().SetBoundShaderState(
+		GDynamicRHI->RHICreateBoundShaderState(
+			GPositionUVVertexDeclaration.VertexDeclarationRHI,
+			VertexShader, PixelShader
+		).GetReference()
+	);
+	GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+	GetCommandList().SetStreamSource(0, GNDCSquareVertexBuffer.VertexBufferRHI, 0);
+	GetCommandList().DrawPrimitive(0, 2, 1);
+}
+
 FViewFamilyInfo::FViewFamilyInfo(const FSceneViewFamily& InViewFamily)
 	: FSceneViewFamily(InViewFamily)
 {
 	bIsViewFamilyInfo = true;
+
+	ShadingPath = ::GetShadingPath();
 }

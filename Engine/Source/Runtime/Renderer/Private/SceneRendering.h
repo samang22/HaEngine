@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "SceneUtils.h"
 #include "SceneTextures.h"
 
 class FViewFamilyInfo : public FSceneViewFamily
@@ -8,6 +9,7 @@ public:
     explicit FViewFamilyInfo(const FSceneViewFamily& InViewFamily);
     virtual ~FViewFamilyInfo() {}
 
+    EShadingPath GetShadingPath() const { return ShadingPath; }
 
     /** Get scene textures associated with this view family -- asserts or checks that they have been initialized */
     inline FSceneTextures& GetSceneTextures()
@@ -37,6 +39,8 @@ private:
     friend struct FSceneTextures;
 
     FSceneTextures SceneTextures;
+
+    EShadingPath ShadingPath = EShadingPath::Num;
 };
 
 /**
@@ -57,6 +61,11 @@ public:
 protected:
     void RenderLight();
     void RenderMesh();
+
+    void RenderDeferredLight();
+
+protected:
+    void DrawRectangle(FRHIVertexShader* VertexShader, FRHIPixelShader* PixelShader);
 
 protected:
     /** 렌더링 중인 뷰 패밀리. 이 변수는 Views 배열을 참조합니다. */

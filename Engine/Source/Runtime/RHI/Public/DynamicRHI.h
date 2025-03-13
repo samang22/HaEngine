@@ -8,6 +8,7 @@
 #include "RHIFwd.h"
 #include "RHIAccess.h"
 #include "PixelFormat.h"
+#include "../../Engine/Public/SceneUtils.h"
 
 class FRHICommandList;
 struct FRHIBufferDesc;
@@ -84,3 +85,5 @@ FORCEINLINE class IRHICommandContext* RHIGetDefaultContext()
 FSamplerStateRHIRef RHI_API RHICreateSamplerState(const FSamplerStateInitializerRHI& Initializer);
 FRasterizerStateRHIRef RHI_API RHICreateRasterizerState(const FRasterizerStateInitializerRHI& Initializer);
 FDepthStencilStateRHIRef RHI_API RHICreateDepthStencilState(const FDepthStencilStateInitializerRHI& Initializer);
+
+EShadingPath RHI_API GetShadingPath();

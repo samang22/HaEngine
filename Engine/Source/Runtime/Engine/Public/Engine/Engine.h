@@ -15,6 +15,8 @@ class ENGINE_API UEngine : public UObject
     friend class UGameInstance;
     GENERATED_BODY()
 public:
+    bool IsPIE() const { return bPIE; }
+
     UEngine();
     void Init(HWND hViewportHandle);
     void Tick(float DeltaSeconds);

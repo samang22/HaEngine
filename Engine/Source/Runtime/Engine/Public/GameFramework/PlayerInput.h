@@ -78,10 +78,10 @@ public:
     /** 재맵핑할 수 없는 엔진 정의 축 매핑을 추가합니다. */
     static void AddEngineDefinedAxisMapping(const FInputAxisKeyMapping& AxisMapping);
 
-    static void SetLockMouseMode(bool bMode);
-
 public:
     UPlayerInput();
+    ~UPlayerInput();
+    void SetLockMouseMode(bool bMode);
 
 public:
     /** 현재 입력 컴포넌트 스택을 기반으로 프레임의 입력 이벤트를 처리합니다. */
@@ -96,6 +96,6 @@ private:
     static TArray<FInputAxisKeyMapping> EngineDefinedAxisMappings;
     DirectX::Mouse::State LastMouseState;
 
-    static inline bool bLockMouse = true;
-    static inline DirectX::Mouse::State InitialMouseState;
+    bool bLockMouse = true;
+    DirectX::Mouse::State InitialMouseState;
 };

@@ -4,6 +4,19 @@
 // Globals.
 FDynamicRHI* GDynamicRHI = NULL;
 
+EShadingPath RHI_API GetShadingPath()
+{
+    static EShadingPath ShadingPath = EShadingPath::Num;
+    if (ShadingPath == EShadingPath::Num)
+    {
+        FString ShadingPathString;
+        FConfigFile& ConfigFile = GConfig->GetConfig(GEngineIni);
+        ConfigFile.Get("/Script/Engine.RendererSettings", "ShadingPath", ShadingPathString);
+        ShadingPath = ShadingPathString == TEXT("Deferred") ? EShadingPath::Deferred : EShadingPath::Forward;
+    }
+    return ShadingPath;
+}
+
 void RHIInit()
 {
     if (!GDynamicRHI)

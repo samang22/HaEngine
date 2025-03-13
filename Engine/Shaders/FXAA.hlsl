@@ -1,23 +1,13 @@
 // FXAA Vertex Shader
-struct VS_INPUT
-{
-    float3 Position : ATTRIBUTE0;
-    float2 TexCoord : ATTRIBUTE1;
-};
+#include "Common.fxh"
 
-struct PS_INPUT
+VSOutput_PositionUV VS(VSInput_PositionUV Input)
 {
-    float4 Position : SV_POSITION;
-    float2 TexCoord : TEXCOORD;
-};
-
-PS_INPUT VS(VS_INPUT Input)
-{
-    PS_INPUT Output;
+    VSOutput_PositionUV Output;
 
     // 화면 사각형의 위치와 텍스처 좌표를 설정
-    Output.Position = float4(Input.Position, 1.0);
-    Output.TexCoord = Input.TexCoord;
+    Output.SVPosition = float4(Input.Position, 1.0);
+    Output.UV = Input.UV;
 
     return Output;
 }
@@ -31,16 +21,17 @@ cbuffer FFXAAUniformBuffer
     float2 ScreenSize;
 };
 
-float3 PS(float4 Position : SV_POSITION, float2 UV : TEXCOORD) : SV_TARGET
+float3 PS(VSOutput_PositionUV Input) : SV_TARGET
 {
     // 주어진 텍스처 좌표(UV)에서 텍스처를 샘플링하여 현재 픽셀의 색상 정보를 가져옴
-    float3 Color = SceneTexture.Sample(Sampler, UV).rgb;
+    float3 Color = SceneTexture.Sample(Sampler, Input.UV).rgb;
     
     // 주위 픽셀 샘플링 (오른쪽, 왼쪽, 위쪽, 아래쪽)
-    float3 TexelRight = SceneTexture.Sample(Sampler, UV + float2(1.0 / ScreenSize.x, 0)).rgb; // 오른쪽 픽셀
-    float3 TexelLeft = SceneTexture.Sample(Sampler, UV - float2(1.0 / ScreenSize.x, 0)).rgb; // 왼쪽 픽셀
-    float3 TexelUp = SceneTexture.Sample(Sampler, UV + float2(0, 1.0 / ScreenSize.y)).rgb; // 위쪽 픽셀
-    float3 TexelDown = SceneTexture.Sample(Sampler, UV - float2(0, 1.0 / ScreenSize.y)).rgb; // 아래쪽 픽셀
+    float3 TexelRight = SceneTexture.Sample(Sampler, Input.UV + float2(1.0 / ScreenSize.x, 0)).rgb; // 오른쪽 픽셀
+    float3 TexelLeft = SceneTexture.Sample(Sampler, Input.UV - float2(1.0 / ScreenSize.x, 0)).rgb; // 왼쪽 픽셀
+    float3 TexelUp = SceneTexture.Sample(Sampler, Input.UV + float2(0, 1.0 / ScreenSize.y)).rgb; // 위쪽 픽셀
+    float3 TexelDown = SceneTexture.Sample(Sampler, Input.UV - float2(0, 1.0 / ScreenSize.y)).rgb; // 아래쪽 픽셀
+    
     
     // 주위 픽셀과 현재 픽셀 비교 (밝기 계산)
     // 루마(Luma)란, 이미지나 비디오에서 각 픽셀의 밝기를 나타내는 값

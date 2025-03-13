@@ -761,3 +761,8 @@ void AActor::BeginPlay()
 		}
 	}
 }
+
+void AActor::SetActorHiddenInGame(bool bNewHidden)
+{
+	bHidden = bNewHidden;
+}

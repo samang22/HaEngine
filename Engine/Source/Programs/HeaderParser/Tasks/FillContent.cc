@@ -166,6 +166,7 @@ void FFillContentTask::RunTask(Value::ConstValueIterator& InDoc, string& InOutCo
 										}
 										/*else if (strDataType_Name == "uint8")
 										{
+											bBaseType = true;
 											InOutContent += ".PropertyType = EPropertyType::T_UINT8";
 										}*/
 										else if (strDataType_Name == "int")

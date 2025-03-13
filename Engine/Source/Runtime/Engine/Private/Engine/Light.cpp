@@ -14,6 +14,8 @@ ALight::ALight(const FObjectInitializer& ObjectInitializer)
     LightDirectionMesh->SetStaticMesh(StaticMesh);
     LightDirectionMesh->SetRelativeRotation(FRotator(-90.f, 0.f, 0.f));
     LightDirectionMesh->SetRelativeScale3D(FVector(0.3f, 0.3f, 0.7f));
+
+    SetActorHiddenInGame(true);
 }
 
 void ALight::SetLightColor(FLinearColor Color)
@@ -27,7 +29,9 @@ void ALight::OnPropertyChanged(FProperty& Property)
 
     FRotator LightRotation = LightComponent->GetRelativeRotation();
     FRotator DefaultRotation = GetDefault<ALight>()->LightDirectionMesh->GetRelativeRotation();
-    FRotator MeshRotation = LightRotation + DefaultRotation;
-    LightDirectionMesh->SetRelativeRotation(FRotator(MeshRotation.Pitch, 0.f, MeshRotation.Roll));
+ 
+    FRotator NewMeshRotation = LightRotation + DefaultRotation;
+    LightDirectionMesh->SetRelativeRotation(FRotator(NewMeshRotation.Pitch, 0.f, NewMeshRotation.Yaw));
+
     LightDirectionMesh->SetRelativeLocation(LightComponent->GetRelativeLocation());
 }

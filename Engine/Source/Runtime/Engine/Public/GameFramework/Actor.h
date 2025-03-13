@@ -317,6 +317,15 @@ public:
 	UPROPERTY(EditAnywhere /*EditDefaultsOnly, Category = Tick*/)
 	bool bAllowTickBeforeBeginPlay = false;
 
+	/**
+	 *  액터를 게임에서 숨기도록 설정합니다.
+	 *  @param  bNewHidden  액터 및 모든 구성 요소를 숨길지 여부입니다.
+	 */
+	 //UFUNCTION(BlueprintCallable, Category = "Rendering", meta = (DisplayName = "Set Actor Hidden In Game", Keywords = "Visible Hidden Show Hide"))
+	virtual void SetActorHiddenInGame(bool bNewHidden);
+	virtual bool IsHiddenInGame() const { return bHidden; }
+
+
 public:
 	/**
 	 * 이 액터의 소유자입니다. 주로 복제(bNetUseOwnerRelevancy 및 bOnlyRelevantToOwner) 및 가시성(PrimitiveComponent bOwnerNoSee 및 bOnlyOwnerSee)에 사용됩니다.
@@ -365,6 +374,13 @@ private:
 	 * 레벨 시작 시 생성된 액터의 재초기화를 방지합니다.
 	 */
 	uint8 bActorInitialized : 1 = false;
+
+	/**
+	 * 이 액터를 실제 게임이 아닌 에디터에서만 볼 수 있게 해줍니다.
+	 * @see SetActorHiddenInGame()
+	 */
+	UPROPERTY(/*Interp, */EditAnywhere/*, Category = Rendering, BlueprintReadOnly, Replicated, meta = (AllowPrivateAccess = "true", DisplayName = "Actor Hidden In Game", SequencerTrackClass = "/Script/MovieSceneTracks.MovieSceneVisibilityTrack")*/)
+	bool bHidden = false;
 
 	/** BeginPlay가 시작되었거나 완료되었는지를 나타내는 Enum */
 	enum class EActorBeginPlayState : uint8

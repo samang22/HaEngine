@@ -14,6 +14,12 @@ UPlayerInput::UPlayerInput()
     LastMouseState = InitialMouseState;
 }
 
+UPlayerInput::~UPlayerInput()
+{
+    if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
+    ShowCursor(TRUE);
+}
+
 void UPlayerInput::SetLockMouseMode(bool bMode)
 {
     InitialMouseState = DirectX::Mouse::Get().GetState();
@@ -34,6 +40,12 @@ void UPlayerInput::SetLockMouseMode(bool bMode)
 
         LPARAM lParam = MAKELPARAM(InitialMouseState.x, InitialMouseState.y); // 변환된 화면 좌표를 사용합니다
         DirectX::Mouse::Get().ProcessMessage(WM_MOUSEMOVE, 0, lParam);
+
+        ShowCursor(FALSE);
+    }
+    else
+    {
+        ShowCursor(TRUE);
     }
 }
 

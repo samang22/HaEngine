@@ -21,10 +21,31 @@ cbuffer FLightShaderParameters : register(b2)
     float FLightShaderParameters_Padding;
 }
 
+Texture2D<float4> BaseColorTexture : register(t0);
+Texture2D<float3> NormalTexture : register(t1);
+Texture2D<float4> MetallicTexture : register(t2);
+Texture2D<float4> RoughnessTexture : register(t3);
+Texture2D<float4> AmbientOcclusionTexture : register(t4);
 TextureCube<float3> RadianceTexture : register(t5);
 TextureCube<float3> IrradianceTexture : register(t6);
 
+sampler TextureSampler : register(s0);
 sampler IBLSampler : register(s1);
+
+struct FVSInput
+{
+    float3 Position : ATTRIBUTE0;
+    float3 Normal : ATTRIBUTE1;
+    float2 UV : ATTRIBUTE2;
+};
+
+struct FVSOutput
+{
+    float4 SVPosition : SV_Position;
+    float4 PositionWS : POSITIONW;
+    float3 NormalWS : NORMALW;
+    float2 UV : TEXCOORD0;
+};
 
 
 static const float PI = 3.14159265f;

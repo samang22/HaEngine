@@ -122,7 +122,9 @@ void ADefaultPawn::ControlYawPitch(float Val)
     {
         bTransition = false;
         bControlYawPitch = !bControlYawPitch;
-        UPlayerInput::SetLockMouseMode(bControlYawPitch);
+
+        TEnginePtr<APlayerController> PC = Cast<APlayerController>(GetController());
+        PC->PlayerInput->SetLockMouseMode(bControlYawPitch);
     }
     else if (Val == 0.f)
     {
