@@ -107,9 +107,9 @@
     -> [o] Spawn된 Actor BeginPlay & Tick
 
 - 렌더러 개선
-    -> [] Directional Light 광원 추가
-    -> [] 포워드로 PBR 추가
-    -> [] 디퍼드로 PBR 포팅
+    -> [o] Directional Light 광원 추가
+    -> [o] 포워드로 PBR 추가
+    -> [o] 디퍼드로 PBR 포팅
 
     - 정리
 - Sharpmake: 솔루션 및 프로젝트 만들어주는 프로그램 (Engine\Source\Programs\Sharpmake)
