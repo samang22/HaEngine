@@ -17,7 +17,7 @@ UPlayerInput::UPlayerInput()
 UPlayerInput::~UPlayerInput()
 {
     if (HasAnyFlags(EObjectFlags::RF_ClassDefaultObject)) { return; }
-    ShowCursor(TRUE);
+    while (ShowCursor(TRUE) < 0);
 }
 
 void UPlayerInput::SetLockMouseMode(bool bMode)

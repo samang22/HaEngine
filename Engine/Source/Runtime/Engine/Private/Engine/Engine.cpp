@@ -181,7 +181,7 @@ void UEngine::WndProc(UINT Message, WPARAM wParam, LPARAM lParam, LRESULT* pResu
         {
             const int32 NewWidth = (int)(short)(LOWORD(lParam));
             const int32 NewHeight = (int)(short)(HIWORD(lParam));
-            if (CurrentViewportClient)
+            if (NewWidth > 0 && NewHeight > 0 && CurrentViewportClient)
             {
                 CurrentViewportClient->RequestResize(NewWidth, NewHeight);
             }

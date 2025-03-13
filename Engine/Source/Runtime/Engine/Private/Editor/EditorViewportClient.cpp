@@ -176,7 +176,7 @@ void UEditorViewportClient::UpdateMouseDelta()
         // 우클릭이 끝난 시점
         if (LastRightMouseButtonDown == true)
         {
-            ShowCursor(TRUE);
+            while (ShowCursor(TRUE) < 0);
         }
         return;
     }
@@ -185,7 +185,7 @@ void UEditorViewportClient::UpdateMouseDelta()
     if (LastRightMouseButtonDown == false)
     {
         RightButtonStartMouseState = CurrentMouseState;
-        ShowCursor(FALSE);
+        while (ShowCursor(FALSE) >= 0);
     }
 
     // 변화량을 계산할 수 있으므로, 마우스의 위치를 우클릭을 시작한 위치로 이동한다

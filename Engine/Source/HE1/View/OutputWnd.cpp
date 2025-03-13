@@ -26,8 +26,16 @@ void COutputWnd::OnLog(ELogVerbosity InLogVerbosity, FStringView InMessage)
 	FString NewString = TEXT("[") + FString(GetLogName(InLogVerbosity)) + TEXT("] ") + InMessage.data();
 	m_wndOutputDebug.AddString(NewString.data());
 
-	// 스크롤을 가장 아래로 내린다
+	// 로그 항목이 100개를 넘으면 가장 오래된 항목을 제거합니다.
+	const int MaxLogItems = 100;
 	int ItemCount = m_wndOutputDebug.GetCount();
+	if (ItemCount > MaxLogItems)
+	{
+		m_wndOutputDebug.DeleteString(0); // 가장 오래된 항목 제거
+	}
+
+	// 스크롤을 가장 아래로 내린다
+	ItemCount = m_wndOutputDebug.GetCount(); // ItemCount를 다시 계산합니다.
 	if (ItemCount > 0)
 	{
 		m_wndOutputDebug.SetTopIndex(ItemCount - 1);
