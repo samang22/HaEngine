@@ -48,7 +48,7 @@ protected:
      * @param OutViewInfo - 반환 시 플레이어의 뷰 정보를 포함합니다.
      */
 
-    virtual void GetViewPoint(FMinimalViewInfo& OutViewInfo);
+    virtual void GetViewPoint(struct FMinimalViewInfo& OutViewInfo);
 
 protected:
     /** 이 플레이어의 뷰를 포함하는 기본 뷰포트입니다. */
