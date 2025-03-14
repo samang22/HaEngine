@@ -16,6 +16,7 @@ bool UFbxFactory::FactoryCanImport(const FString& Filename)
 
 TObjectPtr<UObject> UFbxFactory::FactoryCreateFile(const FName InName, const FString& InFileName, const TCHAR* Params)
 {
+#if !SERVER
     struct FFbxManagerContext
     {
         FFbxManagerContext(fbxsdk::FbxManager* InFbxManager)
@@ -53,8 +54,12 @@ TObjectPtr<UObject> UFbxFactory::FactoryCreateFile(const FName InName, const FSt
 		NewStaticMesh->Create(MeshData);
 	}
     return NewStaticMesh;
-}
+#else
+    return nullptr;
+#endif
 
+}
+#if !SERVER
 fbxsdk::FbxScene* UFbxFactory::LoadFbxScene(fbxsdk::FbxManager* InFbxManager, const char* InFileName)
 {
     struct FFbxImporterContext
@@ -91,6 +96,7 @@ fbxsdk::FbxScene* UFbxFactory::LoadFbxScene(fbxsdk::FbxManager* InFbxManager, co
     }
     return Scene;
 }
+
 
 void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMeshData)
 {
@@ -245,3 +251,4 @@ void UFbxFactory::ExtractFbx(fbxsdk::FbxNode* InNode, TArray<FMeshData>& OutMesh
         ExtractFbx(InNode->GetChild(i), OutMeshData);
     }
 }
+#endif

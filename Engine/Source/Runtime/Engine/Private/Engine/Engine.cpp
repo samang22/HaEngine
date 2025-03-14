@@ -43,13 +43,16 @@ void UEngine::Init(HWND hViewportHandle)
 
 	GWorld->InitalizeNewWorld();
 
+#if !SERVER
 	EditorViewportClient = NewObject<UEditorViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
 	EditorViewportClient->Init(hViewportHandle, GWorld);
     CurrentViewportClient = Cast<UViewportClient>(EditorViewportClient);
+#endif
 }
 
 void UEngine::Tick(float DeltaSeconds)
 {
+#if WITH_EDITOR
     DirectX::Keyboard::State KeyboardState = DirectX::Keyboard::Get().GetState();
     const bool bLeftAltKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::LeftAlt);
     const bool bPKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::P);
@@ -63,11 +66,14 @@ void UEngine::Tick(float DeltaSeconds)
         // PIE -> SIE
         PIEtoSIE();
     }
-
+#endif
     GWorld->Tick(DeltaSeconds);
 
-    CurrentViewportClient->Tick(DeltaSeconds);
-    CurrentViewportClient->Draw();
+    if (CurrentViewportClient)
+    {
+        CurrentViewportClient->Tick(DeltaSeconds);
+        CurrentViewportClient->Draw();
+    }
 }
   
 void UEngine::PreExit()

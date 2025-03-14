@@ -33,11 +33,11 @@ public class HE1 : CommonProject
         // 문제는 없지만, 명시적으로 Core를 추가시켜준다.
         conf.AddPublicDependency<Launch>(target);
 
-        // if (target.LaunchType == ELaunchType.Editor || target.LaunchType == ELaunchType.Client)
-        // {
-        // conf.AddPublicDependency<Slate>(target);
-        conf.AddPublicDependency<Renderer>(target);
-        // conf.AddPublicDependency<D3D11RHI>(target);
-        // }
+        if (target.LaunchType == ELaunchType.Editor || target.LaunchType == ELaunchType.Client)
+        {
+            //conf.AddPublicDependency<Slate>(target);
+            conf.AddPublicDependency<Renderer>(target);
+            //conf.AddPublicDependency<D3D11RHI>(target);
+        }
     }
 }
