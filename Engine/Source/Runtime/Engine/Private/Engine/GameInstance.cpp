@@ -36,7 +36,7 @@ ULocalPlayer* UGameInstance::GetLocalPlayer(const uint64 PlayerIndex)
     return LocalPlayers[PlayerIndex].get();
 }
 
-#if WITH_EDITOR
+//#if WITH_EDITOR
 void UGameInstance::InitializeForPlayInEditor()
 {
     UEngine* const EditorEngine = GetEngine();
@@ -92,7 +92,7 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
     PlayWorld->BeginPlay();
 }
 
-#endif
+//#endif
 
 ULocalPlayer* UGameInstance::CreateInitialPlayer()
 {

@@ -26,13 +26,13 @@ public:
     class UGameViewportClient* GetGameViewportClient() const;
     ULocalPlayer* GetLocalPlayer(const uint64 PlayerIndex);
 
-#if WITH_EDITOR
+//#if WITH_EDITOR
     /* 게임의 PIE 인스턴스를 위해 게임 인스턴스를 초기화하는데 호출됩니다 */
     virtual void InitializeForPlayInEditor();
 
     /* 에디터에서 Play/Simulate 실행 시 실제로 게임을 시작하는 함수입니다 */
     virtual void StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer);
-#endif
+//#endif
 
     virtual ULocalPlayer* CreateInitialPlayer();
 

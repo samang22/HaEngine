@@ -160,8 +160,10 @@ void CMFCApplication::OnAppAbout()
 
 #include <windows.h>
 
+void LAUNCH_API EngineWndProc(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	EngineWndProc(uMsg, wParam, lParam, nullptr);
 	switch (uMsg)
 	{
 	case WM_DESTROY:

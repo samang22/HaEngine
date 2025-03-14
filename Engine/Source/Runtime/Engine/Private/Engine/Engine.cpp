@@ -52,15 +52,19 @@ void UEngine::Init(HWND hViewportHandle)
 
 void UEngine::Tick(float DeltaSeconds)
 {
-#if WITH_EDITOR
+//#if WITH_EDITOR
     DirectX::Keyboard::State KeyboardState = DirectX::Keyboard::Get().GetState();
     const bool bLeftAltKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::LeftAlt);
     const bool bPKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::P);
     const bool bESCKeyDown = KeyboardState.IsKeyDown(DirectX::Keyboard::Keys::Escape);
+
+#if WITH_EDITOR
     if (bLeftAltKeyDown && bPKeyDown) // SIE -> PIE
+#endif
     {
         CreateNewPlayInEditorInstance();
     }
+#if WITH_EDITOR
     else if (bESCKeyDown)
     {
         // PIE -> SIE
@@ -257,7 +261,7 @@ double UEngine::GetMaxTickRate(double DeltaTime)
 
 void UEngine::CreateNewPlayInEditorInstance()
 {
-#if WITH_EDITOR
+//#if WITH_EDITOR
 
     if (bPIE) { return; }
     bPIE = true;
@@ -310,7 +314,7 @@ void UEngine::CreateNewPlayInEditorInstance()
     }
 
     PlayWorld->OnWorldChanged();
-#endif
+//#endif
 }
 
 void UEngine::PIEtoSIE()
