@@ -19,6 +19,11 @@ public class HE1 : CommonProject
             conf.Options.Add(Options.Vc.General.MfcSupport.UseMfcDynamic);
             conf.Options.Add(Options.Vc.Linker.SubSystem.Windows);
         }
+        else if (target.LaunchType == ELaunchType.Client)
+        {
+            conf.Options.Add(Options.Vc.Linker.SubSystem.Windows);
+        }
+
 
         //conf.SolutionFolder = "Engine";
         conf.Output = Configuration.OutputType.Exe;

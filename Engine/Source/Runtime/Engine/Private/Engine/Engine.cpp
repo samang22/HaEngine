@@ -251,6 +251,8 @@ double UEngine::GetMaxTickRate(double DeltaTime)
 
 void UEngine::CreateNewPlayInEditorInstance()
 {
+#if WITH_EDITOR
+
     if (bPIE) { return; }
     bPIE = true;
 
@@ -302,6 +304,7 @@ void UEngine::CreateNewPlayInEditorInstance()
     }
 
     PlayWorld->OnWorldChanged();
+#endif
 }
 
 void UEngine::PIEtoSIE()

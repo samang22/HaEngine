@@ -92,6 +92,8 @@ void UGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer)
     PlayWorld->BeginPlay();
 }
 
+#endif
+
 ULocalPlayer* UGameInstance::CreateInitialPlayer()
 {
     return CreateLocalPlayer(false);
@@ -122,7 +124,6 @@ int32 UGameInstance::AddLocalPlayer(TObjectPtr<ULocalPlayer> NewPlayer)
     return InsertIndex;
 }
 
-#endif
 
 AGameModeBase* UGameInstance::CreateGameModeForURL(FURL InURL, UWorld* InWorld)
 {
