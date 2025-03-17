@@ -9,4 +9,8 @@ class GAMEPROJECT_API AServerGameMode : public AGameModeBase
 public:
 	AServerGameMode();
 	virtual void BeginPlay() override;
+
+protected:
+	std::jthread Thread;
+	std::jthread Thread2;
 };

@@ -12,6 +12,7 @@
 #include <span>
 #include <cmath>
 #include <atomic>
+#include <thread>
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN

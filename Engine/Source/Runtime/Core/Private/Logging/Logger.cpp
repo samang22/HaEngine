@@ -111,32 +111,32 @@ FLogger::FLogger()
 
 void FLogger::LogF(ELogVerbosity InLogVerbosity, FStringView InMessage)
 {
-	switch (InLogVerbosity)
-	{
-	case ELogVerbosity::Fatal:
-		BOOST_LOG_SEV(Logger, ELogVerbosity::Fatal) << InMessage;
-		_ASSERT(false);
-		break;
-	case ELogVerbosity::Error:
-		BOOST_LOG_SEV(Logger, ELogVerbosity::Error) << InMessage;
-		_ASSERT(false);
-		break;
-	case ELogVerbosity::Warning:
-		BOOST_LOG_SEV(Logger, ELogVerbosity::Warning) << InMessage;
-		break;
-	case ELogVerbosity::Log:
-		BOOST_LOG_SEV(Logger, ELogVerbosity::Log) << InMessage;
-		break;
-	default:
-		_ASSERT(false);
-		break;
-	}
+	//switch (InLogVerbosity)
+	//{
+	//case ELogVerbosity::Fatal:
+	//	BOOST_LOG_SEV(Logger, ELogVerbosity::Fatal) << InMessage;
+	//	_ASSERT(false);
+	//	break;
+	//case ELogVerbosity::Error:
+	//	BOOST_LOG_SEV(Logger, ELogVerbosity::Error) << InMessage;
+	//	_ASSERT(false);
+	//	break;
+	//case ELogVerbosity::Warning:
+	//	BOOST_LOG_SEV(Logger, ELogVerbosity::Warning) << InMessage;
+	//	break;
+	//case ELogVerbosity::Log:
+	//	BOOST_LOG_SEV(Logger, ELogVerbosity::Log) << InMessage;
+	//	break;
+	//default:
+	//	_ASSERT(false);
+	//	break;
+	//}
 
-	LogDelegate.Broadcast(InLogVerbosity, InMessage);
+	//LogDelegate.Broadcast(InLogVerbosity, InMessage);
 
-	if (IsDebuggerPresent())
-	{
-		const FString NewLog = std::format(TEXT("[{}] {}\n"), GetLogName(InLogVerbosity), InMessage);
-		OutputDebugStringW(NewLog.data());
-	}
+	//if (IsDebuggerPresent())
+	//{
+	//	const FString NewLog = std::format(TEXT("[{}] {}\n"), GetLogName(InLogVerbosity), InMessage);
+	//	OutputDebugStringW(NewLog.data());
+	//}
 }
