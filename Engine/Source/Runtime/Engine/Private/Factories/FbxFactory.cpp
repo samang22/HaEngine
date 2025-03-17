@@ -1,7 +1,8 @@
 #include "Factories/FbxFactory.h"
 #include "Engine/StaticMesh.h"
+#if !SERVER
 #include "Fbx.h"
-
+#endif
 bool UFbxFactory::FactoryCanImport(const FString& Filename)
 {
     FString Extension = FPaths::GetExtension(Filename);

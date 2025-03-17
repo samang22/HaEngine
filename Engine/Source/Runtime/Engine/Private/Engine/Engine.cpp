@@ -64,13 +64,15 @@ void UEngine::Tick(float DeltaSeconds)
     {
         CreateNewPlayInEditorInstance();
     }
-#if WITH_EDITOR
-    else if (bESCKeyDown)
+    if (bESCKeyDown)
     {
+#if WITH_EDITOR
         // PIE -> SIE
         PIEtoSIE();
-    }
+#else
+        PostQuitMessage(0);
 #endif
+    }
     GWorld->Tick(DeltaSeconds);
 
     if (CurrentViewportClient)
@@ -281,8 +283,13 @@ void UEngine::CreateNewPlayInEditorInstance()
         // GameInstance를 초기화하려고 시도합니다. 이것은 월드를 생성할 것입니다.
         GameInstance->InitializeForPlayInEditor();
 
-        GameViewport = NewObject<UGameViewportClient>(this, nullptr, TEXT("EditorViewportClient"));
+        GameViewport = NewObject<UGameViewportClient>(this, nullptr, TEXT("GameViewportClient"));
+#if SERVER
+        GameViewport->InitPIE(NULL, GWorld, GameInstance, nullptr);
+#else
         GameViewport->InitPIE(EditorViewportClient->hViewportHandle, GWorld, GameInstance, EditorViewportClient->Viewport);
+#endif
+
         GameViewport->GameInstance = GameInstance.get();
         CurrentViewportClient = GameViewport;   
         UWorld* PIEWorld = GameInstance->GetWorld();

@@ -17,7 +17,7 @@ void UViewportClient::Init(HWND hInViewportHandle, UWorld* InWorld)
 		ViewportSize.y = WindowRect.bottom;
 	}
 
-	if (!Viewport)
+	if (!Viewport && GDynamicRHI) 
 	{
 		Viewport = GDynamicRHI->RHICreateViewport(hInViewportHandle, ViewportSize.x, ViewportSize.y, false, PF_A2B10G10R10);
 	}

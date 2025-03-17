@@ -22,6 +22,11 @@ UPlayerInput::~UPlayerInput()
 
 void UPlayerInput::SetLockMouseMode(bool bMode)
 {
+#if SERVER
+    bLockMouse = false;
+    return;
+#endif
+
     InitialMouseState = DirectX::Mouse::Get().GetState();
     bLockMouse = bMode;
     if (bLockMouse)
