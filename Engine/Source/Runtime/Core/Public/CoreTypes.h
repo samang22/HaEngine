@@ -13,6 +13,8 @@
 #include <cmath>
 #include <atomic>
 #include <thread>
+#include <mutex>
+#include <future>
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
