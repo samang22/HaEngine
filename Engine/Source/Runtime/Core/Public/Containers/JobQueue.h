@@ -9,8 +9,11 @@ public:
     {
         if (!NewJob)
         {
-            _ASSERT(false);
-            return;
+            if (!bShutdown)
+            {
+                _ASSERT(false);
+                return;
+            }
         }
 
         {
@@ -23,10 +26,7 @@ public:
     std::function<void()> Pop()
     {
         std::unique_lock<std::mutex> Lock(Mutex);
-        //if (Jobs.empty())
-        //{
-        //    return nullptr;
-        //}
+
 
         CV.wait(Lock, [this] { return !Jobs.empty(); });
 
@@ -49,6 +49,7 @@ public:
     void Shutdown()
     {
         bShutdown = true;
+        Push(nullptr);
     }
 
 private:

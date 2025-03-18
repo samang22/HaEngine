@@ -120,7 +120,10 @@ FLogger::FLogger()
 			while (!JobQueue.IsShutdown())
 			{
 				std::function<void()> Job = JobQueue.Pop();
-				Job();
+				if (Job)
+				{
+					Job();
+				}
 			}
 		});
 #endif
