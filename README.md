@@ -14,7 +14,7 @@ Catching Up Unreal Engine
 Build Guide
 - Run Setup.bat
 - Run GenerateSoltion.bat
-	- or UserProject/UserProject HaGame.sproject 더블 클릭
+	- or UserProject .sproject 더블 클릭
 - Run HE.sln
-    - Debug Editor or Release Editor 선택 (다른 구성은 아직 미지원)
+    - Debug Editor Editor 선택
     - 실행
