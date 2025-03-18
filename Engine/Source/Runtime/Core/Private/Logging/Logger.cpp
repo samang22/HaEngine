@@ -39,6 +39,9 @@ FLogger* FLogger::Get(const bool bDestroy)
 	static unique_ptr<FLogger> Instance = make_unique<FLogger>();
 	if (bDestroy)
 	{
+		Instance->JobQueue.Shutdown();
+		Instance->LogThread.join();
+
 		Instance.reset();
 		return nullptr;
 	}
@@ -50,6 +53,7 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(Timestamp, "TimeStamp", boost::posix_time::ptime)
 
 FLogger::FLogger()
 {
+#if !CUSTOM_LOG_THREAD
 	// FileSink
 	{
 		boost::shared_ptr<sinks::text_file_backend> Backend = boost::make_shared<sinks::text_file_backend>(
@@ -107,36 +111,78 @@ FLogger::FLogger()
 		logging::core::get()->add_sink(ConsoleSink);
 	}
 	logging::add_common_attributes();
+
+#else
+	LogThread = jthread(
+		[this]
+		{
+			SetThreadDescription(GetCurrentThread(), TEXT("Log Thread"));
+			while (!JobQueue.IsShutdown())
+			{
+				std::function<void()> Job = JobQueue.Pop();
+				Job();
+			}
+		});
+#endif
 }
 
 void FLogger::LogF(ELogVerbosity InLogVerbosity, FStringView InMessage)
 {
-	//switch (InLogVerbosity)
-	//{
-	//case ELogVerbosity::Fatal:
-	//	BOOST_LOG_SEV(Logger, ELogVerbosity::Fatal) << InMessage;
-	//	_ASSERT(false);
-	//	break;
-	//case ELogVerbosity::Error:
-	//	BOOST_LOG_SEV(Logger, ELogVerbosity::Error) << InMessage;
-	//	_ASSERT(false);
-	//	break;
-	//case ELogVerbosity::Warning:
-	//	BOOST_LOG_SEV(Logger, ELogVerbosity::Warning) << InMessage;
-	//	break;
-	//case ELogVerbosity::Log:
-	//	BOOST_LOG_SEV(Logger, ELogVerbosity::Log) << InMessage;
-	//	break;
-	//default:
-	//	_ASSERT(false);
-	//	break;
-	//}
+#if !CUSTOM_LOG_THREAD
+	switch (InLogVerbosity)
+	{
+	case ELogVerbosity::Fatal:
+		BOOST_LOG_SEV(Logger, ELogVerbosity::Fatal) << InMessage;
+		_ASSERT(false);
+		break;
+	case ELogVerbosity::Error:
+		BOOST_LOG_SEV(Logger, ELogVerbosity::Error) << InMessage;
+		_ASSERT(false);
+		break;
+	case ELogVerbosity::Warning:
+		BOOST_LOG_SEV(Logger, ELogVerbosity::Warning) << InMessage;
+		break;
+	case ELogVerbosity::Log:
+		BOOST_LOG_SEV(Logger, ELogVerbosity::Log) << InMessage;
+		break;
+	default:
+		_ASSERT(false);
+		break;
+	}
 
-	//LogDelegate.Broadcast(InLogVerbosity, InMessage);
+	LogDelegate.Broadcast(InLogVerbosity, InMessage);
 
-	//if (IsDebuggerPresent())
-	//{
-	//	const FString NewLog = std::format(TEXT("[{}] {}\n"), GetLogName(InLogVerbosity), InMessage);
-	//	OutputDebugStringW(NewLog.data());
-	//}
+	if (IsDebuggerPresent())
+	{
+		const FString NewLog = std::format(TEXT("[{}] {}\n"), GetLogName(InLogVerbosity), InMessage);
+		OutputDebugStringW(NewLog.data());
+	}
+
+#else
+	FString NewString;
+	switch (InLogVerbosity)
+	{
+	case Fatal:
+		NewString = TEXT("[Fatal] ");
+		break;
+	case Error:
+		NewString = TEXT("[Error] ");
+		break;
+	case Warning:
+		NewString = TEXT("[Warning] ");
+		break;
+	case Log:
+		NewString = TEXT("[Log] ");
+		break;
+	default:
+		break;
+	}
+	NewString += FString(InMessage) + TEXT('\n');
+	JobQueue.Push(
+		[NewString]()
+		{
+			std::wcout << NewString;
+		}
+	);
+#endif
 }

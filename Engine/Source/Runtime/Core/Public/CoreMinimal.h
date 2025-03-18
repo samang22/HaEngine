@@ -9,6 +9,7 @@
 
 #include "Containers/ResourceArray.h"
 #include "Containers/DynamicRHIResourceArray.h"
+#include "Containers/JobQueue.h"
 
 #include "UObject/EnginePtr.h"
 #include "UObject/Object.h"

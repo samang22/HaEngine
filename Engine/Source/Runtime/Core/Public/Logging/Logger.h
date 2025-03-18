@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreTypes.h"
+#include "Containers/JobQueue.h"
 #include "Delegate/Delegate.h"
 
 //namespace ELogVerbosity
@@ -39,6 +40,8 @@ inline const TCHAR* GetLogName(ELogVerbosity InLogLevel)
 	return nullptr;
 }
 
+#define CUSTOM_LOG_THREAD 1
+
 class CORE_API FLogger
 {
 public:
@@ -48,6 +51,12 @@ public:
 	void LogF(ELogVerbosity InLogVerbosity, FStringView InMessage);
 
 	FDelegate<ELogVerbosity, FStringView> LogDelegate;
+
+#if CUSTOM_LOG_THREAD
+private:
+	jthread LogThread;
+	FJobQueue JobQueue;
+#endif
 };
 
 #define E_LOG(LogVerbosity, FormatMsg, ...) FLogger::Get()->LogF(ELogVerbosity::LogVerbosity, format(FormatMsg, __VA_ARGS__));
