@@ -49,7 +49,7 @@ public class EngineSolution : Solution
             conf.AddProject<Core>(target);
             conf.AddProject<Engine>(target);
             conf.AddProject<Launch>(target);
-            // conf.AddProject<Network>(target);
+            conf.AddProject<Network>(target);
             conf.AddProject<RenderCore>(target);
             conf.AddProject<Renderer>(target);
             conf.AddProject<RHI>(target);
