@@ -40,7 +40,7 @@ inline const TCHAR* GetLogName(ELogVerbosity InLogLevel)
 	return nullptr;
 }
 
-#define CUSTOM_LOG_THREAD 1
+#define CUSTOM_LOG_THREAD 0
 
 class CORE_API FLogger
 {
