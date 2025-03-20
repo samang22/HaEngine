@@ -16,7 +16,7 @@ void AServerGameMode::BeginPlay()
     if (!NetDriver->InitListen(this, URL, false, Error))
     {
         E_LOG(Error, TEXT("Server listen failed: {}"), Error);
-        RequestEngineExit(TEXT(""));
+        RequestEngineExit(TEXT("Server listen failed"));
         return;
     }
 }

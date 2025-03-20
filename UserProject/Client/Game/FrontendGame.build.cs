@@ -39,7 +39,7 @@ public class FrontendGameSolution : FrontendEngineSolution
 {
     public FrontendGameSolution()
     {
-        //Name = "SE";
+        //Name = "HE";
     }
 
     public override void ConfigureAll(Configuration conf, EngineTarget target)

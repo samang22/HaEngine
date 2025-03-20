@@ -1,11 +1,19 @@
 #pragma once
 #include "EngineMinimal.h"
-#include "UserGameMode.generated.h"
+#include "NetworkDelegates.h"
+#include "ClientGameMode.generated.h"
+
+class UIpNetDriver;
 
 UCLASS()
-class GAMEPROJECT_API AUserGameMode : public AGameModeBase
+class GAMEPROJECT_API AClientGameMode : public AGameModeBase, public FNetworkNotify
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 public:
-	AUserGameMode();
+    AClientGameMode();
+    virtual void BeginPlay() override;
+    virtual void Tick(float DeltaSceonds) override;
+
+protected:
+    TObjectPtr<UIpNetDriver> NetDriver;
 };

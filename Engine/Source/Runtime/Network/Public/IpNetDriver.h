@@ -11,10 +11,12 @@ class NETWORK_API UIpNetDriver : public UNetDriver
 	GENERATED_BODY()
 public:
     UIpNetDriver();
-    virtual bool InitBase(bool bInitAsClient, class FNetworkNotify* InNotify, const FURL& URL, bool bReuseAddressAndPort, FString& Error) override;
     virtual bool InitListen(class FNetworkNotify* InNotify, FURL& ListenURL, bool bReuseAddressAndPort, FString& Error) override;
+    virtual bool InitConnect(class FNetworkNotify* InNotify, const FURL& ConnectURL, FString& Error) override;
     virtual void Tick(float DeltaSeconds) override;
 
+protected:
+    virtual bool InitBase(bool bInitAsClient, class FNetworkNotify* InNotify, const FURL& URL, bool bReuseAddressAndPort, FString& Error) override;
 protected:
     void StartAceept();
 
@@ -28,4 +30,7 @@ protected:
     FIOContext Context;
 
     map<UIpNetConnection*, TObjectPtr<UIpNetConnection>> Backlog;
+
+protected:
+    TObjectPtr<UIpNetConnection> ServerConnection;
 };

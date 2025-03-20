@@ -176,6 +176,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 int32 LAUNCH_API EnginePreInit(const TCHAR* CmdLine);
 int32 LAUNCH_API EngineInit(HWND hViewportWnd = NULL);
 
+bool CORE_API IsEngineExitRequested();
 void LAUNCH_API EngineTick();
 void LAUNCH_API EngineExit();
 
@@ -204,22 +205,26 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 
 	MSG msg;
-	bool running = true;
-	while (running)
+	bool Running = true;
+	while (Running) 
 	{
 		// 비활성 상태에서는 PeekMessage를 사용하여 메시지 큐를 처리
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			if (msg.message == WM_QUIT)
 			{
-				running = false;
+				Running = false;
 			}
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 
 		// 여기서 게임 업데이트 및 렌더링 작업 수행
-		EngineTick();
+		Running = !IsEngineExitRequested();
+		if (Running)
+		{
+			EngineTick();
+		}
 	}
 
 	EngineExit();

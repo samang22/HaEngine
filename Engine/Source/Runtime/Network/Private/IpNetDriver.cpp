@@ -38,6 +38,19 @@ bool UIpNetDriver::InitListen(FNetworkNotify* InNotify, FURL& ListenURL, bool bR
     return true;
 }
 
+bool UIpNetDriver::InitConnect(FNetworkNotify* InNotify, const FURL& ConnectURL, FString& Error)
+{
+    if (!Super::InitConnect(InNotify, ConnectURL, Error))
+    {
+        return false;
+    }
+
+    ServerConnection = NewObject<UIpNetConnection>(this, NetConnectionClass);
+    bool bResult = ServerConnection->InitRemoteConnection(this, URL, Context);
+
+    return bResult;
+}
+
 void UIpNetDriver::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);

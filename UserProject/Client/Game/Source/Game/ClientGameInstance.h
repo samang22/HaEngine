@@ -1,11 +1,11 @@
 #pragma once
 #include "EngineMinimal.h"
-#include "UserGameInstance.generated.h"
+#include "ClientGameInstance.generated.h"
 
 UCLASS()
-class GAMEPROJECT_API UUserGameInstance : public UGameInstance
+class GAMEPROJECT_API UClientGameInstance : public UGameInstance
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 public:
-	UUserGameInstance();
+    UClientGameInstance();
 };

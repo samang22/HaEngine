@@ -1,6 +1,6 @@
-#include "UserGameInstance.h"
+#include "ClientGameInstance.h"
 
-UUserGameInstance::UUserGameInstance()
+UClientGameInstance::UClientGameInstance()
 {
 
 }
