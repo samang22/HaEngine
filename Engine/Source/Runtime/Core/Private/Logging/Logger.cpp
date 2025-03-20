@@ -80,6 +80,7 @@ FLogger::FLogger()
 		logging::core::get()->add_sink(FileSink);
 	}
 	
+#if SERVER
 	{
 		boost::shared_ptr<sinks::text_ostream_backend> ConsoleBackend = boost::make_shared<sinks::text_ostream_backend>();
 		ConsoleBackend->add_stream(boost::shared_ptr<std::ostream>(&std::clog, boost::null_deleter()));
@@ -112,6 +113,7 @@ FLogger::FLogger()
 		logging::core::get()->add_sink(ConsoleSink);
 	}
 	logging::add_common_attributes();
+#endif
 
 #else
 	LogThread = jthread(

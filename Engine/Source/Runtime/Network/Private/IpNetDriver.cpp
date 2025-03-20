@@ -1,11 +1,11 @@
 #include "IpNetDriver.h"
 #include "NetworkTypes.h"
-#include "IpNetConnection.h"
+#include "IpConnection.h"
 #include <boost/asio/ip/tcp.hpp>
 
 UIpNetDriver::UIpNetDriver()
 {
-	SetNetConnectionClass(UIpNetConnection::StaticClass());
+	SetNetConnectionClass(UIpConnection::StaticClass());
 }
 
 bool UIpNetDriver::InitBase(bool bInitAsClient, FNetworkNotify* InNotify, const FURL& LocalURL, bool bReuseAddressAndPort, FString& Error)
@@ -45,7 +45,7 @@ bool UIpNetDriver::InitConnect(FNetworkNotify* InNotify, const FURL& ConnectURL,
         return false;
     }
 
-    ServerConnection = NewObject<UIpNetConnection>(this, NetConnectionClass);
+    ServerConnection = NewObject<UIpConnection>(this, NetConnectionClass);
     bool bResult = ServerConnection->InitRemoteConnection(this, URL, Context);
 
     return bResult;
@@ -75,7 +75,7 @@ void UIpNetDriver::Tick(float DeltaSeconds)
 
 void UIpNetDriver::StartAceept()
 {
-    TObjectPtr<UIpNetConnection> NetConnection = NewObject<UIpNetConnection>(this, NetConnectionClass);
+    TObjectPtr<UIpConnection> NetConnection = NewObject<UIpConnection>(this, NetConnectionClass);
     NetConnection->InitRemoteConnection(this, URL, Context);
     Backlog.emplace(NetConnection.get(), NetConnection);
 

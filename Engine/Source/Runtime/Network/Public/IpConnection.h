@@ -2,10 +2,11 @@
 #include "CoreMinimal.h"
 #include "Engine/NetConnection.h"
 #include "NetworkFwd.h"
-#include "IpNetConnection.generated.h"
+#include "IpConnection.generated.h"
 
+//
 UCLASS()
-class UIpNetConnection : public UNetConnection
+class NETWORK_API UIpConnection : public UNetConnection
 {
     GENERATED_BODY()
 

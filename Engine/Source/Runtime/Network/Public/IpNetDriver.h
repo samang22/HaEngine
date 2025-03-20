@@ -3,7 +3,7 @@
 #include "NetworkFwd.h"
 #include "IpNetDriver.generated.h"
 
-class UIpNetConnection;
+class UIpConnection;
 
 UCLASS()
 class NETWORK_API UIpNetDriver : public UNetDriver
@@ -29,8 +29,8 @@ protected:
     shared_ptr<FAcceptor> Acceptor;
     FIOContext Context;
 
-    map<UIpNetConnection*, TObjectPtr<UIpNetConnection>> Backlog;
+    map<UIpConnection*, TObjectPtr<UIpConnection>> Backlog;
 
 protected:
-    TObjectPtr<UIpNetConnection> ServerConnection;
+    TObjectPtr<UIpConnection> ServerConnection;
 };

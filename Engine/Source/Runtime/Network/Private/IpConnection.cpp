@@ -1,8 +1,8 @@
-#include "IpNetConnection.h"
+#include "IpConnection.h"
 #include "Engine/NetDriver.h"
 #include "NetworkTypes.h"
 
-bool UIpNetConnection::InitRemoteConnection(UNetDriver* InDriver, const FURL& InURL, FIOContext& InContext)
+bool UIpConnection::InitRemoteConnection(UNetDriver* InDriver, const FURL& InURL, FIOContext& InContext)
 {
 	bool bResult = InitBase(InDriver, InURL, InContext);
 	if (bResult == false)
@@ -28,7 +28,7 @@ bool UIpNetConnection::InitRemoteConnection(UNetDriver* InDriver, const FURL& In
     return true;
 }
 
-bool UIpNetConnection::InitBase(UNetDriver* InDriver, const FURL& InURL, FIOContext& InContext)
+bool UIpConnection::InitBase(UNetDriver* InDriver, const FURL& InURL, FIOContext& InContext)
 {
 	bool bResult = Super::InitBase(InDriver, InURL);
 
