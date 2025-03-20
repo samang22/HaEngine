@@ -3,6 +3,7 @@
 #include "GameFramework/Actor.h"
 #include "Light.generated.h"
 
+//
 UCLASS(/*Abstract*/)
 class ENGINE_API ALight : public AActor
 {

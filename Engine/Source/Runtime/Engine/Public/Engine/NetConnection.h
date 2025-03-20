@@ -4,7 +4,6 @@
 #include "Engine/EngineBaseTypes.h"
 #include "NetConnection.generated.h"
 
-//
 
 class UNetDriver;
 
