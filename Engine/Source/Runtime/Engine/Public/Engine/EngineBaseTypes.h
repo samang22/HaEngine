@@ -18,7 +18,7 @@ struct FURL
 
     // 선택적 호스트 포트입니다.
     //UPROPERTY()
-    int32 Port;
+    int32 Port = 5555;
 
     //UPROPERTY()
     int32 Valid;
@@ -113,10 +113,10 @@ struct FURL
     // */
     //ENGINE_API void RemoveOption(const TCHAR* Key, const TCHAR* Section = nullptr, const FString& Filename = GGameIni);
 
-    ///**
-    // * 이 URL을 텍스트로 변환합니다.
-    // */
-    //ENGINE_API FString ToString(bool FullyQualified = 0) const;
+    /**
+     * 이 URL을 텍스트로 변환합니다.
+     */
+    ENGINE_API FString ToString(bool FullyQualified = 0) const;
 
     ///**
     // * Host와 Port 값을 표준을 준수하는 문자열로 준비합니다.

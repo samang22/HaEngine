@@ -1,9 +1,12 @@
 #pragma once
 #include "EngineMinimal.h"
+#include "NetworkDelegates.h"
 #include "ServerGameMode.generated.h"
 
+class UIpNetDriver;
+
 UCLASS()
-class GAMEPROJECT_API AServerGameMode : public AGameModeBase
+class GAMEPROJECT_API AServerGameMode : public AGameModeBase, public FNetworkNotify
 {
 	GENERATED_BODY()
 public:
@@ -12,6 +15,5 @@ public:
 	virtual void Tick(float DeltaSceonds) override;
 
 protected:
-	std::jthread Thread;
-	std::jthread Thread2;
+	TObjectPtr<UIpNetDriver> NetDriver;
 };

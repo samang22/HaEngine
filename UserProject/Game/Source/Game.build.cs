@@ -19,6 +19,7 @@ public class GameProject : UserProject
     public override void ConfigureAll(Configuration conf, EngineTarget target)
     {
         base.ConfigureAll(conf, target);
+        conf.AddPublicDependency<Network>(target);
     }
 }
 

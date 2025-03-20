@@ -8,7 +8,7 @@
 #include "Player.generated.h"
 //
 UCLASS()
-class UPlayer : public UObject
+class ENGINE_API UPlayer : public UObject 
 {
     GENERATED_BODY()
 
