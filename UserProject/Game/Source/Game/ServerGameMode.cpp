@@ -24,4 +24,5 @@ void AServerGameMode::BeginPlay()
 void AServerGameMode::Tick(float DeltaSceonds)
 {
     Super::Tick(DeltaSceonds);
+    NetDriver->Tick(DeltaSceonds);
 }

@@ -39,7 +39,7 @@ public class HE1 : CommonProject
             conf.AddPublicDependency<Renderer>(target);
             //conf.AddPublicDependency<D3D11RHI>(target);
         }
-        else if (target.LaunchType == ELaunchType.Server)
+        //else if (target.LaunchType == ELaunchType.Server)
         {
             conf.AddPublicDependency<Network>(target);
         }

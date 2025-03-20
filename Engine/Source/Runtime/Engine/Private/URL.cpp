@@ -29,7 +29,7 @@ FString FURL::ToString(bool FullyQualified) const
         }
         else
         {
-            Result += TEXT("localhost");
+            Result += TEXT("0.0.0.0");
         }
         Result += TEXT(":") + std::to_wstring(Port);
         //Result += GetHostPortString();

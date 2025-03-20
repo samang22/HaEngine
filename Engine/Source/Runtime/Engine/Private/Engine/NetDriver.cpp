@@ -1,5 +1,6 @@
-#include "NetDriver.h"
+#include "Engine/NetDriver.h"
 #include "Engine/NetConnection.h"
+
 
 UNetDriver::UNetDriver()
 {
@@ -9,8 +10,13 @@ UNetDriver::~UNetDriver()
 {
 }
 
+void UNetDriver::SetNetConnectionClass(TSubclassOf<UNetConnection> InClass)
+{
+    NetConnectionClass = InClass;
+}
 
-bool UNetDriver::InitBase(bool bInitAsClient, FNetworkNotify* InNotify, const FURL& URL, bool bReuseAddressAndPort, FString& Error)
+
+bool UNetDriver::InitBase(bool bInitAsClient, FNetworkNotify* InNotify, const FURL& InURL, bool bReuseAddressAndPort, FString& Error)
 {
     bool bSuccess = InitConnectionClass();
 
@@ -20,11 +26,11 @@ bool UNetDriver::InitBase(bool bInitAsClient, FNetworkNotify* InNotify, const FU
     //}
 
     Notify = InNotify;
-
+    URL = InURL;
     return bSuccess;
 }
 
-bool UNetDriver::InitConnectionClass(void)
+bool UNetDriver::InitConnectionClass()
 {
     if (NetConnectionClass == NULL /*&& NetConnectionClassName != TEXT("")*/)
     {
