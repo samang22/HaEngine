@@ -118,7 +118,10 @@
     -> [o] Server Accept까지 처리
     -> [o] Client Connect 처리
     -> [] 페킷 송 수신 처리 (Connection ReceivedRawPacket, LowLevelSend)
-
+    -> [] Connection 종료 처리 함수(Shutdown)
+    -> [] echo 서버 및 클라 작성
+    -> [] 수신 Packet 처리(Channel)
+    -> [] 채팅 서버 및 클라 작성
     
     - 정리
 - Sharpmake: 솔루션 및 프로젝트 만들어주는 프로그램 (Engine\Source\Programs\Sharpmake)

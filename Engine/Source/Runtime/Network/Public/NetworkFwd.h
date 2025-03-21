@@ -15,3 +15,4 @@ using namespace boost::asio::ip;
 using FAcceptor = boost::asio::ip::tcp::acceptor;
 using FIOContext = boost::asio::io_context;
 using FSocket = boost::asio::ip::tcp::socket;
+using FEndPoint = boost::asio::ip::tcp::endpoint;

@@ -28,6 +28,20 @@ bool UIpConnection::InitRemoteConnection(UNetDriver* InDriver, const FURL& InURL
     return true;
 }
 
+void UIpConnection::OnAccepted()
+{
+    Super::OnAccepted();
+
+    RecvBuffer.resize(RecvBufferSize);
+    RemoteEndPoint = GetSocket()->remote_endpoint();
+    RemoteIP = ANSI_TO_TCHAR(RemoteEndPoint.address().to_string());
+    RemotePort = RemoteEndPoint.port();
+}
+
+void UIpConnection::ReceivedRawPacket(uint64 InRecvSize)
+{
+}
+
 bool UIpConnection::InitBase(UNetDriver* InDriver, const FURL& InURL, FIOContext& InContext)
 {
 	bool bResult = Super::InitBase(InDriver, InURL);

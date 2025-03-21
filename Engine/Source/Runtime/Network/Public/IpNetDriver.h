@@ -29,7 +29,8 @@ protected:
     shared_ptr<FAcceptor> Acceptor;
     FIOContext Context;
 
-    map<UIpConnection*, TObjectPtr<UIpConnection>> Backlog;
+    map<UIpConnection*, TObjectPtr<UIpConnection>> Backlogs;
+    map<UIpConnection*, TObjectPtr<UIpConnection>> PendingConnections;
 
 protected:
     TObjectPtr<UIpConnection> ServerConnection;

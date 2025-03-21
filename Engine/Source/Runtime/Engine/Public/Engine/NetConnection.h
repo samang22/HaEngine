@@ -41,6 +41,9 @@ public:
     virtual bool InitRemoteConnection(UNetDriver* InDriver, const FURL& InURL);
 
     void SetConnectionState(EConnectionState NewState) { ConnectionState = NewState; }
+    
+    virtual void OnAccepted() {}
+    virtual void ReceivedRawPacket(uint64 InRecvSize) {}
 
 protected:
     virtual bool InitBase(UNetDriver* InDriver, const FURL& InURL);

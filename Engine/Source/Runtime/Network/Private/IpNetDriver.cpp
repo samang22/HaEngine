@@ -2,6 +2,7 @@
 #include "NetworkTypes.h"
 #include "IpConnection.h"
 #include <boost/asio/ip/tcp.hpp>
+#include "Net/DataBunch.h"
 
 UIpNetDriver::UIpNetDriver()
 {
@@ -77,12 +78,41 @@ void UIpNetDriver::StartAceept()
 {
     TObjectPtr<UIpConnection> NetConnection = NewObject<UIpConnection>(this, NetConnectionClass);
     NetConnection->InitRemoteConnection(this, URL, Context);
-    Backlog.emplace(NetConnection.get(), NetConnection);
+    Backlogs.emplace(NetConnection.get(), NetConnection);
 
     Acceptor->async_accept(*NetConnection->GetSocket(),
-        [](const boost::system::error_code& Error)
+        [this, NetConnection](const boost::system::error_code& Error)
         {
-            E_LOG(Log, TEXT("Accepted!"));
+            Backlogs.erase(NetConnection.get());
+
+            StartAceept();
+
+            if (Error)
+            {
+                E_LOG(Error, TEXT("Accept failed: {}"), ANSI_TO_TCHAR(Error.message()));
+                return;
+            }
+
+            NetConnection->OnAccepted();
+
+            E_LOG(Log, TEXT("[Accepted]: {}:{}"), NetConnection->GetRemoteIP(), NetConnection->GetRemotePort());
+
+            PendingConnections.emplace(NetConnection.get(), NetConnection);
+
+            boost::asio::async_read(*NetConnection->GetSocket(),
+                boost::asio::buffer(NetConnection->GetRecvBuffer().data(), sizeof(FPacketHeader)),
+                [this, NetConnection](const boost::system::error_code& Error, uint64 InRecvSize)
+                {
+                    if (Error)
+                    {
+                        PendingConnections.erase(NetConnection.get());
+                        E_LOG(Log, TEXT("[Read Failed]: {}, {}:{}"), ANSI_TO_TCHAR(Error.message()), NetConnection->GetRemoteIP(), NetConnection->GetRemotePort());
+                        return;
+                    }
+
+                    NetConnection->ReceivedRawPacket(InRecvSize);
+                }
+            );
         }
     );
 }

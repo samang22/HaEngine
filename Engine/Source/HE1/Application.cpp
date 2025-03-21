@@ -220,9 +220,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		}
 
 		// 여기서 게임 업데이트 및 렌더링 작업 수행
-		Running = !IsEngineExitRequested();
 		if (Running)
 		{
+			Running = !IsEngineExitRequested();
 			EngineTick();
 		}
 	}
