@@ -117,8 +117,9 @@
     -> [o] IpNetDriver, IpConnection 제작
     -> [o] Server Accept까지 처리
     -> [o] Client Connect 처리
-    -> [] 페킷 송 수신 처리 (Connection ReceivedRawPacket)
+    -> [] 페킷 송 수신 처리 (Connection ReceivedRawPacket, LowLevelSend)
 
+    
     - 정리
 - Sharpmake: 솔루션 및 프로젝트 만들어주는 프로그램 (Engine\Source\Programs\Sharpmake)
 	- Setup.bat 파일에서 빌드 됩니다.
