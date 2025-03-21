@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
 	const int FileSize = (int)Files.size();
 	bool bBuildFailed = false;
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int i = 0; i < FileSize; ++i)
     {
 		std::cout << "tid: " << std::this_thread::get_id() << std::endl;
