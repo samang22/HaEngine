@@ -58,15 +58,9 @@ void UIpNetDriver::Tick(float DeltaSeconds)
 
     uint32 PollCount = 0;
     const uint32 MaxPollCountPerTick = 1000;
-    boost::system::error_code ErrorCode;
-    while (uint32 n = Context.poll_one(ErrorCode))
+    while (Context.poll_one() > 0)
     {
-        if (ErrorCode)
-        {
-            E_LOG(Error, TEXT("Context poll error: {}"), ANSI_TO_TCHAR(ErrorCode.message()));
-            break;
-        }
-        PollCount += n;
+        ++PollCount;
         if (PollCount >= MaxPollCountPerTick)
         {
             break;

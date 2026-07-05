@@ -8,7 +8,7 @@ FUniformBufferRHIRef FD3D11DynamicRHI::RHICreateUniformBuffer(const FConstantBuf
     {
         if (Layout.Size != ContentsSize)
         {
-            E_LOG(Error, TEXT("Size 가 다릅니다"));
+            E_LOG(Error, TEXT("Uniform buffer size mismatch"));
         }
         FRHIUniformBuffer* UniformBuffer = UniformBuffers[Layout.Name];
 

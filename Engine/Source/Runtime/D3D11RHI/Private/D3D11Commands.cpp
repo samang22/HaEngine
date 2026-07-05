@@ -518,7 +518,7 @@ FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(const FString& InFilePath, con
 
     if (InExtension.empty())
     {
-        E_LOG(Error, TEXT("확장자가 없는 파일 경로: {}"), InFilePath);
+        E_LOG(Error, TEXT("File path has no extension: {}"), InFilePath);
         return FTextureRHIRef();
     }
 
@@ -547,7 +547,7 @@ FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(const FString& InFilePath, con
     }
     else
     {
-        E_LOG(Error, TEXT("지원하지 않는 Texture Format: {}"), InFilePath);
+        E_LOG(Error, TEXT("Unsupported texture format: {}"), InFilePath);
     }
 
     {
@@ -568,7 +568,7 @@ FTextureRHIRef FD3D11DynamicRHI::RHICreateTexture(const FString& InFilePath, con
                 E_LOG(Error, TEXT("Failed to SaveToDDSFile : {}"), InFilePath);
                 return FTextureRHIRef();
             }
-            E_LOG(Warning, TEXT("MipMap을 추가한 다음 DDS File을 사용하세요. {}"), NewFilePath);
+            E_LOG(Warning, TEXT("Use a DDS file with mipmaps. {}"), NewFilePath);
             ScratchImage = &GeneratedWIthMipImage;
         }
         else
@@ -604,7 +604,7 @@ FTextureRHIRef FD3D11DynamicRHI::RHICreateCubeTexture(const FString& InFilePath,
 
     if (InExtension != TEXT("dds"))
     {
-        E_LOG(Error, TEXT("지원하지 않는 CubeTexture Format: {}"), InFilePath);
+        E_LOG(Error, TEXT("Unsupported cube texture format: {}"), InFilePath);
         return FTextureRHIRef();
     }
 

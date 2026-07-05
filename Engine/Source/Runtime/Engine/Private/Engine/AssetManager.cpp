@@ -37,7 +37,7 @@ TEnginePtr<UObject> FAssetManager::LoadAsset(const type_info& InAssetType, const
         UFactory* Factory = Class->GetDefaultObject<UFactory>();
         if (Factory == nullptr)
         {
-            E_LOG(Error, TEXT("CDO 로딩 중"));
+            E_LOG(Error, TEXT("Loading CDO"));
             return nullptr;
         }
 

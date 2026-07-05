@@ -22,7 +22,7 @@ FD3D11Viewport::FD3D11Viewport(FD3D11DynamicRHI* InD3DRHI, HWND InWindowHandle, 
 
 	if (PixelFormat != EPixelFormat::PF_A2B10G10R10)
 	{
-		E_LOG(Error, TEXT("우리는 EPixelFormat::PF_A2B10G10R10만 지원"));
+		E_LOG(Error, TEXT("Only EPixelFormat::PF_A2B10G10R10 is supported"));
 	}
 
 	// 각 뷰포트에 대해 백버퍼/스왑체인을 생성합니다.

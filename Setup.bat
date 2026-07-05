@@ -40,6 +40,48 @@ if not exist "Engine\Source\Programs\vcpkg" (
 .\vcpkg\vcpkg integrate install
 popd
 
+echo [FBX SDK task]
+set "FBX_TARGET_ROOT=%cd%\Engine\Source\ThirdParty\FBX\2020.3.7\lib\x64"
+set "FBX_SDK_ROOT="
+
+if exist "%ProgramFiles%\Autodesk\FBX\FBX SDK\2020.3.7\lib\x64\debug\libfbxsdk.lib" (
+	set "FBX_SDK_ROOT=%ProgramFiles%\Autodesk\FBX\FBX SDK\2020.3.7"
+) else if exist "%ProgramFiles%\Autodesk\FBX\FBX SDK\2020.3.9\lib\x64\debug\libfbxsdk.lib" (
+	set "FBX_SDK_ROOT=%ProgramFiles%\Autodesk\FBX\FBX SDK\2020.3.9"
+)
+
+if "%FBX_SDK_ROOT%"=="" (
+	echo [WARN] FBX SDK not found. Install Autodesk FBX SDK 2020.3.7 or 2020.3.9, then re-run Setup.bat
+	goto FBXDone
+)
+
+if not exist "%FBX_TARGET_ROOT%\debug" mkdir "%FBX_TARGET_ROOT%\debug"
+if not exist "%FBX_TARGET_ROOT%\release" mkdir "%FBX_TARGET_ROOT%\release"
+
+if exist "%FBX_SDK_ROOT%\lib\vs2019\x64\debug\libfbxsdk.lib" (
+	copy /Y "%FBX_SDK_ROOT%\lib\vs2019\x64\debug\libfbxsdk.lib" "%FBX_TARGET_ROOT%\debug\"
+) else if exist "%FBX_SDK_ROOT%\lib\x64\debug\libfbxsdk.lib" (
+	copy /Y "%FBX_SDK_ROOT%\lib\x64\debug\libfbxsdk.lib" "%FBX_TARGET_ROOT%\debug\"
+)
+
+if exist "%FBX_SDK_ROOT%\lib\vs2019\x64\release\libfbxsdk.lib" (
+	copy /Y "%FBX_SDK_ROOT%\lib\vs2019\x64\release\libfbxsdk.lib" "%FBX_TARGET_ROOT%\release\"
+) else if exist "%FBX_SDK_ROOT%\lib\x64\release\libfbxsdk.lib" (
+	copy /Y "%FBX_SDK_ROOT%\lib\x64\release\libfbxsdk.lib" "%FBX_TARGET_ROOT%\release\"
+)
+
+if exist "%FBX_SDK_ROOT%\lib\x64\release\libfbxsdk.dll" (
+	copy /Y "%FBX_SDK_ROOT%\lib\x64\release\libfbxsdk.dll" "%FBX_TARGET_ROOT%\release\"
+)
+
+if not exist "%FBX_TARGET_ROOT%\debug\libfbxsdk.lib" (
+	echo [WARN] libfbxsdk.lib copy failed. Check FBX SDK install path.
+) else (
+	echo [OK] FBX SDK libraries copied from %FBX_SDK_ROOT%
+)
+
+:FBXDone
+
 echo [register .sproject]
 assoc .sproject=sprojectfile
 ftype sprojectfile=

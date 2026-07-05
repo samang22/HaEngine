@@ -13,10 +13,18 @@ bool UIpConnection::InitRemoteConnection(UNetDriver* InDriver, const FURL& InURL
     const bool bServer = InDriver->IsServer();
     if (!bServer)
     {
-        boost::asio::ip::tcp::endpoint EndPoint(boost::asio::ip::address::from_string(TCHAR_TO_ANSI(InURL.Host)), URL.Port);
         tcp::resolver Resolver(InContext);
         boost::system::error_code ErrorCode;
-        boost::asio::connect(*GetSocket(), Resolver.resolve(EndPoint), ErrorCode);
+        const std::string Host = TCHAR_TO_ANSI(InURL.Host);
+        const std::string Port = std::to_string(URL.Port);
+        tcp::resolver::results_type Results = Resolver.resolve(Host, Port, ErrorCode);
+        if (ErrorCode)
+        {
+            E_LOG(Error, TEXT("IpNetConnection Failed to resolve: {}"), ANSI_TO_TCHAR(ErrorCode.message()));
+            return false;
+        }
+
+        boost::asio::connect(*GetSocket(), Results, ErrorCode);
 
         if (ErrorCode)
         {

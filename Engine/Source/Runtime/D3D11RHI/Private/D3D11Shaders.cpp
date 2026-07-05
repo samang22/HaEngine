@@ -15,7 +15,7 @@ bool FD3D11DynamicRHI::RHICompileShader(FShaderType* InShaderType, TObjectPtr<FS
         TargetName = "ps";
         break;
     default:
-        E_LOG(Error, TEXT("아직 지원하지 않는 Frequency 입니다"));
+        E_LOG(Error, TEXT("Unsupported shader frequency"));
         break;
     }
     TargetName += "_5_0";
