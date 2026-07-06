@@ -83,14 +83,39 @@ void UPlayerInput::ProcessInputStack(const TArray<UInputComponent*>& InputCompon
 
         if (bLockMouse)
         {
-            Delta = FVector2D(MouseState.x - InitialMouseState.x, InitialMouseState.y - MouseState.y);
+            HWND hViewportHandle = GEngine->GetCurrentViewClient()->GetNativeWindowHandle();
+            // 우리 창(최상위 부모 기준)이 포그라운드일 때만 마우스를 고정한다
+            const bool bForeground = (GetForegroundWindow() == GetAncestor(hViewportHandle, GA_ROOT));
+
+            if (bForeground)
             {
-                HWND hViewportHandle = GEngine->GetCurrentViewClient()->GetNativeWindowHandle();
+                if (bWasForeground)
+                {
+                    Delta = FVector2D(MouseState.x - InitialMouseState.x, InitialMouseState.y - MouseState.y);
+                }
+                else
+                {
+                    // 포커스 복귀 첫 프레임: 커서가 임의 위치에 있으므로 델타를 무시하고 커서를 다시 숨긴다
+                    Delta = FVector2D(0.f, 0.f);
+                    while (ShowCursor(FALSE) >= 0);
+                }
+
                 POINT Point = POINT(InitialMouseState.x, InitialMouseState.y);
                 // 우리 윈도우의 상대 좌표를 Windows의 Screen 좌표로 변환한다
                 ClientToScreen(hViewportHandle, &Point);
                 SetCursorPos(Point.x, Point.y);
             }
+            else
+            {
+                // 포커스를 잃은 동안에는 마우스를 자유롭게 두고 카메라 입력도 차단한다
+                Delta = FVector2D(0.f, 0.f);
+                if (bWasForeground)
+                {
+                    while (ShowCursor(TRUE) < 0);
+                }
+            }
+
+            bWasForeground = bForeground;
         }
 
         for (UInputComponent* const InputComponent : InputComponentStack)

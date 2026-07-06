@@ -97,5 +97,7 @@ private:
     DirectX::Mouse::State LastMouseState;
 
     bool bLockMouse = true;
+    /** 직전 프레임에 우리 창이 포그라운드였는지. 포커스를 잃으면 마우스 고정을 풀기 위함 */
+    bool bWasForeground = true;
     DirectX::Mouse::State InitialMouseState;
 };
