@@ -173,6 +173,18 @@ class FFXAAPS : public FShader
 };
 IMPLEMENT_SHADER_TYPE(FFXAAPS, FPaths::ShaderDir() + L"/FXAA.hlsl", "PS", SF_Pixel)
 
+class FGBufferDebugVS : public FShader
+{
+	DECLARE_SHADER_TYPE(FGBufferDebugVS)
+};
+IMPLEMENT_SHADER_TYPE(FGBufferDebugVS, FPaths::ShaderDir() + L"/GBufferDebugShader.hlsl", "VS", SF_Vertex)
+
+class FGBufferDebugPS : public FShader
+{
+	DECLARE_SHADER_TYPE(FGBufferDebugPS)
+};
+IMPLEMENT_SHADER_TYPE(FGBufferDebugPS, FPaths::ShaderDir() + L"/GBufferDebugShader.hlsl", "PS", SF_Pixel)
+
 
 void FSceneRenderer::Render()
 {
@@ -214,55 +226,82 @@ void FSceneRenderer::Render()
 		FRHIDepthStencilState* DepthStencilState = TStaticDepthStencilState<false>().GetRHI();
 		GetCommandList().SetDepthStencilState(DepthStencilState);
 
-		// PostProcess
+		FConfigFile& ConfigFile = GConfig->GetConfig(GEngineIni);
+		bool bGBufferDebug = false;
+		ini::IniField GBufferDebugField;
+		if (ConfigFile.Get("/Script/Engine.RendererSettings", "GBufferDebug", GBufferDebugField))
 		{
-			// FXAA
-			FConfigFile& ConfigFile = GConfig->GetConfig(GEngineIni);
-			bool bFXAA = false;
-			ConfigFile.Get<bool>("/Script/Engine.RendererSettings", "FXAA", bFXAA);
-
-			if (bFXAA /*|| GetAsyncKeyState(VK_F7) & 0x8000*/)
-			{
-				TShaderMapRef<FFXAAPS> PixelShader;
-				const FConstantBufferInfo& ConstantBufferInfo = PixelShader->GetConstantBufferInfo(TEXT("FFXAAUniformBuffer"));
-				FXAAUniformBuffer.ScreenSize = ViewFamily.ViewportSize;
-				FXAAUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &FXAAUniformBuffer, sizeof(FXAAUniformBuffer));
-				GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, FXAAUniformBufferRHI);
-
-				TArray<FRHIShaderParameterResource> Parameters;
-				Parameters.emplace_back(TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI(), 0);
-				Parameters.emplace_back(SceneTextures.Color.Target, 0);
-				GetCommandList().SetShaderParameters(PixelShader.GetPixelShader(), Parameters);
-
-				TShaderMapRef<FFXAAVS> VertextShader;
-				DrawRectangle(VertextShader.GetVertexShader(), PixelShader.GetPixelShader());
-			}
-			else
-			{
-				GetCommandList().CopyTexture(SceneTextures.Color.Target, ViewFamily.RenderTarget->GetRenderTarget(), FRHICopyTextureInfo());
-			}
+			bGBufferDebug = GBufferDebugField.as<bool>();
 		}
 
-		// UI Render
+		const bool bShowGBufferDebug =
+			bGBufferDebug && ViewFamily.GetShadingPath() == EShadingPath::Deferred;
+
+		if (bShowGBufferDebug)
 		{
-			TShaderMapRef<FTestVS> VertextShader;
-			TShaderMapRef<FTestPS> PixelShader;
-			GetCommandList().SetBoundShaderState(
-				GDynamicRHI->RHICreateBoundShaderState(
-					GPositionVertexDeclaration.VertexDeclarationRHI,
-					VertextShader.GetVertexShader(),
-					PixelShader.GetPixelShader()
-				).GetReference()
-			);
+			TShaderMapRef<FGBufferDebugVS> VertexShader;
+			TShaderMapRef<FGBufferDebugPS> PixelShader;
 
-			FRHIRasterizerState* RHIRasterizerState = TStaticRasterizerState<FM_Solid, CM_CW>::GetRHI();
-			GetCommandList().SetRasterizerState(RHIRasterizerState);
+			TArray<FRHIShaderParameterResource> Parameters;
+			Parameters.emplace_back(TStaticSamplerState<SF_Point, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI(), 0);
+			Parameters.emplace_back(SceneTextures.GBufferA, 0);
+			Parameters.emplace_back(SceneTextures.GBufferB, 1);
+			Parameters.emplace_back(SceneTextures.GBufferC, 2);
+			Parameters.emplace_back(SceneTextures.Color.Target, 3);
+			GetCommandList().SetShaderParameters(PixelShader.GetPixelShader(), Parameters);
 
-			GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
-			GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
-			GetCommandList().DrawPrimitive(0, 1, 1);
+			DrawRectangle(VertexShader.GetVertexShader(), PixelShader.GetPixelShader());
 		}
+		else
+		{
+			// PostProcess
+			{
+				// FXAA
+				bool bFXAA = false;
+				ConfigFile.Get<bool>("/Script/Engine.RendererSettings", "FXAA", bFXAA);
 
+				if (bFXAA /*|| GetAsyncKeyState(VK_F7) & 0x8000*/)
+				{
+					TShaderMapRef<FFXAAPS> PixelShader;
+					const FConstantBufferInfo& ConstantBufferInfo = PixelShader->GetConstantBufferInfo(TEXT("FFXAAUniformBuffer"));
+					FXAAUniformBuffer.ScreenSize = ViewFamily.ViewportSize;
+					FXAAUniformBufferRHI = RHICreateUniformBuffer(ConstantBufferInfo, &FXAAUniformBuffer, sizeof(FXAAUniformBuffer));
+					GetCommandList().SetShaderUniformBuffer(EShaderFrequency::SF_Pixel, FXAAUniformBufferRHI);
+
+					TArray<FRHIShaderParameterResource> Parameters;
+					Parameters.emplace_back(TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI(), 0);
+					Parameters.emplace_back(SceneTextures.Color.Target, 0);
+					GetCommandList().SetShaderParameters(PixelShader.GetPixelShader(), Parameters);
+
+					TShaderMapRef<FFXAAVS> VertextShader;
+					DrawRectangle(VertextShader.GetVertexShader(), PixelShader.GetPixelShader());
+				}
+				else
+				{
+					GetCommandList().CopyTexture(SceneTextures.Color.Target, ViewFamily.RenderTarget->GetRenderTarget(), FRHICopyTextureInfo());
+				}
+			}
+
+			// UI Render
+			{
+				TShaderMapRef<FTestVS> VertextShader;
+				TShaderMapRef<FTestPS> PixelShader;
+				GetCommandList().SetBoundShaderState(
+					GDynamicRHI->RHICreateBoundShaderState(
+						GPositionVertexDeclaration.VertexDeclarationRHI,
+						VertextShader.GetVertexShader(),
+						PixelShader.GetPixelShader()
+					).GetReference()
+				);
+
+				FRHIRasterizerState* RHIRasterizerState = TStaticRasterizerState<FM_Solid, CM_CW>::GetRHI();
+				GetCommandList().SetRasterizerState(RHIRasterizerState);
+
+				GetCommandList().SetPrimitiveTopology(EPrimitiveType::PT_TriangleList);
+				GetCommandList().SetStreamSource(0, GNDCTriangleVertexBuffer.VertexBufferRHI, 0);
+				GetCommandList().DrawPrimitive(0, 1, 1);
+			}
+		}
 
 		GetCommandList().EndDrawingViewport(ViewFamily.RenderTarget, true, false);
 	}

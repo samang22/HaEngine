@@ -66,7 +66,8 @@ public:\
 
 /** A macro to implement a shader type. */
 #define IMPLEMENT_SHADER_TYPE(ShaderClass,ShaderFilePath,FunctionName,Frequency) \
-    static FShaderType StaticType_##ShaderClass(typeid(ShaderClass), TEXT(#ShaderClass), ShaderFilePath, FunctionName, Frequency, ShaderClass::ConstructCompiledInstance);
+    static FShaderType StaticType_##ShaderClass(typeid(ShaderClass), TEXT(#ShaderClass), \
+	ShaderFilePath, FunctionName, Frequency, ShaderClass::ConstructCompiledInstance);
 
 
 class RENDERCORE_API FGlobalShaderMap
