@@ -58,6 +58,8 @@ public:
 
     inline bool IsSaving() const { return Mode == EMode::Save; }
     inline bool IsLoading() const { return Mode == EMode::Load; }
+    inline bool IsFramedData() const { return bFramedData; }
+    inline void SetFramedData(bool bInFramedData) { bFramedData = bInFramedData; }
 
     /**
      * 이 아카이브가 지속적인 저장소를 위한 데이터를 저장하거나 로드하고 있으며 일시적인 데이터를 건너뛰어야 하는 경우 true를 반환합니다.
@@ -92,6 +94,7 @@ protected:
 
 private:
     EMode Mode;
+    bool bFramedData = false;
     map<UObject*, TObjectPtr<UObject>>* DuplicatedObjectAnnotation = nullptr; // Key: Src, Val: Dup
     boost::archive::text_oarchive* SaveArchive = nullptr;
     boost::archive::text_iarchive* LoadArchive = nullptr;

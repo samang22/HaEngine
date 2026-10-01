@@ -140,16 +140,35 @@ void UWorld::Serialize(FArchive& Ar)
 
 string UWorld::Save()
 {
+	constexpr uint64 SaveFormatMarker = 0x4841454E47494E45;
+	constexpr uint64 SaveFormatVersion = 2;
+
 	std::stringstream Buffer;
 	boost::archive::text_oarchive SaveArchive = boost::archive::text_oarchive(Buffer);
 	FArchive Ar = FArchive(SaveArchive);
+	Ar.SetFramedData(true);
+
+	uint64 FormatMarker = SaveFormatMarker;
+	uint64 FormatVersion = SaveFormatVersion;
+	Ar << FormatMarker;
+	Ar << FormatVersion;
 
 	uint64 ObjectCount = PersistentLevel->Actors.size();
 	Ar << ObjectCount;
 
 	for (TEnginePtr<AActor> Actor : PersistentLevel->Actors)
 	{
-		Actor->Serialize(Ar);
+		FString ActorName = Actor->GetName();
+		Ar << ActorName;
+
+		std::stringstream ActorBuffer;
+		boost::archive::text_oarchive ActorSaveArchive = boost::archive::text_oarchive(ActorBuffer);
+		FArchive ActorAr = FArchive(ActorSaveArchive);
+		ActorAr.SetFramedData(true);
+		Actor->Serialize(ActorAr);
+
+		string ActorData = ActorBuffer.str();
+		Ar << ActorData;
 	}
 
 	string String = Buffer.str();
@@ -158,13 +177,63 @@ string UWorld::Save()
 
 void UWorld::Load(const string& InLoadString)
 {
+	constexpr uint64 SaveFormatMarker = 0x4841454E47494E45;
+	constexpr uint64 SaveFormatVersion = 2;
+
 	std::stringstream Buffer = std::stringstream(InLoadString);
 	boost::archive::text_iarchive LoadArchive = boost::archive::text_iarchive(Buffer);
 	FArchive Ar = FArchive(LoadArchive);
 
 	uint64 ObjectCount = 0;
 	Ar << ObjectCount;
+	if (ObjectCount == SaveFormatMarker)
+	{
+		uint64 FormatVersion = 0;
+		Ar << FormatVersion;
+		if (FormatVersion != SaveFormatVersion)
+		{
+			E_LOG(Error, TEXT("Unsupported world save version: {}"), FormatVersion);
+			return;
+		}
+		Ar << ObjectCount;
+		Ar.SetFramedData(true);
 
+		for (uint64 i = 0; i < ObjectCount; ++i)
+		{
+			FString ActorName;
+			string ActorData;
+			Ar << ActorName;
+			Ar << ActorData;
+
+			auto It = std::find_if(PersistentLevel->Actors.begin(), PersistentLevel->Actors.end(),
+				[&ActorName](TObjectPtr<AActor> Actor)
+				{
+					return Actor->GetName() == ActorName;
+				});
+			if (It == PersistentLevel->Actors.end())
+			{
+				E_LOG(Warning, TEXT("Skipping saved actor that is absent from the world: {}"), ActorName);
+				continue;
+			}
+
+			std::stringstream ActorBuffer(ActorData);
+			boost::archive::text_iarchive ActorLoadArchive = boost::archive::text_iarchive(ActorBuffer);
+			FArchive ActorAr = FArchive(ActorLoadArchive);
+			ActorAr.SetFramedData(true);
+			FString SerializedActorName;
+			ActorAr << SerializedActorName;
+			if (SerializedActorName != ActorName)
+			{
+				E_LOG(Error, TEXT("Actor save record name mismatch: {} != {}"), SerializedActorName, ActorName);
+				return;
+			}
+			It->get()->Serialize(ActorAr);
+		}
+		return;
+	}
+
+	// Legacy saves are read in their original order. Their unframed records cannot
+	// safely skip actors that no longer exist, so stop before desynchronizing the archive.
 	for (uint64 i = 0; i < ObjectCount; ++i)
 	{
 		FString ObjectName;
@@ -181,6 +250,11 @@ void UWorld::Load(const string& InLoadString)
 		if (It != PersistentLevel->Actors.end())
 		{
 			It->get()->Serialize(Ar);
+		}
+		else
+		{
+			E_LOG(Warning, TEXT("Cannot safely skip actor in legacy save: {}"), ObjectName);
+			return;
 		}
 	}
 }

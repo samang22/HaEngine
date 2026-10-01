@@ -65,7 +65,7 @@ namespace DirectX
 
         virtual ~Keyboard();
 
-        enum Keys : unsigned char
+        enum Keys : unsigned short
         {
             None = 0,
 
@@ -247,8 +247,8 @@ namespace DirectX
             OemClear = 0xfe,
 
             // 직접 추가
-            MouseX,
-            MouseY,
+            MouseX = 0xff,
+            MouseY = 0x100,
         };
 
         struct State

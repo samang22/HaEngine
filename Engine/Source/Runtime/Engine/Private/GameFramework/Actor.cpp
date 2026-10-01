@@ -2,6 +2,9 @@
 #include "Camera/CameraTypes.h"
 #include "Engine/World.h"
 #include "Engine/Level.h"
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <sstream>
 
 /** 사용자가 자신의 네이티브 생성자에서 이를 잊어버렸을 때, 액터의 컴포넌트 계층 구조를 설정하는 유틸리티 */
 static USceneComponent* FixupNativeActorComponents(AActor* Actor)
@@ -140,7 +143,24 @@ void AActor::Serialize(FArchive& Ar)
 
 		for (TEnginePtr<UActorComponent> It : OwnedComponents)
 		{
-			It->Serialize(Ar);
+			if (Ar.IsPersistent() && Ar.IsFramedData())
+			{
+				FString ComponentName = It->GetName();
+				Ar << ComponentName;
+
+				std::stringstream ComponentBuffer;
+				boost::archive::text_oarchive ComponentSaveArchive = boost::archive::text_oarchive(ComponentBuffer);
+				FArchive ComponentAr = FArchive(ComponentSaveArchive);
+				ComponentAr.SetFramedData(true);
+				It->Serialize(ComponentAr);
+
+				string ComponentData = ComponentBuffer.str();
+				Ar << ComponentData;
+			}
+			else
+			{
+				It->Serialize(Ar);
+			}
 		}
 	}
 	else
@@ -154,6 +174,11 @@ void AActor::Serialize(FArchive& Ar)
 			{
 				FString ComponentName;
 				Ar << ComponentName;
+				string ComponentData;
+				if (Ar.IsFramedData())
+				{
+					Ar << ComponentData;
+				}
 
 				auto It = find_if(OwnedComponents.begin(), OwnedComponents.end(),
 					[&ComponentName](TEnginePtr<UActorComponent> InComponent)
@@ -162,7 +187,30 @@ void AActor::Serialize(FArchive& Ar)
 					});
 				if (It != OwnedComponents.end())
 				{
-					It->get()->Serialize(Ar);
+					if (Ar.IsFramedData())
+					{
+						std::stringstream ComponentBuffer(ComponentData);
+						boost::archive::text_iarchive ComponentLoadArchive = boost::archive::text_iarchive(ComponentBuffer);
+						FArchive ComponentAr = FArchive(ComponentLoadArchive);
+						ComponentAr.SetFramedData(true);
+						FString SerializedComponentName;
+						ComponentAr << SerializedComponentName;
+						if (SerializedComponentName != ComponentName)
+						{
+							E_LOG(Error, TEXT("Component save record name mismatch: {} != {}"), SerializedComponentName, ComponentName);
+							return;
+						}
+						It->get()->Serialize(ComponentAr);
+					}
+					else
+					{
+						It->get()->Serialize(Ar);
+					}
+				}
+				else
+				{
+					E_LOG(Warning, TEXT("Cannot safely skip component in legacy save: {}"), ComponentName);
+					return;
 				}
 			}
 		}
