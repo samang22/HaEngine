@@ -27,6 +27,7 @@ void FScene::AddPrimitive(UPrimitiveComponent* Primitive)
     if (!Proxy) { return; }
 
     PrimitiveSceneProxies.push_back(Proxy);
+    Primitive->SceneProxy = Proxy;
 }
 
 void FScene::RemovePrimitive(UPrimitiveComponent* Primitive)
@@ -44,7 +45,13 @@ void FScene::RemovePrimitive(UPrimitiveComponent* Primitive)
         return;
     }
 
+    FPrimitiveSceneProxy* Proxy = *It;
     PrimitiveSceneProxies.erase(It);
+    if (Primitive->SceneProxy == Proxy)
+    {
+        Primitive->SceneProxy = nullptr;
+    }
+    delete Proxy;
 }
 
 void FScene::AddLight(ULightComponent* Light)
@@ -53,6 +60,7 @@ void FScene::AddLight(ULightComponent* Light)
     if (!Proxy) { return; }
 
     LightSceneProxies.push_back(Proxy);
+    Light->SceneProxy = Proxy;
 }
 
 void FScene::RemoveLight(ULightComponent* Light)
@@ -70,19 +78,35 @@ void FScene::RemoveLight(ULightComponent* Light)
         return;
     }
 
+    FLightSceneProxy* Proxy = *It;
     LightSceneProxies.erase(It);
+    if (Light->SceneProxy == Proxy)
+    {
+        Light->SceneProxy = nullptr;
+    }
+    delete Proxy;
 }
 
 void FScene::Release()
 {
     for (FPrimitiveSceneProxy* Proxy : PrimitiveSceneProxies)
     {
+        UPrimitiveComponent* Primitive = Proxy->GetPrimitiveComponent();
+        if (Primitive->SceneProxy == Proxy)
+        {
+            Primitive->SceneProxy = nullptr;
+        }
         delete Proxy;
     }
     PrimitiveSceneProxies.clear();
 
     for (FLightSceneProxy* Proxy : LightSceneProxies)
     {
+        ULightComponent* Light = Proxy->GetLightComponent();
+        if (Light->SceneProxy == Proxy)
+        {
+            Light->SceneProxy = nullptr;
+        }
         delete Proxy;
     }
     LightSceneProxies.clear();

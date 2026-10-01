@@ -11,7 +11,7 @@ public:
     virtual ~ULightComponent();
 
     /** The light's scene info. */
-    class FLightSceneProxy* SceneProxy;
+    class FLightSceneProxy* SceneProxy = nullptr;
 
     virtual class FLightSceneProxy* CreateSceneProxy() /*const*/
     {
