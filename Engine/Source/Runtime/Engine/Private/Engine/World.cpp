@@ -187,7 +187,8 @@ void UWorld::Load(const string& InLoadString)
 
 TObjectPtr<UWorld> UWorld::GetDuplicatedWorldForPIE(UWorld* InWorld)
 {
-	TObjectPtr<UWorld> NewWorld = Cast<UWorld>(StaticDuplicateObject(InWorld, nullptr, TEXT("PIE World"), EDuplicateMode::PIE));
+	TObjectPtr<UWorld> NewWorld = Cast<UWorld>(StaticDuplicateObject(InWorld
+		, nullptr, TEXT("PIE World"), EDuplicateMode::PIE));
 	NewWorld->WorldType = EWorldType::PIE;
 	return NewWorld;
 }
@@ -231,7 +232,6 @@ AActor* UWorld::SpawnActor(UClass* Class, FTransform const* UserTransformPtr, co
 	AActor* NewActor = Actor.get();
 
 	NewActor->PostSpawnInitialize(UserTransform, SpawnParameters.Owner, SpawnParameters.Instigator, SpawnParameters.TransformScaleMethod);
-
 	// Broadcast notification of spawn
 	OnActorSpawned.Broadcast(NewActor);
 	E_LOG(Log, TEXT("Actor Spawned({})"), Class->GetName());

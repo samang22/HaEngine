@@ -1,7 +1,8 @@
 @echo off
+setlocal
 
 REM EngineDir은 EngineSolution.build.cs에서 사용 됩니다.
-set EngineDir=%cd%
+set "EngineDir=%~dp0"
 IF NOT "%~1"=="" set "EngineDir=%~1"
 echo EngineDir은 %EngineDir%
 
@@ -16,10 +17,14 @@ echo FrontendTargetCS %FrontendTargetCS%
 
 REM SharpMakeSolutionDir은 최종 Sln 파일이 만들어질 위치가 됩니다.
 REM SharpMakeSolutionDir은 EngineSolution.build.cs에서 사용 됩니다.
-set SharpMakeSolutionDir=%cd%
+set "SharpMakeSolutionDir=%cd%"
 IF NOT "%~4"=="" set SharpMakeSolutionDir="%4"
 echo SharpMakeSolutionDir은 %SharpMakeSolutionDir%
 
+set "HE_VCPKG_ROOT=%EngineDir%\Engine\Source\Programs\vcpkg"
+
 "%EngineDir%\Engine\Source\Programs\Sharpmake\Sharpmake.Application\bin\Release\net6.0\Sharpmake.Application.exe" /sources(@'%TargetCS%') /verbose
+if errorlevel 1 exit /b 1
 "%EngineDir%\Engine\Source\Programs\Sharpmake\Sharpmake.Application\bin\Release\net6.0\Sharpmake.Application.exe" /sources(@'%FrontendTargetCS%') /verbose
+if errorlevel 1 exit /b 1
 pause

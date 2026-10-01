@@ -125,6 +125,10 @@ public abstract class CommonProject : Project
 
         // 빌드 직전에 HeaderParser가 실행되면서 변경된 헤더들을 수집하고, generated.h를 생성
         string EngineDir = Utils.GetEngineDir();
+        // Use this checkout's dependencies instead of per-user vcpkg integration.
+        string VcpkgBuildSystem = EngineDir + @"\Engine\Source\Programs\vcpkg\scripts\buildsystems\msbuild";
+        conf.CustomPropsFiles.Add(VcpkgBuildSystem + @"\vcpkg.props");
+        conf.CustomTargetsFiles.Add(VcpkgBuildSystem + @"\vcpkg.targets");
         conf.EventPreBuild.Add(@"cmd /c """"" + EngineDir + @"\Engine\Source\Programs\HeaderParser\HeaderParser.bat"" ""$(SolutionDir)"" [project.Name] ""[project.SourceRootPath]"" " + @"""" + EngineDir + @"""""");
 
         conf.CustomProperties.Add("CustomOptimizationProperty", $"Custom-{target.Optimization}");

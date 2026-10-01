@@ -1,9 +1,10 @@
 #include "Shader.h"
 
-FShaderType::FShaderType(const type_index ClassType, const TCHAR* InClassName, const FString InShaderFilePath,
-    const char* InFunctionName, EShaderFrequency InShaderFrequency,
+FShaderType::FShaderType(const type_index ClassType, const TCHAR* InClassName, 
+    const FString InShaderFilePath, const char* InFunctionName, EShaderFrequency InShaderFrequency,
     FShaderConstructFunction InShaderConstructFunction)
-    : TypeIndex(ClassType), ClassName(InClassName), ShaderFilePath(InShaderFilePath), FunctionName(InFunctionName), Frequency(InShaderFrequency)
+    : TypeIndex(ClassType), ClassName(InClassName), ShaderFilePath(InShaderFilePath)
+    , FunctionName(InFunctionName), Frequency(InShaderFrequency)
     , ShaderConstructFunction(InShaderConstructFunction)
 {
     FGlobalShaderMap::ShaderTypes.emplace(ClassType, this);
